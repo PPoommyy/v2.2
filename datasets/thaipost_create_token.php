@@ -35,8 +35,8 @@
     }
 
     $requestData = json_decode(file_get_contents('php://input'), true);
-    // $apiHost = "https://dpostinter.thailandpost.com";
-    $apiHost = "https://dpinterapi.thailandpost.com";
+    $apiHost = "https://dpostinter.thailandpost.com";
+    //$apiHost = "https://dpinterapi.thailandpost.com";
     /* $urlencoded = http_build_query([
         'username' => 'testuser1',
         'password' => '12345',

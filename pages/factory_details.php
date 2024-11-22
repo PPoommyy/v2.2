@@ -2,17 +2,17 @@
 <html lang="en">
 <?php include('../templates/metadata.php'); ?>
 <?php 
-    $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : null;
+    $factory_id = isset($_GET['factory_id']) ? $_GET['factory_id'] : null;
 ?>
 <body>
     <?php include('../templates/header.php');?>
-    <input id="orderId" type="hidden" value="<?php echo $order_id ?>">
+    <input id="factoryId" type="hidden" value="<?php echo $factory_id ?>">
     <div class="container">
         <p class="mb-4">
             <strong class="h1">
-                <?= $order_id ? 'Order Details' : 'Add New Order'; ?>
+                <?= $factory_id ? 'Factory' : 'Add New Factory'; ?>
             </strong>
-                <?= $order_id ? '<small class="text-secondary">(' . $order_id . ')</small>' : ''?>
+                <?= $factory_id ? '<small class="text-secondary">(' . $factory_id . ')</small>' : ''?>
         </p>
         <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-5 container">
@@ -82,12 +82,6 @@
                     </div>
                 </div>
                 <div class="row mb-4">
-                    <div class="col-3 text-end">Override Address</div>
-                    <div class="col-9">  
-                        <textarea id="override-address-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter address (e.g.)... Ms. Amy Trudeau 69 Wilson Park Rd ON Canada M6K 3B6 Tel No. 6478814456"></textarea>
-                    </div>
-                </div>
-                <div class="row mb-4">
                     <div class="col-3 text-end">Order Note</div>
                     <div class="col-9">  
                         <textarea id="order-note-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter order note."></textarea>
@@ -149,7 +143,7 @@
                     <div class="row mb-3">
                         <div class="col-6"></div>
                         <?php
-                            if ($order_id) {
+                            if ($factory_id) {
                                 echo '<button id="save-order" class="btn btn-warning"><i class="fa fa-save"></i> Save</button>';
                             } else {
                                 echo '<button id="insert-order" class="btn btn-warning"><i class="fa fa-save"></i> Insert</button>';
@@ -163,6 +157,6 @@
         <div id="order-data-container" class="overflow-scroll"></div>
     </div>
     <?php include('../templates/footer.php');?>
-    <script type='module' src="../scripts/order_details.js"></script>
+    <script type='module' src="../scripts/factory_details.js"></script>
 </body>
 </html>

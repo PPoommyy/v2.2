@@ -2,53 +2,8 @@ import { AddressController } from "../components/AddressController.js";
 import { Alert } from "../components/Alert.js";
 import { DataController } from "../components/DataController.js";
 
-const order_id = document.getElementById('orderId').value;
+const factory_id = document.getElementById('factoryId').value;
 const addProduct = document.getElementById('add-product');
-
-addProduct.addEventListener('click', function (event) {
-    event.preventDefault();
-    const tbody = document.getElementById('item-list-body');
-    const tableRow = document.createElement('tr');
-    tableRow.classList.add('item', 'row');
-    const skuInput = createInput('text', 'order-product-sku', '', false);
-    const skuDiv = createSkuDiv(skuInput)
-    tableRow.appendChild(createTableCell(skuDiv, 5));
-    const priceInput = createInput('number', 'item-price', 0, false);
-    priceInput.addEventListener('change', () => updateTotal(tableRow));
-    tableRow.appendChild(createTableCell(priceInput, 2));
-    const quantityInput = createInput('number', 'quantity-purchased', 1, false);
-    quantityInput.addEventListener('change', () => updateTotal(tableRow));
-    tableRow.appendChild(createTableCell(quantityInput, 2));
-    const totalInput = createInput('number', 'total', 0, true);
-    tableRow.appendChild(createTableCell(totalInput, 2));
-    const removeButton = document.createElement('button');
-    removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
-    removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
-    removeButton.addEventListener('click', () =>{
-        tableRow.remove();
-        updateTotal(tableRow);
-    });
-    tableRow.appendChild(createTableCell(removeButton, 1));
-    tbody.appendChild(tableRow);
-});
-
-const discountField = document.getElementById('discount');
-const shippingFeeField = document.getElementById('shippingFee');
-discountField.addEventListener('change', () => updateSubtotal());
-shippingFeeField.addEventListener('change', () => updateSubtotal());
-
-const hasDeposit = document.getElementById('hasDeposit');
-hasDeposit.addEventListener('change', (event) => {
-    event.preventDefault();
-    const deposit = document.getElementById('deposit');
-    const isChecked = hasDeposit.checked;
-    if (isChecked) {
-        deposit.removeAttribute('disabled');
-    } else {
-        deposit.setAttribute('disabled', '');
-        deposit.value = 0;
-    }
-});
 
 const insertOrderButton = document.getElementById('insert-order');
 const saveOrderButton = document.getElementById('save-order');
@@ -66,7 +21,6 @@ if (insertOrderButton) {
             const order_status_id = document.getElementById('selected-order-status').getAttribute('data-id');
             const order_type_id = document.getElementById('selected-order-type').getAttribute('data-id');
             const shipAddressInput = document.getElementById('ship-address-input').value;
-            const overrideAddressInput = document.getElementById('override-address-input').value;
             const orderNoteInput = document.getElementById('order-note-input').value;
             const fileInput = document.getElementById('file-input');
             const hasDeposit = document.getElementById('hasDeposit');
@@ -77,29 +31,29 @@ if (insertOrderButton) {
                 return;
             }
 
-            const addressSplit = AddressController.splitAddressData(shipAddressInput);
+            const addressSplit = splitAddressData(shipAddressInput);
             const addressLineCount = addressSplit.length;
             let haveEmail = false;
             let buyer_email = null;
 
-            if (addressLineCount > 0 && AddressController.isValidEmail(addressSplit[addressLineCount - 1][0])) {
+            if (addressLineCount > 0 && isValidEmail(addressSplit[addressLineCount - 1][0])) {
                 haveEmail = true;
                 buyer_email = addressSplit[addressLineCount - 1][0];
             }
             let country_code_data, buyer_phone_number, ship_city, ship_postal_code, ship_state;
 
             if (haveEmail && addressLineCount >= 4) {
-                country_code_data = await get_country_code_by_name(AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true));
+                country_code_data = await get_country_code_by_name(getValueByIndex(addressSplit[addressLineCount-3], 2, true));
                 buyer_phone_number = addressSplit[addressLineCount-2][0];
-                ship_city = AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, false);
-                ship_postal_code = AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, true);
-                ship_state = AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false);
+                ship_city = getValueByIndex(addressSplit[addressLineCount-4], 2, false);
+                ship_postal_code = getValueByIndex(addressSplit[addressLineCount-4], 2, true);
+                ship_state = getValueByIndex(addressSplit[addressLineCount-3], 2, false);
             } else if (addressLineCount >= 4) {
-                country_code_data = await get_country_code_by_name(AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, true));
+                country_code_data = await get_country_code_by_name(getValueByIndex(addressSplit[addressLineCount-2], 2, true));
                 buyer_phone_number = addressSplit[addressLineCount - 1][0];
-                ship_city = AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false);
-                ship_postal_code = AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true);
-                ship_state = AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, false);
+                ship_city = getValueByIndex(addressSplit[addressLineCount-3], 2, false);
+                ship_postal_code = getValueByIndex(addressSplit[addressLineCount-3], 2, true);
+                ship_state = getValueByIndex(addressSplit[addressLineCount-2], 2, false);
             } else {
                 country_code_data = null;
                 buyer_phone_number = addressSplit[addressLineCount - 1][0];
@@ -110,7 +64,7 @@ if (insertOrderButton) {
 
             const isThai = AddressController.checkThaiProvince(addressSplit);
 
-            const orderId = await generateUniqueOrderId();
+            const factoryId = await generateUniqueOrderId();
             const odate = orderDate.split("-").join("/");
             const idate = new Date(odate);
             const idateYear = String(idate.getFullYear()).slice(-2);
@@ -127,7 +81,7 @@ if (insertOrderButton) {
                 const response = await DataController.upload(formData, "../files/");
                 
                 const to_insert_file = {
-                    order_id: orderId,
+                    factory_id: factoryId,
                     file_name: response.fileName,
                     file_pathname: response.filePath,
                 }
@@ -136,7 +90,7 @@ if (insertOrderButton) {
             }
 
             const newOrder = {
-                order_id: orderId,
+                factory_id: factoryId,
                 payments_date: insertedDate,
                 date_created: insertedDate,
                 buyer_name: addressSplit[0][0],
@@ -160,7 +114,6 @@ if (insertOrderButton) {
                 order_status_id: order_status_id ? order_status_id : 1,
                 order_type_id: order_type_id ? order_type_id : country_code_data && country_code_data.data !== "TH" ? 1 : 2,
                 raw_address: shipAddressInput,
-                override_address: overrideAddressInput || null,
                 buyer_email: buyer_email,
                 order_note: orderNoteInput
             };
@@ -188,7 +141,7 @@ if (insertOrderButton) {
                         }
                     }
         
-                    const uniqueId = `${orderId},${id}`;
+                    const uniqueId = `${factoryId},${id}`;
         
                     const existingItem = itemsList.find((item) => item.sku_settings_id === id);
                     
@@ -199,7 +152,7 @@ if (insertOrderButton) {
                         const newItem = {
                             unique_id: uniqueId,
                             order_item_id: id,
-                            order_id: orderId,
+                            factory_id: factoryId,
                             sku_settings_id: id,
                             item_price: price,
                             shipping_price: 0,
@@ -236,7 +189,7 @@ if (insertOrderButton) {
 if (saveOrderButton) {
     saveOrderButton.addEventListener('click', async() => {
         try {
-            const order_details = await get_order_details(order_id);
+            const order_details = await get_order_details(factory_id);
             const { details, items } = order_details.data1;
             const tbody = document.getElementById('item-list-body');
             const discount = document.getElementById('discount').value;
@@ -248,7 +201,6 @@ if (saveOrderButton) {
             const order_status_id = document.getElementById('selected-order-status').getAttribute('data-id');
             const order_type_id = document.getElementById('selected-order-type').getAttribute('data-id');
             const shipAddressInput = document.getElementById('ship-address-input').value;
-            const overrideAddressInput = document.getElementById('override-address-input').value;
             const orderNoteInput = document.getElementById('order-note-input').value;
             const fileInput = document.getElementById('file-input');
             const hasDeposit = document.getElementById('hasDeposit').checked;
@@ -259,29 +211,29 @@ if (saveOrderButton) {
                 return;
             }
 
-            const addressSplit = AddressController.splitAddressData(shipAddressInput);
+            const addressSplit = splitAddressData(shipAddressInput);
             const addressLineCount = addressSplit.length;
             let haveEmail = false;
             let buyer_email = null;
 
-            if (addressLineCount > 0 && AddressController.isValidEmail(addressSplit[addressLineCount - 1][0])) {
+            if (addressLineCount > 0 && isValidEmail(addressSplit[addressLineCount - 1][0])) {
                 haveEmail = true;
                 buyer_email = addressSplit[addressLineCount - 1][0];
             }
             let country_code_data, buyer_phone_number, ship_city, ship_postal_code, ship_state;
 
             if (haveEmail && addressLineCount >= 4) {
-                country_code_data = await get_country_code_by_name(AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true));
+                country_code_data = await get_country_code_by_name(getValueByIndex(addressSplit[addressLineCount-3], 2, true));
                 buyer_phone_number = addressSplit[addressLineCount-2][0];
-                ship_city = AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, false);
-                ship_postal_code = AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, true);
-                ship_state = AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false);
+                ship_city = getValueByIndex(addressSplit[addressLineCount-4], 2, false);
+                ship_postal_code = getValueByIndex(addressSplit[addressLineCount-4], 2, true);
+                ship_state = getValueByIndex(addressSplit[addressLineCount-3], 2, false);
             } else if (addressLineCount >= 4) {
-                country_code_data = await get_country_code_by_name(AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, true));
+                country_code_data = await get_country_code_by_name(getValueByIndex(addressSplit[addressLineCount-2], 2, true));
                 buyer_phone_number = addressSplit[addressLineCount - 1][0];
-                ship_city = AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false);
-                ship_postal_code = AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true);
-                ship_state = AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, false);
+                ship_city = getValueByIndex(addressSplit[addressLineCount-3], 2, false);
+                ship_postal_code = getValueByIndex(addressSplit[addressLineCount-3], 2, true);
+                ship_state = getValueByIndex(addressSplit[addressLineCount-2], 2, false);
             } else {
                 country_code_data = null;
                 buyer_phone_number = addressSplit[addressLineCount - 1][0];
@@ -290,18 +242,18 @@ if (saveOrderButton) {
                 ship_state = null;
             }
             /* const country_code_data = 
-            haveEmail ? await get_country_code_by_name(AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true))
-            : await get_country_code_by_name(AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, true));
+            haveEmail ? await get_country_code_by_name(AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true))
+            : await get_country_code_by_name(AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, true));
             
             const buyer_email = haveEmail ? addressSplit[addressLineCount-1][0] : null;
             const buyer_phone_number = haveEmail ? addressSplit[addressLineCount-2][0] : addressSplit[addressLineCount - 1][0];
-            const ship_city = haveEmail ? AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, false) : AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false);
-            const ship_postal_code = haveEmail ? AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, true) : AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true);
-            const ship_state = haveEmail ? AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false) : AddressController.AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, false); */
+            const ship_city = haveEmail ? AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, false) : AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false);
+            const ship_postal_code = haveEmail ? AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, true) : AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, true);
+            const ship_state = haveEmail ? AddressController.getValueByIndex(addressSplit[addressLineCount-3], 2, false) : AddressController.getValueByIndex(addressSplit[addressLineCount-2], 2, false); */
 
             const isThai = AddressController.checkThaiProvince(addressSplit);
 
-            const orderId = details.order_id;
+            const factoryId = details.factory_id;
 
             const payments_date = details.payments_date ? details.payments_date.split(' ')[0] : null;
             const date_created = details.date_created ? details.date_created.split(' ')[0] : null;
@@ -324,8 +276,9 @@ if (saveOrderButton) {
                 const filename = `file-${Date.now()}.${getFileExtension(file.name)}`;
                 formData.append('file', file, filename);
                 const response = await DataController.upload(formData, "../files/");
+                console.log(response);
                 const to_insert_file = {
-                    order_id: orderId,
+                    factory_id: factoryId,
                     file_name: response.fileName,
                     file_pathname: response.filePath,
                 }
@@ -363,7 +316,6 @@ if (saveOrderButton) {
             to_update_order = updatedObject(to_update_order, "order_status_id", details.order_status_id, order_status_id);
             to_update_order = updatedObject(to_update_order, "order_type_id", details.order_type_id, order_type_id);
             to_update_order = updatedObject(to_update_order, "raw_address", details.raw_address, shipAddressInput);
-            to_update_order = updatedObject(to_update_order, "override_address", details.override_address, overrideAddressInput || null);
             to_update_order = updatedObject(to_update_order, "order_note", details.order_note, orderNoteInput);
             // to_update_order = updatedObject(to_update_order, "timesort", details.timesort, newTimeSort);
     
@@ -398,7 +350,7 @@ if (saveOrderButton) {
                         }
                     }
         
-                    const uniqueId = `${orderId},${id}`;
+                    const uniqueId = `${factoryId},${id}`;
                     const existingItem = itemsList.find((item) => item.sku_settings_id === id);
     
                     if (existingItem && existingItem.item_price === price) {
@@ -408,7 +360,7 @@ if (saveOrderButton) {
                         const newItem = {
                             unique_id: uniqueId,
                             order_item_id: id,
-                            order_id: orderId,
+                            factory_id: factoryId,
                             sku_settings_id: id,
                             item_price: price,
                             shipping_price: 0,
@@ -517,7 +469,7 @@ if (saveOrderButton) {
             }
 
             if (to_update_order && Object.keys(to_update_order).length > 0) {
-                const res = await update_order("order_id", details.order_id, to_update_order);
+                const res = await update_order("factory_id", details.factory_id, to_update_order);
                 if (res.status) {
                     Alert.showSuccessMessage("Order updated successfully");
                     setTimeout(() => {
@@ -543,37 +495,12 @@ if (saveOrderButton) {
     });
 }
 
-const formattedDate = (date) => {
-    if (date) {
-        const formattedDate1 = date.split("-").join("/");
-        var formattedDate2 = (formattedDate1.indexOf('T') != -1) ? formattedDate1.substring(0, formattedDate1.indexOf('T')) : formattedDate1;
-        var newDate = new Date(formattedDate2);
-
-        newDate = new Date((newDate.getMonth() + 1) + '/' + newDate.getDate() + '/' + newDate.getFullYear());
-        formattedDate2 = newDate.toDateString();
-        return formattedDate2;
-    }
-    return date;
-}
 
 const formatDate = (date) => {
     var _date = date.getFullYear() + '-' + (date.getMonth()+1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
-    //var _time = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
     var _time = "00:00:00";
     var date_time = _date + ' ' + _time;
     return date_time;
-}
-
-const generateNewTimeSort = (date, lastTimeSort) => {
-    const resultArray = lastTimeSort ? [lastTimeSort.toString().slice(0, 2), lastTimeSort.toString().slice(2, 4), lastTimeSort.toString().slice(4)] : [];
-    const year = String(date.getFullYear()).slice(-2);
-    const month = (date.getMonth()+1).toString().padStart(2, '0');
-    const sortOrder = (Number(resultArray[2]) + 1).toString().padStart(4, '0');
-    var newTimeSort = "";
-    newTimeSort += year === resultArray[0] ? resultArray[0] : year;
-    newTimeSort += year === resultArray[0] && month === resultArray[1] ? resultArray[1] : month;
-    newTimeSort += year === resultArray[0] && month === resultArray[1] ? sortOrder : "0001";
-    return newTimeSort;
 }
 
 const updatedObject = (object, key, oldData, newData) => {
@@ -583,92 +510,13 @@ const updatedObject = (object, key, oldData, newData) => {
     return object;
 }
 
-
-
-const uniqid = () => {
-    var timestamp = Math.floor(new Date().getTime() / 1000);
-    var random = Math.random().toString(36).substr(2, 5);
-    var uniqueId = timestamp.toString(16) + random;
-    return uniqueId;
-};
-
-const generateUniqueOrderId = async () => {
-    try {
-      let newOrderId;
-      do {
-        newOrderId = uniqid();
-  
-        const orderDetails = await get_order_details(newOrderId);
-  
-        if (!orderDetails || !orderDetails.data1 || orderDetails.data1.items.length <= 0) {
-          break;
-        }
-      } while (true);
-  
-      return newOrderId;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-};
-
 const getFileExtension = (filename) => {
     return filename.split('.').pop();
 }
 
-const get_website_datas = async() => {
+const get_factory_details = async(factory_id) => {
     try {
-        const response = await axios.get(`../datasets/get_website_datas.php`);
-        return response.data;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
-const get_order_details = async(order_id) => {
-    try {
-        const response = await axios.get(`../datasets/get_order_details.php?order_id=${order_id}`);
-        return response.data;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
-const get_order_list = async(limit, page) => {
-    try {
-        let url = `../datasets/get_order_list.php?limit=${limit}&page=${page}`;
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
-}
-
-const get_sku_search = async(searchTerm) => {
-    try {
-        const response = await axios.get(`../datasets/get_sku_search.php?searchTerm=${searchTerm}`);
-        return response.data;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
-const get_sku_by_name = async (name) => {
-    try {
-        const response = await axios.get(`../datasets/get_sku_by_name.php?name=${name}`);
-        return response.data;
-    } catch (error) {
-        console.error(error);
-        throw error;
-    }
-}
-
-const get_country_code_by_name = async (name) => {
-    try {
-        const response = await axios.get(`../datasets/get_country_code_by_name.php?name=${name}`);
+        const response = await axios.get(`../datasets/get_factory_details.php?factory_id=${factory_id}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -686,72 +534,7 @@ const get_last_timesort = async(yearAndMonth) => {
     }
 }
 
-const insert_order = async(order, items) => {
-    try {
-        const response = await axios.post(
-            `../datasets/insert_order.php`,
-            {
-                order: order,
-                items: items
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        return response.data;
-    } catch (error) {
-        Alert.showErrorMessage(error);
-        throw error;
-    }
-}
-
-const update_order = async(key, value, toUpdate) => {
-    try {
-        const response = await axios.post(
-            `../datasets/update_order.php`,
-            {
-                key,
-                value,
-                toUpdate
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        return response.data;
-    } catch (error) {
-        Alert.showErrorMessage(error);
-        throw error;
-    }
-}
-
-const update_order_item = async(key, value, toUpdate) => {
-    try {
-        const response = await axios.post(
-            `../datasets/update_order_item.php`,
-            {
-                key,
-                value,
-                toUpdate
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-        return response.data;
-    } catch (error) {
-        Alert.showErrorMessage(error);
-        throw error;
-    }
-}
-
-const generateItemsListTable = async (order_id) => {
+const generateItemsListTable = async (factory_id) => {
     try {
         let orders = [];
 
@@ -778,8 +561,8 @@ const generateItemsListTable = async (order_id) => {
 
         const tableBody = document.createElement('tbody');
         tableBody.id = 'item-list-body';
-        if (order_id) {
-            const result = await get_order_details(order_id);
+        if (factory_id) {
+            const result = await get_order_details(factory_id);
             orders = result.data1;
             const { items, details } = orders;
             currencyText.innerHTML = details.currency_code;
@@ -856,72 +639,16 @@ const generateItemsListTable = async (order_id) => {
     }
 }
 
-const generateTable = async(limit, page) => {
-    try {
-        const result = await get_order_list(limit, page);
-        const orders = result.data1;
-
-        const orderDataContainer = document.getElementById('order-data-container');
-        orderDataContainer.innerHTML = '';
-
-        const tableElement = document.createElement('table');
-        tableElement.classList.add('table', 'table-bordered', 'table-striped', 'table-hover');
-
-        const tableHeader = document.createElement('thead');
-        const tableHeaderRow = document.createElement('tr');
-        tableHeaderRow.innerHTML =
-        `<th>TIME SORT</th>
-         <th>Detail</th>
-         <th>Buyer Name</th>
-         <th>Report Product Name</th>
-         <th>All Total</th>
-         <th>Channel</th>
-         <th>Currency</th>
-         <th>Order Status</th>
-         <th>Fulfillment Status</th>`;
-        tableHeader.appendChild(tableHeaderRow);
-        tableElement.appendChild(tableHeader);
-
-        const tableBody = document.createElement('tbody');
-        orders.forEach(order => {
-            const tableRow = document.createElement('tr');
-            tableRow.innerHTML =
-                `<td rowspan=${order.items.length}>${order.details.timesort}</td>
-                 <td rowspan=${order.items.length}><a href="order_details.php?order_id=${order.details.order_id}">View Detail</a></td>
-                 <td rowspan=${order.items.length}>${order.details.buyer_name}</td>
-                 <td>${order.items[0].report_product_name}</td>
-                 <td rowspan=${order.items.length}>${order.all_total}</td>
-                 <td rowspan=${order.items.length}>${order.details.website_name}</td>
-                 <td rowspan=${order.items.length}>${order.details.currency_code}</td>
-                 <td rowspan=${order.items.length}>${order.details.order_status}</td>
-                 <td rowspan=${order.items.length}>${order.details.fulfillment_status}</td>`;
-            tableBody.appendChild(tableRow);
-            order.items.slice(1).forEach(item => {
-                const itemRow = document.createElement('tr');
-                itemRow.innerHTML =
-                    `<td>${item.report_product_name}</td>`;
-                tableBody.appendChild(itemRow);
-            });
-        });
-        tableElement.appendChild(tableBody);
-        orderDataContainer.appendChild(tableElement);
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-
-const generateDropdown = async (order_id) => {
+const generateDropdown = async (factory_id) => {
     try {
         let data;
-        if (order_id) {
-            const result = await get_order_details(order_id);
+        if (factory_id) {
+            const result = await get_order_details(factory_id);
             const data1 = result.data1;
             data = result.data2;
 
             const { 
-                raw_address,
-                override_address, 
+                raw_address, 
                 order_note, 
                 payments_date, 
                 website_name, 
@@ -940,9 +667,6 @@ const generateDropdown = async (order_id) => {
             const files = data1.files;
             const shipAddressInput = document.getElementById('ship-address-input');
             shipAddressInput.value = raw_address;
-
-            const overrideAddressInput = document.getElementById('override-address-input');
-            overrideAddressInput.value = override_address;
 
             const orderNoteInput = document.getElementById('order-note-input');
             orderNoteInput.value = order_note;
@@ -1257,9 +981,9 @@ const appendDropdownList = (button, dropdown, data, description) => {
     dropdown.appendChild(list);
 }
 
-if (order_id){
-    generateItemsListTable(order_id);
-    generateDropdown(order_id);
+if (factory_id){
+    generateItemsListTable(factory_id);
+    generateDropdown(factory_id);
     generateTable(10, 1);
 } else {
     generateTable(10, 1);

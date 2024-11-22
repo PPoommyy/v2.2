@@ -19,15 +19,16 @@ const generateBarcode = async (order, apiHost, accessToken) => {
 
     const contentPieces = [];
 
-    const { details, all_total, sub_total, items, service_id } = order; 
+    const { details, all_total, sub_total, items, service_id } = order;
+    const address = details.override_address? details.override_address : details.raw_address;
     /* console.log("order");
     console.log(order);
     console.log("items");
     console.log(items); */
 
-    const resultArray = AddressController.splitAddressData(details.raw_address).slice(1);
+    const resultArray = AddressController.splitAddressData(address).slice(1);
 
-    const addressSplit = AddressController.splitAddressData(details.raw_address);
+    const addressSplit = AddressController.splitAddressData(address);
     const addressLineCount = addressSplit.length;
     const haveEmail = addressSplit[addressLineCount -1][0].indexOf('@') !== -1;
 
@@ -91,7 +92,7 @@ const generateBarcode = async (order, apiHost, accessToken) => {
             }
         },
         "receiver": {
-            "name": details.buyer_name ? details.buyer_name.toUpperCase() : "",
+            "name": details.override_address ? addressSplit[0][0].toUpperCase() : details.buyer_name ? details.buyer_name.toUpperCase() : "",
             "tel": buyer_phone_number ? AddressController.formatPhoneNumber(buyer_phone_number) : "",
             "email": haveEmail ? addressSplit[addressLineCount - 1][0] : "",
             "address": {
@@ -127,8 +128,8 @@ const generateBarcode = async (order, apiHost, accessToken) => {
         items: itemsList
      };
     
-    /* console.log("payload");
-    console.log(payload); */
+    console.log("payload");
+    console.log(payload);
 
     try {
         const response = await axios.post(

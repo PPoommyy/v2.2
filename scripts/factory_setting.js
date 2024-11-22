@@ -54,106 +54,43 @@ async function generateTable(limit, page) {
         const totalCount = skusData.count;
         const totalPages = Math.ceil(totalCount / limit);
         const factorySkuDataContainer = document.getElementById('factory-sku-container');
+        const tableElement = document.createElement('table');
+        tableElement.classList.add('table', 'table-sm', 'table-bordered', 'table-striped', 'table-hover');
 
+        const tableHeader = document.createElement('thead');
+        const tableHeaderRow = document.createElement('tr');
+        tableHeaderRow.innerHTML =
+        `
+        <th>Details</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Email</th>`;
+        tableHeader.appendChild(tableHeaderRow);
+        tableElement.appendChild(tableHeader);
+        
+        const tableBody = document.createElement('tbody');
         factories.forEach(factory => {
             const { details, factory_skus } = factory;
             const { id, name, location, contact_person, contact_number, email_address } = details;
-            const cardElement = document.createElement('div');
-            cardElement.classList.add('card', 'mb-4');
-
-            const cardHeader = document.createElement('div');
-            cardHeader.classList.add('card-header');
-            cardHeader.textContent = `Factory: ${name}`;
-
-            const cardBody = document.createElement('div');
-            cardBody.classList.add('card-body');
-
-            const tableElement = document.createElement('table');
-            tableElement.classList.add('table', 'table-sm', 'table-bordered', 'table-striped', 'table-hover');
-
-            const tableHeader = document.createElement('thead');
-            const tableHeaderRow = document.createElement('tr');
-            tableHeaderRow.innerHTML =
-            `
-            <th>
-                <input id="select-all-${id}" type="checkbox" data-index="-1" name="Allitems" value="-1" data-toggle="tooltip" data-placement="top" title="Select All"/>
-            </th>
-            <th>Order Product SKU</th>
-            <th>Report Product Name</th>`;
-            tableHeader.appendChild(tableHeaderRow);
-            tableElement.appendChild(tableHeader);
-
-            const tableBody = document.createElement('tbody');
-            tableBody.id = `sku-data-tbody-${id}`;
-            skus.forEach((sku, index) => {
-                const tableRow = document.createElement('tr');
-                const checkboxInput = document.createElement('input');
-                checkboxInput.type = 'checkbox';
-                checkboxInput.name = 'items';
-                checkboxInput.value = sku.id;
-
-                tableRow.appendChild(Cell.createElementCell(checkboxInput, false, false, ['th']));
-                tableRow.appendChild(Cell.createSpanCell(sku.order_product_sku, false, false));
-                tableRow.appendChild(Cell.createSpanCell(sku.report_product_name, false, false));
-                tableBody.appendChild(tableRow);
-            });
-            tableElement.appendChild(tableBody);
             
-            const skuPaginationDiv = document.createElement('div');
-            skuPaginationDiv.classList.add("col", "mb-3" , "d-flex", "justify-content-end");
-            const skuPagination = document.createElement('div');
-            skuPagination.id = `sku-pagination-${id}`;
-            const skuPaginationList = document.createElement('ul');
-            skuPaginationList.classList.add("pagination", "m-0");
-            skuPagination.appendChild(skuPaginationList);
-            skuPaginationDiv.appendChild(skuPagination);
-
-            cardBody.appendChild(skuPaginationDiv);
-            cardBody.appendChild(tableElement);
+            const tableRow = document.createElement('tr');
             
-            cardElement.appendChild(cardHeader);
-            cardElement.appendChild(cardBody);
+            const linkDetails = document.createElement('a');
+            linkDetails.href = `factory_details.php?factory_id=${id}`;
+            linkDetails.innerText = 'View Detail';
 
-            factorySkuDataContainer.appendChild(cardElement);
-            /* 
-            <div class="row">
-                <div class="col mb-3 d-flex align-items-center justify-content-start ">
-                    <p id="dropdown-title" class="small p-0 m-0 mx-2">Showing</p>
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="limitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            20
-                        </button>
-                        <ul id="dropdownMenu" class="dropdown-menu" aria-labelledby="limitDropdown">
-                            <li><a class="dropdown-item" data-limit="20">20</a></li>
-                            <li><a class="dropdown-item" data-limit="50">50</a></li>
-                            <li><a class="dropdown-item" data-limit="100">100</a></li>
-                            <li><a class="dropdown-item" data-limit="150">150</a></li>
-                            <li><a class="dropdown-item" data-limit="200">200</a></li>
-                        </ul>
-                    </div>
-                    <p class="small p-0 m-0 mx-2">records per page</p>
-                </div>
-            </div>
-            */
-
-            Pagination.updatePagination(page, totalPages, `sku-pagination-${id}`, generateTable());
-            const selectedAllCheckbox = document.getElementById(`select-all-${id}`);
-            const inputCheckbox = tableElement.querySelectorAll('input[name="items"]');
-            selectedAllCheckbox.addEventListener('change', function () {
-                inputCheckbox.forEach(checkbox => {
-                    const skuId = checkbox.value;
-                    // updateCheckBoxList(skuId);
-                    checkbox.checked = this.checked;
-                });
-            });
-            
-            inputCheckbox.forEach(checkbox => {
-                checkbox.addEventListener('change', function () {
-                    const skuId = checkbox.value;
-                    // updateCheckBoxList(skuId);
-                });
-            });
+            tableRow.appendChild(Cell.createElementCell(linkDetails, false, false, false));
+            tableRow.appendChild(Cell.createSpanCell(id, false, false));
+            tableRow.appendChild(Cell.createSpanCell(name, false, false));
+            tableRow.appendChild(Cell.createSpanCell(location, false, false));
+            tableRow.appendChild(Cell.createSpanCell(email_address, false, false));
+            tableBody.appendChild(tableRow);
         });
+        tableElement.appendChild(tableBody);
+        factorySkuDataContainer.appendChild(tableElement);
+        Pagination.updatePagination(page, totalPages, 'pagination1', generateTable);
+        Pagination.updatePagination(page, totalPages, 'pagination2', generateTable);
     } catch (error) {
         console.error(error);
     }

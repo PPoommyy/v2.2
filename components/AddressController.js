@@ -114,9 +114,15 @@ const checkThaiProvince = (addressArray) => {
     return isThaiProvince;
 }
 
+ const isValidEmail = (str) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(str);
+}
+
 export const AddressController = {
     formatPhoneNumber,
     splitAddressData,
     getValueByIndex,
-    checkThaiProvince
+    checkThaiProvince,
+    isValidEmail
 }

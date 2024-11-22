@@ -40,7 +40,17 @@
                 </div>
             </div>
         </div>
+        <div class="col mb-3 d-flex justify-content-end">
+            <div id="pagination1">
+                <ul class="pagination m-0"></ul>
+            </div>
+        </div>
         <div id="factory-sku-container" class="container"></div>
+        <div class="col mb-3 d-flex justify-content-end">
+            <div id="pagination2">
+                <ul class="pagination m-0"></ul>
+            </div>
+        </div>
     </div>
     <?php include("../templates/footer.php"); ?>
     <script type="module" src="../scripts/factory_setting.js"></script>
