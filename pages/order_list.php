@@ -137,6 +137,21 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="trackingModalTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="trackingModalBody"></div>
+                    <div class="modal-footer">
+                        <button id="createTrackingBtn" class="btn btn-primary d-none">Create Tracking</button>
+                        <button id="deleteTrackingBtn" class="btn btn-danger">Delete Tracking</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="order-data-container" class="overflow-scroll"></div>
         <div class="mb-3 row">
             <div class="col-sm-12 col-md-7">

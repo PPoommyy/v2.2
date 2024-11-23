@@ -203,25 +203,87 @@ async function generateTable(limit, page) {
             if (tracking.length > 0) {
                 const trackingNumber = tracking[0].tracking_number || null;
                 const trackingID = tracking[0].tracking_id || null;
-                const color = trackingNumber ? trackingID ? "success": "warning": "danger";
-                //<i class="fa-solid fa-envelope-circle-check"></i>
+                const color = trackingNumber ? (trackingID ? "success" : "warning") : "danger";
+            
+                console.log(`Tracking`, tracking);
+                console.log(`TrackingID ${trackingID} TrackingID == null ? ${trackingID === null}`);
+            
+                // Create the envelopeIcon button
                 const envelopeIcon = document.createElement('button');
                 envelopeIcon.classList.add('btn', `btn-outline-${color}`, 'btn-sm', 'fa-solid', 'fa-envelope-circle-check', 'me-1');
                 envelopeIcon.type = 'button';
-                envelopeIcon.setAttribute('data-bs-toggle', 'popover');
-                envelopeIcon.setAttribute('data-bs-content', `Tracking Number: ${trackingNumber || "none"}, Tracking ID: ${trackingID || "none"}`);
                 timesortDiv.appendChild(envelopeIcon);
             
-                var popover = new bootstrap.Popover(envelopeIcon, {
-                    container: 'body',
-                    placement: 'right',
-                    trigger: 'click',
-                    tapindex: '0'
-                });
+                // Add event listener to open the modal and update content dynamically
+                envelopeIcon.addEventListener('click', () => {
+                    const modalTitle = document.getElementById('trackingModalTitle');
+                    const modalBody = document.getElementById('trackingModalBody');
+                    const createTrackingBtn = document.getElementById('createTrackingBtn');
+                    const deleteTrackingBtn = document.getElementById('deleteTrackingBtn');    
+            
+                    // Update modal content
+                    modalTitle.textContent = 'Tracking Information';
+                    modalBody.innerHTML = `
+                        <p>Tracking Number: ${trackingNumber || "none"}</p>
+                        <p>Tracking ID: ${trackingID || "none"}</p>
+                    `;
+            
+                    if (!trackingID) {
+                        // Show Create Tracking button if trackingID is null
+                        createTrackingBtn.classList.remove('d-none');
+                    } else {
+                        createTrackingBtn.classList.add('d-none');
+                    }
+            
+                    // Open the modal
+                    const trackingModal = new bootstrap.Modal(document.getElementById('trackingModal'));
+                    trackingModal.show();
+            
+                    // Add event listener to Create Tracking button
+                    createTrackingBtn.onclick = async () => {
+                        try {
+                            // Call API to create tracking
+                            const createTracking = await AftershipAPIController.createTracking(order, aftershipApiHost, trackingNumber);
+            
+                            console.log(createTracking);
+                            if (createTracking.success) {
+                                // Update the tracking table
+                                const result = await DataController.updateByKey("tracking", "id", tracking[0].id, "tracking_id", createTracking.data.id);
+            
+                                if (result.status) {
+                                    trackingModal.hide();
+                                    Alert.showSuccessMessage('Tracking created and updated successfully');
+                                    generateTable(100, 1);
+                                } else {
+                                    Alert.showErrorMessage('Update failed');
+                                }
+                            } else {
+                                Alert.showErrorMessage('Tracking creation failed');
+                            }
+                        } catch (error) {
+                            console.error('Error creating tracking:', error);
+                            Alert.showErrorMessage('An error occurred during tracking creation');
+                        }
+                    };
 
-                // Add click event listener to envelopeIcon button
-                envelopeIcon.addEventListener('click', () => {console.log("click")});
-            }
+                    deleteTrackingBtn.onclick = async () => {
+                        try {
+                            const res = await DataController._delete("tracking", "id", tracking[0].id);
+                            if (res.status) {
+                                trackingModal.hide();
+                                Alert.showSuccessMessage('Tracking deleted successfully');
+                                generateTable(100, 1);
+                            } else {
+                                Alert.showErrorMessage('Delete tracking failed');
+                            }
+                        } catch (error) {
+                            console.error('Error deleting tracking:', error);
+                            Alert.showErrorMessage('An error occurred during tracking deletion');
+                        }
+                    };
+                });
+            }                                  
+            
             tableRow.appendChild(Cell.createElementCell(checkboxInput, false, items.length, ['th']));
             tableRow.appendChild(Cell.createElementCell(linkDetails, false, items.length, false));
             tableRow.appendChild(Cell.createElementCell(timesortDiv, false, items.length));
