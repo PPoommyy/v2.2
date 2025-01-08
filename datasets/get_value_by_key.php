@@ -10,7 +10,7 @@
     $value = $requestData['value'];
     
     try {
-        $res = get_value_by_key($conn, $table, $column, $key, $value, "id", 1);
+        $res = json_decode(get_value_by_key($conn, $table, $column, $key, $value, "id", 1), true);
         $response = [
             'id' => $id,
             'table' => $table,

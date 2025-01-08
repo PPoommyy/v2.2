@@ -95,6 +95,7 @@ async function generateTable(limit, page) {
         console.error(error);
     }
 }
+
 function toggleSpinner(loading) {
     const spinner = document.getElementById('loading-spinner');
     if (loading) {

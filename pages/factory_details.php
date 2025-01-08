@@ -14,9 +14,28 @@
             </strong>
                 <?= $factory_id ? '<small class="text-secondary">(' . $factory_id . ')</small>' : ''?>
         </p>
+        <!-- 
+        /* 
+    show 2 section
+    1. on left side show factory details
+    2. on right side show factory skus table have pagination from Pagination.js and each row have check box to add factory sku to factory_sku_settings table (checkbox enabled if exist)
+    have save button on above to create or delete factory_sku_settings from checkbox
+*/
+         -->
         <div class="row">
-            <div class="col-sm-12 col-md-12 col-lg-5 container">
-                <div class="row mb-4">
+            <!--  
+            example detail
+                        {
+                            "id": 1,
+                            "name": "Shanghai Electronics",
+                            "location": "Shanghai, China",
+                            "contact_person": "Li Wei",
+                            "contact_number": "+86-21-12345678",
+                            "email_address": "liwei@shanghai-electronics.com"
+                        }
+
+            example format
+            <div class="row mb-4">
                     <div class="col-3 text-end">Website Name</div>
                     <div class="col-9 btn-group">
                         <button class="btn btn-secondary dropdown-toggle  overflow-hidden" type="button" id="selected-website" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="select-website">
@@ -25,136 +44,49 @@
                         <ul id="website-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
                         </ul>
                     </div>
-                </div>
+                </div> 
+                
+                -->
+            <div class="col-6">
                 <div class="row mb-4">
-                    <div class="col-3 text-end">Order Date</div>
+                    <div class="col-3 text-end">Factory Name</div>
                     <div class="col-9">
-                        <div class="input-group" id='datetimepicker'>
-                            <input id="order-date-input" class="form-control" value="<?php echo date('Y-m-d'); ?>" type="date" id="date">
-                            <label class="input-group-text bg-secondary text-white" for="order-date-input"><span class="fa fa-calendar"></span></label>
-                        </div>
+                        <input id="factory-name" class="form-control" type="text">
                     </div>
                 </div>
                 <div class="row mb-4">
-                    <div class="col-3 text-end">Currency</div>
-                    <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-currency" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="select-currency">
-                            Select Currency
-                        </button>
-                        <ul id="currency-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
-                        </ul>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Payment Method</div>
-                    <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-payment" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false"  for="select-payment">
-                            Select Payment
-                        </button>
-                        <ul id="payment-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
-                        </ul>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Order Status</div>
-                    <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-order-status" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false"  for="selected-order-status">
-                            Select Order Status
-                        </button>
-                        <ul id="order-status-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
-                        </ul>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Order Type</div>
-                    <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-order-type" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false"  for="selected-order-type">
-                            Select Order Type
-                        </button>
-                        <ul id="order-type-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
-                        </ul>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Ship Address</div>
-                    <div class="col-9">  
-                        <textarea id="ship-address-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter address (e.g.)... Ms. Amy Trudeau 69 Wilson Park Rd ON Canada M6K 3B6 Tel No. 6478814456"></textarea>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Order Note</div>
-                    <div class="col-9">  
-                        <textarea id="order-note-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter order note."></textarea>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">File Upload</div>
+                    <div class="col-3 text-end">Factory Location</div>
                     <div class="col-9">
-                        <ul class="list-group" id="file-list"></ul>
-                        <div class="input-group">
-                            <input type="file" class="form-control" id="file-input">
-                        </div>
+                        <input id="factory-location" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Contact Person</div>
+                    <div class="col-9">
+                        <input id="factory-contact-person" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Contact Number</div>
+                    <div class="col-9">
+                        <input id="factory-contact-number" class="form-control" type="text">
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Email Address</div>
+                    <div class="col-9">
+                        <input id="factory-email-address" class="form-control" type="text">
                     </div>
                 </div>
             </div>
-            <div class="col-sm-12 col-md-12 col-lg-7 row">
-                <div class="container" id="select-product-container">
-                <p>Select Products: <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add Product</button></p>
+            
+            <div class="col-6">
+                <div class="col-sm-12 col-md-5" id="pagination1">
+                    <ul class="pagination justify-content-start"></ul>
                 </div>
-                <div class="col-sm-12 col-md-12 col-lg-12" id="item-data-container"></div>
-                <div class="col-sm-12 col-md-6 col-lg-6">
-                    <div class="row mb-3">
-                        <div class="col-sm-12 col-md-6 col-lg-6">
-                            <label class="me-3">Deposit?</label>
-                            <input type="checkbox" id="hasDeposit" data-toggle="tooltip" data-placement="top" title="Include This"/>
-                        </div>
-                        <div class="col-sm-12 col-md-6 col-lg-6">
-                            <input type="number" id="deposit" class="form-control" disabled>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-12 col-md-6 col-lg-6">
-                    <div class="row mb-3">
-                        <label class="col-sm-12 col-md-6 col-lg-6" >Subtotal</label>
-                        <div class="col-sm-12 col-md-6 col-lg-6">
-                            <input type="number" id="subtotal" class="form-control" disabled>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-12 col-md-6 col-lg-6">Discount</label>
-                        <div class="col-sm-12 col-md-6 col-lg-6">
-                            <input type="number" id="discount" class="form-control">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label class="col-sm-12 col-md-6 col-lg-6">Shipping Fee</label>
-                        <div class="col-sm-12 col-md-6 col-lg-6">
-                            <input type="number" id="shippingFee" class="form-control">
-                        </div>
-                    </div>
-                    <div class="form-group text-end mb-3">
-                        <div>
-                            <span id="currency" class="h1 text-danger"></span>
-                            <span class="h1"><u id="alltotal">0.00</u></span>
-                            <br>
-                            <span class="small">All Total</span>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-6"></div>
-                        <?php
-                            if ($factory_id) {
-                                echo '<button id="save-order" class="btn btn-warning"><i class="fa fa-save"></i> Save</button>';
-                            } else {
-                                echo '<button id="insert-order" class="btn btn-warning"><i class="fa fa-save"></i> Insert</button>';
-                            }
-                        ?>
-                    </div>
-                </div>
+                <div id="factory-skus" class="container"></div>
             </div>
         </div>
-        <p class="h2">Recently Added/Updated Orders</p>
-        <div id="order-data-container" class="overflow-scroll"></div>
     </div>
     <?php include('../templates/footer.php');?>
     <script type='module' src="../scripts/factory_details.js"></script>

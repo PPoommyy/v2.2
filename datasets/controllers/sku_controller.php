@@ -215,4 +215,69 @@
             return null;
         }
     }
+
+    function get_factory_skus($conn, $factory_id, $limit, $offset) {
+        try {
+            $query = "
+            SELECT 
+                ss.id as sku_settings_id, 
+                ss.order_product_sku, 
+                ss.report_product_name,
+                fss.factory_id,
+                fss.factory_sku_settings_id,
+                fss.created_at,
+                fss.updated_at,
+                CASE 
+                    WHEN fss.factory_sku_settings_id IS NOT NULL THEN 1 
+                    ELSE 0 
+                END AS exist
+            FROM
+                sku_settings ss
+            LEFT JOIN
+                factory_sku_settings fss 
+                ON ss.id = fss.sku_setting_id AND fss.factory_id = :factory_id
+            ORDER BY exist DESC, ss.order_product_sku ASC
+            LIMIT :limit OFFSET :offset;
+            ";
+            $stmt = $conn->prepare($query);
+            $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $jsonData = json_encode($result);
+            return $jsonData;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+            return null;
+        }
+    }
+
+    function get_factory_skus_count($conn, $factory_id) {
+        try {
+            $query = "
+            SELECT 
+                COUNT(*) as count,
+                ss.id as sku_settings_id, 
+                ss.order_product_sku, 
+                ss.report_product_name
+            FROM
+                sku_settings ss
+            LEFT JOIN
+                factory_sku_settings fss 
+                ON ss.id = fss.sku_setting_id AND fss.factory_id = :factory_id
+            ORDER BY ss.order_product_sku ASC;
+            ";
+
+            $stmt = $conn->prepare($query);
+            $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $jsonData = json_encode($result);
+            return $jsonData;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+            return null;
+        }
+    }
 ?>

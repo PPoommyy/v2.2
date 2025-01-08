@@ -62,6 +62,8 @@ const createPageLink = (pageNumber, name, generateTable) => {
         const limitDropdown = document.getElementById('limitDropdown');
         const selectedLimit = limitDropdown?limitDropdown.innerText:100;
         const selectedPage = parseInt(this.getAttribute('page-number'));
+        console.log("selectedLimit", selectedLimit);
+        console.log("selectedPage", selectedPage);
         generateTable(selectedLimit, selectedPage);
         this.parentElement.classList.add('active');
     });

@@ -99,7 +99,10 @@
             </div>
             <div class="col-sm-12 col-md-12 col-lg-7 row">
                 <div class="container" id="select-product-container">
-                <p>Select Products: <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add Product</button></p>
+                <p>Add product: <div class="container" id="timesort-container">
+                <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add</button></p>
+
+                <!-- <p>Select Products: <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add Product</button></p> -->
                 </div>
                 <div class="col-sm-12 col-md-12 col-lg-12" id="item-data-container"></div>
                 <div class="col-sm-12 col-md-6 col-lg-6">
@@ -157,6 +160,6 @@
         <div id="order-data-container" class="overflow-scroll"></div>
     </div>
     <?php include('../templates/footer.php');?>
-    <script type='module' src="../scripts/order_details.js"></script>
+    <script type='module' src="../scripts/po_order_details.js"></script>
 </body>
 </html>

@@ -431,7 +431,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                 let itemIndex = 1;
                 
                 if (sliceIndex === 0 && sliceIndex < orderSliceNumber-1) {
-                    for (let i = 0; i < 7; i++) {
+                    /* for (let i = 0; i < 7; i++) {
                         for (let char of generateColumnRange('A', 'AM')) {
                             const templateCellRef = `${char}${i==6 ? i : i + 1}`;
                             const { style, width } = getStyle(templateCellRef, templateSheet);
@@ -443,7 +443,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                             outputCell.value = value;
                             updateFormula(outputCell, orderIndex);
                         }
-                    }
+                    } */
 
                     addressSplit.forEach((line) => {
                         ws.getCell(orderIndex + addressIndex, columnToNumber("B")).value = line;
@@ -457,7 +457,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                     ws.getCell(orderIndex + 1, columnToNumber('N')).value = tax_rate.tax_rate * 100;
                     ws.getCell(orderIndex + 1, columnToNumber('AM')).value = addressSplit.join();
                 } else if (sliceIndex === 0) {
-                    for (let i = 0; i < 7; i++) {
+                    /* for (let i = 0; i < 7; i++) {
                         for (let char of generateColumnRange('A', 'AM')) {
                             const templateCellRef = `${char}${i + 1}`;
                             const { style, width } = getStyle(templateCellRef, templateSheet);
@@ -469,7 +469,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                             outputCell.value = value;
                             updateFormula(outputCell, orderIndex);
                         }
-                    }
+                    } */
                     addressSplit.forEach((line) => {
                         ws.getCell(orderIndex + addressIndex, columnToNumber("B")).value = line;
                         addressIndex++;

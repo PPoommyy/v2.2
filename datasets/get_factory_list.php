@@ -11,18 +11,9 @@
         $factories = json_decode(select($conn, 'factories', ['*'], 'id', $limit, $offset), true);
 
         $arrayObject = array_map(function ($factory) use ($conn) {
-            $join_factories_skus = [
-                ['factories f', 'factory_sku.factory_id', 'f.id'],
-                ['sku_settings ss', 'factory_sku.sku_setting_id', 'ss.id']
-            ];
-            $column_factories_skus = [
-                "sku_setting_id",
-                "order_product_sku",
-                "report_product_name"
-            ];
-            $where_factories_skus = [
-                ['factory_id', '=', $factory['id']]
-            ];
+            $join_factories_skus = [];
+            $column_factories_skus = [];
+            $where_factories_skus = [];
             $factory_skus = json_decode(select($conn, 'factory_sku', $column_factories_skus, 'sku_setting_id', null, null, $join_factories_skus, $where_factories_skus), true);
             // $factory_skus = select($conn, 'factory_sku', $column_factories_skus, 'sku_setting_id', null, null, $join_factories_skus, $where_factories_skus);
             return [

@@ -110,6 +110,71 @@
         }
     }
 
+    function get_order_by_timesort($conn, $searchTerm) {
+        try {
+            $query = "
+            SELECT 
+                o.order_id,
+                payments_date,
+                buyer_name,
+                ship_phone_number,
+                ship_promotion_discount,
+                o.shipping_fee,
+                deposit,
+                ship_address_1,
+                ship_address_2,
+                ship_address_3,
+                ship_city,
+                ship_state,
+                ship_postal_code,
+                ship_country,
+                o.timesort,
+                raw_address,
+                override_address,
+                order_note,
+                fulfillment_status,
+                w.name as website_name,
+                w.id as website_id,
+                c.name as currency_code,
+                c.id as currency_id,
+                pm.name as payment_methods,
+                pm.id as payment_method_id,
+                ost.name as order_status,
+                ost.id as order_status_id
+            FROM orders o
+            JOIN orders_skus os ON o.order_id = os.order_id
+            JOIN currencies c ON o.currency_id = c.id
+            JOIN websites w ON o.website_id = w.id
+            JOIN payment_methods pm ON o.payment_method_id = pm.id
+            JOIN order_status ost ON o.order_status_id = ost.id
+            WHERE ost.name = 'processing' 
+            AND (o.timesort LIKE :searchTerm_start OR o.timesort LIKE :searchTerm_contain)
+            ORDER BY 
+                CASE 
+                    WHEN o.timesort LIKE :searchTerm_start THEN 0
+                    ELSE 1
+                END,
+                o.timesort ASC
+            LIMIT 10;
+            ";
+    
+            $stmt = $conn->prepare($query);
+            $stmt->bindValue(':searchTerm_start', $searchTerm . '%', PDO::PARAM_STR);
+            $stmt->bindValue(':searchTerm_contain', '%' . $searchTerm . '%', PDO::PARAM_STR);
+            $stmt->execute();
+        
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if ($result) {
+                return json_encode($result);
+            } else {
+                return json_encode(['error' => 'No results found']);
+            }
+        } catch(PDOException $e) {
+            error_log("Database Query Error: " . $e->getMessage());
+            return json_encode(['error' => $e->getMessage()]);
+        }
+    }       
+
     function get_sku_by_name ($conn, $name) {
         try {
             $query = "
