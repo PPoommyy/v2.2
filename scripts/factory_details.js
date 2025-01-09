@@ -9,11 +9,17 @@ console.log("factory_id ", factory_id);
 const get_factory_details = async (factory_id) => {
     try {
         const url = `../datasets/get_value_by_key.php?table=factories`;
-        const response = await axios.get(url,
+        /* const response = await axios.get(url,
             {
                 "key": "id",
                 "value": factory_id
+            }); */
+        const response = await axios.post(url, 
+            { 
+                key: "id", 
+                value: factory_id
             });
+
         return response;
     } catch (error) {
         Alert.showErrorMessage();
@@ -115,14 +121,13 @@ this is front-end code call from factory_details.php
     2. on right side show factory skus table have pagination from Pagination.js and each row have check box to add factory sku to factory_sku_settings table (checkbox enabled if exist)
     have save button on above to create or delete factory_sku_settings from checkbox
 */
-const generateSection1 = async (factory_id) => {
+const generateSection1 = async () => {
     // if factory_id is null then meaning of add new factory
     if (factory_id) {
         const result = await get_factory_details(factory_id);
-        const factory = result.data;
+        const factory = result.data.status[0];
+        const { name, location, contact_person, contact_number, email_address } = factory;
         console.log("factory", factory);
-        /* const factorySkuDataContainer = document.getElementById('factory-skus');
-        const tableElement = document.createElement('table'); */
 
         const factoryName = document.getElementById('factory-name');
         const factoryLocation = document.getElementById('factory-location');
@@ -130,20 +135,27 @@ const generateSection1 = async (factory_id) => {
         const factoryContactNumber = document.getElementById('factory-contact-number');
         const factoryEmailAddress = document.getElementById('factory-email-address');
 
-        factoryName.textContent = factory.name;
-        factoryLocation.textContent = factory.location;
-        factoryContactPerson.textContent = factory.contact_person;
-        factoryContactNumber.textContent = factory.contact_number;
-        factoryEmailAddress.textContent = factory.email_address;
-
-        /* factorySkuDataContainer.appendChild(tableElement); */
+        /*
+        <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Name</div>
+                    <div class="col-9">
+                        <input id="factory-name" class="form-control" type="text">
+                    </div>
+                </div> 
+         */
+        factoryName.value = name;
+        factoryLocation.value = location;
+        factoryContactPerson.value = contact_person;
+        factoryContactNumber.value = contact_number;
+        factoryEmailAddress.value = email_address;
     }
 }
 
-const generateSection2 = async (factory_id, limit, page) => {
+const generateSection2 = async (limit, page) => {
+    console.log("page = ", page);
     // if factory_id is null then meaning of add new factory
     if (factory_id) {
-        const result = await get_factory_skus(factory_id, limit, page);
+        const result = await get_factory_skus(factory_id, page);
         const factory = result.data.data;
         console.log("result", result);
         const factorySkuDataContainer = document.getElementById('factory-skus');
@@ -156,7 +168,7 @@ const generateSection2 = async (factory_id, limit, page) => {
         `
         <th></th>
         <th>Sku ID</th>
-        <th>Sku</th>
+        <th>Order Product Sku</th>
         <th>Report Product Name</th>
         `;
         tableHeader.appendChild(tableHeaderRow);
@@ -170,7 +182,7 @@ const generateSection2 = async (factory_id, limit, page) => {
             tableRow.innerHTML =
             `
             <td>
-                <input type="checkbox" name="factory_sku_settings_id[]" value="${factory_sku_settings_id}" ${exist === 1 ? 'checked' : ''}>
+                <input type="checkbox" name="factory_sku_settings_id${factory_sku_settings_id}" value="${factory_sku_settings_id}" ${exist === 1 ? 'checked' : ''}>
             </td>
             <td>${sku_settings_id}</td>
             <td>${order_product_sku}</td>
@@ -180,10 +192,114 @@ const generateSection2 = async (factory_id, limit, page) => {
         });
         factorySkuDataContainer.appendChild(tableElement);
         const totalCount = result.data.totalCount;
-        const totalPages = Math.ceil(totalCount / limit);
+        const totalPages = Math.ceil(totalCount / 100);
         Pagination.updatePagination(page, totalPages, 'pagination1', generateSection2);
     }
 }
 
-generateSection1(factory_id);
-generateSection2(factory_id, 10, 1);
+/* 
+    create function for save-factory and create-factory button from factory_details.php
+    1. get value from factory details input then update to factories table by Datacontroller.js component
+    2. get value from checkbox in factory-skus table then create or delete data in factory_sku_settings table by Datacontroller.js component
+*/
+
+const saveFactory = async () => {
+    // Gather factory details
+    const factoryName = document.getElementById('factory-name');
+    const factoryLocation = document.getElementById('factory-location');
+    const factoryContactPerson = document.getElementById('factory-contact-person');
+    const factoryContactNumber = document.getElementById('factory-contact-number');
+    const factoryEmailAddress = document.getElementById('factory-email-address');
+
+    const factory = {
+        name: factoryName.value,
+        location: factoryLocation.value,
+        contact_person: factoryContactPerson.value,
+        contact_number: factoryContactNumber.value,
+        email_address: factoryEmailAddress.value,
+    };
+
+    console.log("factory", factory);
+
+    // Update factory details
+    const factoryUpdateResult = await DataController.update("factories", "id", factory_id, factory);
+    if (!factoryUpdateResult) {
+        Alert.showErrorMessage("Failed to update factory details.");
+        return;
+    }
+
+    // Process checkboxes for factory SKUs
+    const checkboxes = document.querySelectorAll('#factory-skus input[type="checkbox"]');
+    const insertResults = [];
+    const deleteOperations = [];
+
+    for (const checkbox of checkboxes) {
+        const factorySkuSettingsId = checkbox.value;
+        const isChecked = checkbox.checked;
+
+        console.log("isChecked: ", isChecked);
+        console.log("factorySkuSettingsId: ", factorySkuSettingsId);
+        console.log("insert row?: ", isChecked && factorySkuSettingsId == "null");
+        if (isChecked && factorySkuSettingsId == "null") {
+            // Insert new row for checked item that does not exist
+            console.log("insert new row");
+            const skuSettingsId = checkbox.closest('tr').querySelector('td:nth-child(2)').textContent;
+            try {
+                const result = await DataController.insert("factory_sku_settings", { factory_id: parseInt(factory_id), sku_settings_id: parseInt(skuSettingsId) });
+                console.log("Insert result:", result);
+                insertResults.push(result);
+            } catch (error) {
+                console.error("Error inserting SKU:", error);
+            }
+        } else if (!isChecked && factorySkuSettingsId != null) {
+            // Add delete operation for unchecked item that exists
+            deleteOperations.push(DataController._delete("factory_sku_settings", "factory_sku_settings_id", factorySkuSettingsId));
+        }
+    }
+
+    try {
+        // Execute all delete operations in parallel
+        await Promise.all(deleteOperations);
+        Alert.showSuccessMessage("Factory details and SKUs updated successfully.");
+    } catch (error) {
+        console.error("Error deleting SKUs:", error);
+        Alert.showErrorMessage("Failed to update factory SKUs.");
+    }
+};
+
+const createFactory = async () => {
+    const factoryName = document.getElementById('factory-name');
+    const factoryLocation = document.getElementById('factory-location');
+    const factoryContactPerson = document.getElementById('factory-contact-person');
+    const factoryContactNumber = document.getElementById('factory-contact-number');
+    const factoryEmailAddress = document.getElementById('factory-email-address');
+    const factory = {
+        name: factoryName.value,
+        location: factoryLocation.value,
+        contact_person: factoryContactPerson.value,
+        contact_number: factoryContactNumber.value,
+        email_address: factoryEmailAddress.value,
+    };
+    const result = await DataController.insert("factories", factory);
+    console.log("result", result);
+    if (result) {
+        Alert.showSuccessMessage();
+    } else {
+        Alert.showErrorMessage();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const saveFactoryButton = document.getElementById('save-factory');
+    const createFactoryButton = document.getElementById('create-factory');
+
+    if (saveFactoryButton) {
+        saveFactoryButton.addEventListener('click', saveFactory);
+    }
+    if (createFactoryButton) {
+        createFactoryButton.addEventListener('click', createFactory);
+    }
+
+    generateSection1();
+    generateSection2(10, 1);
+});

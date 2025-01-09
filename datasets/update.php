@@ -10,15 +10,12 @@
     $to_update = $requestData['toUpdate'];
     
     try {
-        $res = update($conn, $table, $id, $key, $value);
+        $res = update($conn, $table, $key, $value, $to_update);
         $response = [
-            'id' => $id,
             'request' => $requestData,
             'status' => $res
         ];
-
-        $jsonData = json_encode($response);
-        echo $jsonData;
+        echo json_encode($response);
     }   catch (\Exception $e) {
         echo $e->getMessage();
     }

@@ -243,7 +243,7 @@
     };
   }
 
-  function update($conn, $table, $key, $value, $order) {
+  function update_order($conn, $table, $key, $value, $order) {
     try {
         $updateColumns = array_map(function ($column) {
             return $column . ' = :' . $column;

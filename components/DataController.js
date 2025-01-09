@@ -100,10 +100,31 @@ const select = async(table, column, orderBy, limit, page) => {
     }
 }
 
+const selectByKey = async(table, key, value) => {
+    try {
+        const response = await axios.post(
+            `../datasets/get_value_by_key.php?table=${table}`,
+            {
+                key,
+                value
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const DataController = { 
     insert,
     update,
     select,
+    selectByKey,
     _delete,
     updateByKey,
     upload,

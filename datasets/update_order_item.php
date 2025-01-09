@@ -9,7 +9,7 @@
     $to_update = $requestData['toUpdate'];
     
     try {
-        $res = update($conn, "orders_skus", $key, $value, $to_update);
+        $res = update_order($conn, "orders_skus", $key, $value, $to_update);
         $response = [
             'request' => $requestData,
             'status' => $res

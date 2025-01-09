@@ -10,7 +10,7 @@
     <div class="container">
         <p class="mb-4">
             <strong class="h1">
-                <?= $factory_id ? 'Factory' : 'Add New Factory'; ?>
+                <?= $factory_id ? 'Factory Details' : 'Add New Factory'; ?>
             </strong>
                 <?= $factory_id ? '<small class="text-secondary">(' . $factory_id . ')</small>' : ''?>
         </p>
@@ -81,6 +81,16 @@
             </div>
             
             <div class="col-6">
+                <div class="row mb-3">
+                    <div class="col-6"></div>
+                    <?php
+                        if ($factory_id) {
+                            echo '<button id="save-factory" class="btn btn-warning"><i class="fa fa-save"></i> Save</button>';
+                        } else {
+                            echo '<button id="create-factory" class="btn btn-warning"><i class="fa fa-save"></i> Create</button>';
+                        }
+                    ?>
+                </div>
                 <div class="col-sm-12 col-md-5" id="pagination1">
                     <ul class="pagination justify-content-start"></ul>
                 </div>

@@ -220,11 +220,11 @@
         try {
             $query = "
             SELECT 
-                ss.id as sku_settings_id, 
+                ss.id AS sku_settings_id, 
                 ss.order_product_sku, 
                 ss.report_product_name,
                 fss.factory_id,
-                fss.factory_sku_settings_id,
+                fss.factory_sku_settings_id AS factory_sku_settings_id,
                 fss.created_at,
                 fss.updated_at,
                 CASE 
@@ -235,8 +235,8 @@
                 sku_settings ss
             LEFT JOIN
                 factory_sku_settings fss 
-                ON ss.id = fss.sku_setting_id AND fss.factory_id = :factory_id
-            ORDER BY exist DESC, ss.order_product_sku ASC
+                ON ss.id = fss.sku_settings_id AND fss.factory_id = :factory_id
+            ORDER BY ss.order_product_sku ASC, ss.id ASC
             LIMIT :limit OFFSET :offset;
             ";
             $stmt = $conn->prepare($query);
@@ -265,7 +265,7 @@
                 sku_settings ss
             LEFT JOIN
                 factory_sku_settings fss 
-                ON ss.id = fss.sku_setting_id AND fss.factory_id = :factory_id
+                ON ss.id = fss.sku_settings_id AND fss.factory_id = :factory_id
             ORDER BY ss.order_product_sku ASC;
             ";
 
