@@ -22,6 +22,7 @@
           override_address,
           order_note,
           fulfillment_status,
+          os.orders_skus_id,
           w.name as website_name,
           w.id as website_id,
           c.name as currency_code,
@@ -81,6 +82,7 @@
           c.id as currency_id,
           pm.name as payment_methods,
           pm.id as payment_method_id,
+          os.orders_skus_id,
           ost.name as order_status,
           ost.id as order_status_id
         FROM orders o
@@ -127,6 +129,7 @@
     try {
       $query = "
       SELECT 
+        orders_skus_id,
         unique_id,
         order_item_id,
         sku_settings_id,
@@ -324,6 +327,76 @@
 
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':order_id',$order_id);
+        $stmt->execute();
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
+    }
+  }
+
+  function get_pre_po_order_items($conn, $factory_id, $order_id) {
+    try {
+        $query = "
+        SELECT 
+          os.orders_skus_id,
+          os.unique_id,
+          os.order_item_id,
+          os.sku_settings_id,
+          os.item_price,
+          os.quantity_purchased,
+          os.shipping_price,
+          os.total, 
+          ss.order_product_sku, 
+          ss.report_product_name,
+          fss.factory_sku_settings_id
+        FROM orders_skus os 
+        JOIN sku_settings ss ON os.sku_settings_id = ss.id
+        JOIN factory_sku_settings fss ON os.sku_settings_id = fss.sku_settings_id
+        WHERE fss.factory_id = :factory_id AND os.order_id = :order_id;
+        ";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+        $stmt->bindParam(':order_id', $order_id, PDO::PARAM_INT);
+
+        $stmt->execute();
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
+    }
+  }
+
+  function get_pre_po_order_items_count($conn, $factory_id, $order_id) {
+    try {
+        $query = "
+        SELECT 
+          os.orders_skus_id,
+          os.unique_id,
+          os.order_item_id,
+          os.sku_settings_id,
+          os.item_price,
+          os.quantity_purchased,
+          os.shipping_price,
+          os.total, 
+          ss.order_product_sku, 
+          ss.report_product_name,
+          fss.factory_sku_settings_id
+        FROM orders_skus os 
+        JOIN sku_settings ss ON os.sku_settings_id = ss.id
+        JOIN factory_sku_settings fss ON os.sku_settings_id = fss.sku_settings_id
+        WHERE fss.factory_id = :factory_id AND os.order_id = :order_id;
+        ";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+        $stmt->bindParam(':order_id', $order_id, PDO::PARAM_INT);
+
         $stmt->execute();
 
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);

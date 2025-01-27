@@ -46,7 +46,7 @@
         }
     }
     
-    function get_order_items($conn, $order_id) {
+    function get_po_order_items($conn, $order_id) {
         try {
             $query = "
             SELECT 

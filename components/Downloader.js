@@ -431,7 +431,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                 let itemIndex = 1;
                 
                 if (sliceIndex === 0 && sliceIndex < orderSliceNumber-1) {
-                    /* for (let i = 0; i < 7; i++) {
+                    for (let i = 0; i < 7; i++) {
                         for (let char of generateColumnRange('A', 'AM')) {
                             const templateCellRef = `${char}${i==6 ? i : i + 1}`;
                             const { style, width } = getStyle(templateCellRef, templateSheet);
@@ -443,7 +443,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                             outputCell.value = value;
                             updateFormula(outputCell, orderIndex);
                         }
-                    } */
+                    }
 
                     addressSplit.forEach((line) => {
                         ws.getCell(orderIndex + addressIndex, columnToNumber("B")).value = line;
@@ -457,7 +457,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                     ws.getCell(orderIndex + 1, columnToNumber('N')).value = tax_rate.tax_rate * 100;
                     ws.getCell(orderIndex + 1, columnToNumber('AM')).value = addressSplit.join();
                 } else if (sliceIndex === 0) {
-                    /* for (let i = 0; i < 7; i++) {
+                    for (let i = 0; i < 7; i++) {
                         for (let char of generateColumnRange('A', 'AM')) {
                             const templateCellRef = `${char}${i + 1}`;
                             const { style, width } = getStyle(templateCellRef, templateSheet);
@@ -469,7 +469,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                             outputCell.value = value;
                             updateFormula(outputCell, orderIndex);
                         }
-                    } */
+                    }
                     addressSplit.forEach((line) => {
                         ws.getCell(orderIndex + addressIndex, columnToNumber("B")).value = line;
                         addressIndex++;
@@ -479,7 +479,7 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
                     ws.getCell(orderIndex + 1, columnToNumber('J')).value = payments_date.split(" ")[0];
                     ws.getCell(orderIndex + 1, columnToNumber('K')).value = currency_code;
                     ws.getCell(orderIndex + 1, columnToNumber('L')).value = all_total.toFixed(2);
-                    ws.getCell(orderIndex + 1, columnToNumber('N')).value = tax_rate.tax_rate * 100;
+                    ws.getCell(orderIndex + 1, columnToNumber('N')).value = tax_rate.tax_rate?tax_rate.tax_rate * 100:0;
                     ws.getCell(orderIndex + 1, columnToNumber('AM')).value = addressSplit.join();
 
                     // ws.getCell(footerIndex, columnToNumber('C')).value = `${payment_methods} (${website_name}) ${deposit ? "* มัดจำ " + deposit : ""}`;
@@ -941,7 +941,7 @@ const generateDpostExcel = async (orders, toggleSpinner, checkboxStates) => {
 
             let buyer_email, buyer_phone_number, ship_city, ship_postal_code, ship_state;
 
-            if (haveEmail) {
+            if (haveEmail && addressLineCount >2 ) {
                 buyer_phone_number = addressSplit[addressLineCount-2][0];
                 ship_city = AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, false);
                 ship_postal_code = AddressController.getValueByIndex(addressSplit[addressLineCount-4], 2, true);
@@ -1106,6 +1106,66 @@ const generateMergedPDF = async (selectedOrders) => {
     URL.revokeObjectURL(url);
     Alert.showSuccessMessage(`Barcode Downloaded Successfully`);
 }
+
+const generateUserDataCSV = async (userData) => {
+    /* TODO :
+        using exceljs to
+            1. generate csv file from userData 
+            2. download the file as userData.csv
+
+        example data:
+        [
+            {
+                "buyer_email": "aapo.vara1@gmail.com",
+                "buyer_name": "Aapo Heinonen",
+                "buyer_phone_number": "T. +358402142530",
+                "short_name": "Finland"
+            },
+            {
+                "buyer_email": "Alnievera@gmail.com",
+                "buyer_name": "Aaron Nievera",
+                "buyer_phone_number": "T. 650-892-5656",
+                "short_name": "United States"
+            },
+            {
+                "buyer_email": "heinis@gmail.com",
+                "buyer_name": "Aatos Putkonen",
+                "buyer_phone_number": "T. 0407688767",
+                "short_name": "Finland"
+            }
+        ]
+    */
+   try {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('UserData');
+
+    worksheet.columns = [
+        { header: 'buyer_name', key: 'buyer_name', width: 20 },
+        { header: 'buyer_email', key: 'buyer_email', width: 20 },
+        { header: 'buyer_phone_number', key: 'buyer_phone_number', width: 20 },
+        { header: 'short_name', key: 'short_name', width: 20 }
+    ];
+    console.log("userData: " + userData);
+    userData.forEach((user) => {
+        console.log("user: " + user);
+        worksheet.addRow(user);
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'userData.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
+   } catch (error) {
+    console.error(error);
+    return false;
+   }
+}
+
 export const Downloader = {
     generateInvoiceExcel,
     generateOrderExcel,
@@ -1114,5 +1174,6 @@ export const Downloader = {
     generateDhlPreAlertExcel,
     generateDpostExcel,
     generateAftershipCSV,
-    generateMergedPDF
+    generateMergedPDF,
+    generateUserDataCSV
 }

@@ -15,11 +15,24 @@
                 </div>
             </div>
         </div>
-
+        <div id="loading-spinner" class="spinner-border text-primary fixed-top top-50 start-50 d-none" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
         <!-- Container to show product list -->
         <div class="row mt-3">
             <div class="col-12">
                 <div id="order-skus"></div>
+                <div class="mb-3 row">
+                    <div class="col-sm-12 col-md-7">
+                        <button id="createPoOrder" class="btn btn-warning btn-sm" disabled>
+                            <span class="fa-solid fa-arrow-circle-down"></span> Create Po Order
+                        </button>
+                    </div>
+                    <div class="col-sm-12 col-md-5" id="pagination2">
+                        <ul class="pagination justify-content-end"></ul>
+                    </div>
+                </div>
+                </div>
             </div>
         </div>
     </div>

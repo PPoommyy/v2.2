@@ -3,11 +3,22 @@ import { DataController } from "../components/DataController.js";
 import { Pagination } from "../components/Pagination.js";
 import { Cell } from "../components/Cell.js";
 
+// get factoryId from url
+const factoryId = new URLSearchParams(window.location.search).get('factory_id');
 const get_factory_list = async (limit, page) => {
     try {
         const url = `../datasets/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const get_factory_details = async (factoryId) => {
+    try {
+        const response = await DataController.selectByKey("factories", "id", parseInt(factoryId));
+        return response;
     } catch (error) {
         throw error;
     }
@@ -328,6 +339,47 @@ const loadFactorySkus = async (factoryId) => {
     }
 };
 
+const loadFactoryDetails = async (factoryId) => {
+    try {
+        toggleSpinner(true);
+        const result = await get_factory_details(factoryId);
+        const factoryDetails = result.status[0];
+        /* <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Name</div>
+                    <div class="col-9">
+                        <input type="text" id="factory-name" class="form-control" placeholder="Factory Name" aria-label="Factory Name" disabled>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Number</div>
+                    <div class="col-9">
+                        <input type="text" id="factory-number" class="form-control" placeholder="Factory Number" aria-label="Factory Number" disabled>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-3 text-end">Factory Email</div>
+                    <div class="col-9">
+                        <input type="text" id="factory-email" class="form-control" placeholder="Factory Email" aria-label="Factory Email" disabled>
+                    </div>
+                </div>
+                factoryDetails = {
+                    "id": 1,
+                    "name": "Shanghai Electronics",
+                    "location": "Shanghai, China",
+                    "contact_person": "Li Wei",
+                    "contact_number": "+86-21-12345678",
+                    "email_address": "liwei@shanghai-electronics.com"
+                }
+            */
+        const factoryName = document
+        console.log(factoryDetails);
+    } catch (error) {
+        console.error(error);
+    } finally {
+        toggleSpinner(false);
+    }
+};
+
 function updateCheckBoxList(sku_id, order_id, checked) {
     const createPoOrderButton = document.getElementById('createPoOrder');
 
@@ -355,34 +407,35 @@ function updateCheckBoxList(sku_id, order_id, checked) {
     console.log("Updated checkboxStates: ", checkboxStates);
 }
 
-const createPoOrderButton = document.getElementById('createPoOrder');
-createPoOrderButton.addEventListener("click", function () {
-    const selectedFactory = document.getElementById('select-factory').dataset.factoryId;
-    console.log("selectedFactory", document.getElementById('select-factory').dataset);
+// const createPoOrderButton = document.getElementById('createPoOrder');
+// createPoOrderButton.addEventListener("click", function () {
+//     const selectedFactory = document.getElementById('select-factory').dataset.factoryId;
+//     console.log("selectedFactory", document.getElementById('select-factory').dataset);
     
-    if (!selectedFactory) {
-        Alert.showErrorMessage("กรุณาเลือกโรงงานก่อนสร้าง PO Order");
-        return;
-    }
+//     if (!selectedFactory) {
+//         Alert.showErrorMessage("กรุณาเลือกโรงงานก่อนสร้าง PO Order");
+//         return;
+//     }
 
-    // Create a list of order IDs and their associated SKU IDs
-    const selectedItems = [];
-    for (const orderId in checkboxStates) {
-        const orderSkuIds = checkboxStates[orderId];
-        orderSkuIds.forEach(skuId => {
-            selectedItems.push(`order_id=${orderId}&sku_id=${skuId}`);
-        });
-    }
+//     // Create a list of order IDs and their associated SKU IDs
+//     const selectedItems = [];
+//     for (const orderId in checkboxStates) {
+//         const orderSkuIds = checkboxStates[orderId];
+//         orderSkuIds.forEach(skuId => {
+//             selectedItems.push(`order_id=${orderId}&sku_id=${skuId}`);
+//         });
+//     }
 
-    if (selectedItems.length === 0) {
-        Alert.showErrorMessage("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
-        return;
-    }
+//     if (selectedItems.length === 0) {
+//         Alert.showErrorMessage("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
+//         return;
+//     }
 
-    const queryString = `pre_po_details.php?factory_id=${selectedFactory}&${selectedItems.join('&')}`;
-    window.location.href = queryString;
-});
+//     const queryString = `pre_po_details.php?factory_id=${selectedFactory}&${selectedItems.join('&')}`;
+//     window.location.href = queryString;
+// });
 
 document.addEventListener('DOMContentLoaded', () => {
-    generateDropdown();
+    console.log("factoryId", factoryId);
+    loadFactoryDetails(factoryId);
 });

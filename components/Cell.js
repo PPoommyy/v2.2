@@ -155,8 +155,7 @@ const createElementCell = (element, colSpan, rowSpan, classList) => {
         });
     } else {
         cell.appendChild(element);
-    }
-            
+    }   
     
     return cell;
 }

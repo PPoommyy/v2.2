@@ -133,6 +133,7 @@
                 override_address,
                 order_note,
                 fulfillment_status,
+                os.orders_skus_id,
                 w.name as website_name,
                 w.id as website_id,
                 c.name as currency_code,
@@ -692,6 +693,27 @@
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
             return count($result) > 0;
+        } catch(PDOException $e) {
+            return false;
+        }
+    }
+
+    function get_user_data($conn) {
+        try {
+            /*
+                1. get buyer_email, buyer_name, buyer_phone_number and ship_country from orders
+                2. join country_currency to get country name
+             */
+            $query = "
+                SELECT buyer_email, buyer_name, buyer_phone_number, country_currency.short_name
+                FROM orders
+                JOIN country_currency ON orders.ship_country = country_currency.country_code
+                ORDER BY buyer_name ASC
+            ";
+            $stmt = $conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+            return json_encode($result);
         } catch(PDOException $e) {
             return false;
         }

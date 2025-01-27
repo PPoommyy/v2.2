@@ -280,4 +280,44 @@
             return null;
         }
     }
+
+    function get_factory_order_skus($conn, $factory_id, $limit, $offset) {
+        try {
+            /* 
+            retrive skus data in order_skus table that are in factory_sku_settings table by factory_id
+             */
+            $query = "
+            SELECT 
+                os.id AS order_sku_id, 
+                os.order_product_sku, 
+                os.report_product_name,
+                fss.factory_id,
+                fss.factory_sku_settings_id AS factory_sku_settings_id,
+                fss.created_at,
+                fss.updated_at,
+                CASE 
+                    WHEN fss.factory_sku_settings_id IS NOT NULL THEN 1 
+                    ELSE 0 
+                END AS exist
+            FROM
+                order_skus os
+            LEFT JOIN
+                factory_sku_settings fss 
+                ON os.id = fss.order_sku_id AND fss.factory_id = :factory_id
+            ORDER BY os.order_product_sku ASC, os.id ASC
+            LIMIT :limit OFFSET :offset;
+            ";
+            $stmt = $conn->prepare($query);
+            $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $jsonData = json_encode($result);
+            return $jsonData;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+            return null;
+        }
+    }
 ?>
