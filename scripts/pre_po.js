@@ -5,7 +5,7 @@ import { Cell } from "../components/Cell.js";
 
 const get_factory_list = async (limit, page) => {
     try {
-        const url = `../datasets/get_factory_list.php?limit=${limit}&page=${page}`;
+        const url = `../backend/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -15,7 +15,7 @@ const get_factory_list = async (limit, page) => {
 
 const get_factory_skus = async (factory_id, page) => {
     try {
-        const url = `../datasets/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
+        const url = `../backend/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -26,7 +26,7 @@ const get_factory_skus = async (factory_id, page) => {
 
 const get_pre_po_order = async (factory_id) => {
     try {
-        let url = `../datasets/get_pre_po_orders.php?factory_id=${factory_id}`;
+        let url = `../backend/get_pre_po_orders.php?factory_id=${factory_id}`;
 
         const response = await axios.get(url);
         return response.data;
@@ -45,8 +45,8 @@ function toggleSpinner(loading) {
 }
 
 const generateDropdown = async () => {
-    const dropdownMenu = document.getElementById('dropdown-menu'); // Using getElementById
-    dropdownMenu.innerHTML = ''; // Clear existing options
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    dropdownMenu.innerHTML = '';
 
     try {
         const factoryData = await get_factory_list(100, 1);
@@ -60,9 +60,9 @@ const generateDropdown = async () => {
             option.classList.add('dropdown-item');
             option.href = '#';
             option.textContent = name;
-            option.dataset.factoryId = id; // Add a data attribute for factory ID
+            option.dataset.factoryId = id;
 
-            // Add event listener for selecting a factory
+            
             option.addEventListener('click', (event) => {
                 event.preventDefault();
                 handleFactorySelection(option);
@@ -87,89 +87,6 @@ let checkboxStates = [];
 
 const loadFactorySkus = async (factoryId) => {
     try {
-        /* 
-            1. show order table with items more than 1
-
-            example data:
-            [
-        {
-            "details": {
-                "order_id": "67402461ertto",
-                "payments_date": "2024-11-22 00:00:00",
-                "buyer_name": "Krzysztof Pietraszek",
-                "ship_phone_number": "T. 503985431",
-                "ship_promotion_discount": 0,
-                "shipping_fee": 10,
-                "deposit": null,
-                "ship_address_1": "Wojska Polskiego",
-                "ship_address_2": "46/9",
-                "ship_address_3": "Elk",
-                "ship_city": "Elk",
-                "ship_state": "Warminsko-Mazurskie",
-                "ship_postal_code": "19-300",
-                "ship_country": "PL",
-                "timesort": "24110002",
-                "raw_address": "Krzysztof Pietraszek\nWojska Polskiego\n46/9 · Wojska Polskiego\nElk · 19-300\nWarminsko-Mazurskie · Poland\nT. 503985431",
-                "override_address": null,
-                "order_note": "",
-                "fulfillment_status": "Processing",
-                "website_name": "boxsensegear.com",
-                "website_id": 19,
-                "currency_code": "USD",
-                "currency_id": 146,
-                "payment_methods": "Paypal",
-                "payment_method_id": 1,
-                "order_status": "Processing",
-                "order_status_id": 1
-            },
-            "items": [
-                {
-                    "unique_id": "67402461ertto,2205",
-                    "order_item_id": "2205",
-                    "sku_settings_id": 2205,
-                    "item_price": 123,
-                    "quantity_purchased": 1,
-                    "shipping_price": 0,
-                    "total": 123,
-                    "order_product_sku": "BXHW-BORAN",
-                    "report_product_name": "เชือกพันมือมวยโบราณ ผู้ใหญ่",
-                    "factory_sku_settings_id": 73
-                }
-            ]
-        },
-        {
-            "details": {
-                "order_id": "674023e9o595w",
-                "payments_date": "2024-11-22 00:00:00",
-                "buyer_name": "Joseph Rennie",
-                "ship_phone_number": "T. +44 7359 191184",
-                "ship_promotion_discount": 0,
-                "shipping_fee": 9.9900000000000002131628207280300557613372802734375,
-                "deposit": null,
-                "ship_address_1": "14 Cupar crescent",
-                "ship_address_2": "Corby",
-                "ship_address_3": "Northamptonshire",
-                "ship_city": "Corby",
-                "ship_state": "Northamptonshire",
-                "ship_postal_code": "NN17 1RG",
-                "ship_country": "UK",
-                "timesort": "24110001",
-                "raw_address": "Joseph Rennie\n14 Cupar crescent·\nCorby · NN17 1RG\nNorthamptonshire · United Kingdom\nT. +44 7359 191184\nJosephrennie2000@gmail.com",
-                "override_address": "",
-                "order_note": "",
-                "fulfillment_status": "Processing",
-                "website_name": "deboxe.com",
-                "website_id": 13,
-                "currency_code": "EUR",
-                "currency_id": 44,
-                "payment_methods": "Stripe Credit Card",
-                "payment_method_id": 17,
-                "order_status": "Processing",
-                "order_status_id": 1
-            },
-            "items": []
-        }]
-        */
         toggleSpinner(true);
         const pre_po_order = await get_pre_po_order(factoryId);
         const orders = pre_po_order.data1;
@@ -184,7 +101,6 @@ const loadFactorySkus = async (factoryId) => {
         const tableHeader = document.createElement('thead');
         const tableHeaderRow = document.createElement('tr');
 
-        // Checkbox เลือกทั้งหมด
         tableHeaderRow.innerHTML = `
             <th>
                 <input id="allItems" type="checkbox" name="Allitems" value="-1" data-toggle="tooltip" title="Select All"/>
@@ -208,34 +124,32 @@ const loadFactorySkus = async (factoryId) => {
             
             const { timesort, order_id, buyer_name, website_name, currency_code, order_status, fulfillment_status, order_note } = details;
         
-            // **สร้างแถวหลักของ Order**
             const tableRow = document.createElement('tr');
         
-            // **สร้าง Order Checkbox (เลือกทั้ง order)**
             const orderCheckbox = document.createElement('input');
             orderCheckbox.type = 'checkbox';
             orderCheckbox.name = 'orderCheckbox';
             orderCheckbox.value = timesort;
-            orderCheckbox.dataset.orderId = order_id;  // เพิ่ม order_id เป็น data attribute
+            orderCheckbox.dataset.orderId = order_id; 
         
             orderCheckbox.addEventListener('change', function () {
                 const itemCheckboxes = document.querySelectorAll(`input[name="itemCheckbox"][data-order-id="${order_id}"]`);
                 itemCheckboxes.forEach(checkbox => {
                     checkbox.checked = this.checked;
-                    updateCheckBoxList(checkbox.value, order_id, this.checked);
+                    updateCheckBoxList(checkbox, order_id, this.checked);
                 });
             });            
         
-            // **สร้าง Checkbox สำหรับ Item ตัวแรก**
             const firstItemCheckbox = document.createElement('input');
             firstItemCheckbox.type = 'checkbox';
             firstItemCheckbox.name = 'itemCheckbox';
             firstItemCheckbox.value = items[0].orders_skus_id;
-            firstItemCheckbox.dataset.orderId = order_id;  // เพิ่ม order_id เป็น data attribute
+            firstItemCheckbox.dataset.order_product_sku = items[0].order_product_sku;
+            firstItemCheckbox.dataset.quantity_purchased = items[0].quantity_purchased;
+            firstItemCheckbox.dataset.orderId = order_id;
         
-            // **อัปเดต Order Checkbox เมื่อกด item ตัวแรก**
             firstItemCheckbox.addEventListener('change', function () {
-                updateCheckBoxList(this.value, order_id, this.checked);
+                updateCheckBoxList(this, order_id, this.checked);
                 updateOrderCheckboxState(order_id);
             });
             
@@ -270,19 +184,19 @@ const loadFactorySkus = async (factoryId) => {
         
             tableBody.appendChild(tableRow);
         
-            // **สร้างแถวของ Item ที่เหลือ**
             items.slice(1).forEach(item => {
                 const itemRow = document.createElement('tr');
         
-                // **Checkbox ของ Item**
                 const itemCheckbox = document.createElement('input');
                 itemCheckbox.type = 'checkbox';
                 itemCheckbox.name = 'itemCheckbox';
                 itemCheckbox.value = item.orders_skus_id;
-                itemCheckbox.dataset.orderId = order_id;  // เพิ่ม order_id เป็น data attribute
+                itemCheckbox.dataset.order_product_sku = item.order_product_sku;
+                itemCheckbox.dataset.quantity_purchased = item.quantity_purchased;
+                itemCheckbox.dataset.orderId = order_id;
         
                 itemCheckbox.addEventListener('change', function () {
-                    updateCheckBoxList(this.value, order_id, this.checked);
+                    updateCheckBoxList(this, order_id, this.checked);
                     updateOrderCheckboxState(order_id);
                 });
         
@@ -297,15 +211,13 @@ const loadFactorySkus = async (factoryId) => {
         tableElement.appendChild(tableBody);
         orderDataContainer.appendChild(tableElement);
 
-        // ฟังก์ชันอัปเดต state ของ Order Checkbox
         function updateOrderCheckboxState(order_id) {
             const itemCheckboxes = document.querySelectorAll(`input[name="itemCheckbox"][data-order-id="${order_id}"]`);
-            const orderCheckbox = document.querySelector('input[name="orderCheckbox"]');
+            const orderCheckbox = document.querySelector(`input[name="orderCheckbox"][data-order-id="${order_id}"]`);
         
             orderCheckbox.checked = [...itemCheckboxes].every(checkbox => checkbox.checked);
         }
 
-        // ฟังก์ชัน Select All
         const allItemsCheckbox = document.getElementById('allItems');
         allItemsCheckbox.addEventListener('change', function () {
             const orderCheckboxes = document.querySelectorAll('input[name="orderCheckbox"]');
@@ -318,7 +230,7 @@ const loadFactorySkus = async (factoryId) => {
 
             itemCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
-                updateCheckBoxList(checkbox.value, this.checked);
+                updateCheckBoxList(checkbox, this.checked);
             });
         });
     } catch (error) {
@@ -328,25 +240,26 @@ const loadFactorySkus = async (factoryId) => {
     }
 };
 
-function updateCheckBoxList(sku_id, order_id, checked) {
+function updateCheckBoxList(item, order_id, checked) {
     const createPoOrderButton = document.getElementById('createPoOrder');
-
+    const sku_settings_id = item.value;
+    const order_product_sku = item.dataset.order_product_sku;
+    const quantity_purchased = item.dataset.quantity_purchased;
     if (checked) {
         if (!checkboxStates[order_id]) {
             checkboxStates[order_id] = [];
         }
-        if (!checkboxStates[order_id].includes(sku_id)) {
-            checkboxStates[order_id].push(sku_id);
+        if (!checkboxStates[order_id].includes(sku_settings_id)) {
+            checkboxStates[order_id].push({ sku_settings_id: sku_settings_id, order_product_sku: order_product_sku, quantity_purchased: quantity_purchased });
         }
     } else {
         if (checkboxStates[order_id]) {
-            checkboxStates[order_id] = checkboxStates[order_id].filter(id => id !== sku_id);
+            checkboxStates[order_id] = checkboxStates[order_id].filter(id => id !== sku_settings_id);
             if (checkboxStates[order_id].length === 0) {
                 delete checkboxStates[order_id];
             }
         }
     }
-   //    check to enable createPoOrderButton
     if (Object.keys(checkboxStates).length > 0) {
         createPoOrderButton.removeAttribute('disabled');
     } else {
@@ -358,19 +271,17 @@ function updateCheckBoxList(sku_id, order_id, checked) {
 const createPoOrderButton = document.getElementById('createPoOrder');
 createPoOrderButton.addEventListener("click", function () {
     const selectedFactory = document.getElementById('select-factory').dataset.factoryId;
-    console.log("selectedFactory", document.getElementById('select-factory').dataset);
     
     if (!selectedFactory) {
         Alert.showErrorMessage("กรุณาเลือกโรงงานก่อนสร้าง PO Order");
         return;
     }
 
-    // Create a list of order IDs and their associated SKU IDs
     const selectedItems = [];
     for (const orderId in checkboxStates) {
-        const orderSkuIds = checkboxStates[orderId];
-        orderSkuIds.forEach(skuId => {
-            selectedItems.push(`order_id=${orderId}&sku_id=${skuId}`);
+        selectedItems.push({
+            order_id: orderId,
+            items: checkboxStates[orderId]
         });
     }
 
@@ -379,9 +290,11 @@ createPoOrderButton.addEventListener("click", function () {
         return;
     }
 
-    const queryString = `pre_po_details.php?factory_id=${selectedFactory}&${selectedItems.join('&')}`;
+    const encodedData = encodeURIComponent(JSON.stringify(selectedItems));
+    const queryString = `pre_po_details.php?factory_id=${selectedFactory}&data=${encodedData}`;
     window.location.href = queryString;
 });
+
 
 document.addEventListener('DOMContentLoaded', () => {
     generateDropdown();

@@ -26,7 +26,7 @@ updateButton.addEventListener('click', async () => {
 
 const get_factory_list = async (limit, page) => {
     try {
-        let url = `../datasets/get_factory_list.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -36,7 +36,7 @@ const get_factory_list = async (limit, page) => {
 
 const get_sku_list = async (limit, page) => {
     try {
-        const url = `../datasets/get_sku_list.php?limit=${limit}&page=${page}`;
+        const url = `../backend/get_sku_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -56,7 +56,6 @@ async function generateTable(limit, page) {
         const factorySkuDataContainer = document.getElementById('factory-sku-container');
         const tableElement = document.createElement('table');
         tableElement.classList.add('table', 'table-sm', 'table-bordered', 'table-striped', 'table-hover');
-
         const tableHeader = document.createElement('thead');
         const tableHeaderRow = document.createElement('tr');
         tableHeaderRow.innerHTML =
@@ -68,18 +67,14 @@ async function generateTable(limit, page) {
         <th>Email</th>`;
         tableHeader.appendChild(tableHeaderRow);
         tableElement.appendChild(tableHeader);
-        
         const tableBody = document.createElement('tbody');
         factories.forEach(factory => {
             const { details, factory_skus } = factory;
             const { id, name, location, contact_person, contact_number, email_address } = details;
-            
             const tableRow = document.createElement('tr');
-            
             const linkDetails = document.createElement('a');
             linkDetails.href = `factory_details.php?factory_id=${id}`;
             linkDetails.innerText = 'View Detail';
-
             tableRow.appendChild(Cell.createElementCell(linkDetails, false, false, false));
             tableRow.appendChild(Cell.createSpanCell(id, false, false));
             tableRow.appendChild(Cell.createSpanCell(name, false, false));

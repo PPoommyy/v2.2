@@ -15,16 +15,11 @@
             $column_factories_skus = [];
             $where_factories_skus = [];
             $factory_skus = json_decode(select($conn, 'factory_sku', $column_factories_skus, 'sku_settings_id', null, null, $join_factories_skus, $where_factories_skus), true);
-            // $factory_skus = select($conn, 'factory_sku', $column_factories_skus, 'sku_settings_id', null, null, $join_factories_skus, $where_factories_skus);
             return [
                 'details' => $factory,
                 'factory_skus' => $factory_skus
             ];
         }, $factories);
-
-        // Fetch related data using get_data function
-        // $factories2 = get_data($conn, 'factories', '*');
-
         $arrayObject2 = array(
             'count' => count($factories)
         );

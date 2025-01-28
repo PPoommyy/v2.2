@@ -8,17 +8,12 @@
                 'method' => $method,
                 'header' => $headers,
                 'content' => $content,
-                'ignore_errors' => true // This allows us to get the response even if it's an error
+                'ignore_errors' => true
             ]
         ];
-
         $context = stream_context_create($options);
         $result = file_get_contents($url, false, $context);
-
-        // Get the response headers
         $responseHeaders = $http_response_header;
-
-        // Get the HTTP status code
         $statusCode = 0;
         if (is_array($responseHeaders)) {
             $parts = explode(' ', $responseHeaders[0]);
@@ -35,29 +30,27 @@
     }
 
     $requestData = json_decode(file_get_contents('php://input'), true);
-    $apiHost = "https://dpostinter.thailandpost.com";
-    //$apiHost = "https://dpinterapi.thailandpost.com";
-    /* $urlencoded = http_build_query([
-        'username' => 'testuser1',
-        'password' => '12345',
-        'grant_type' => 'password'
-    ]); */
-    $urlencoded = http_build_query([
-        'username' => 'boxsense',
-        'password' => 'QUEBECpost',
-        'grant_type' => 'password'
-    ]);
-
+    $apiHost = "https://api.aftership.com";
+    $api_key = "asa";
+    $payload = $requestData['payload'];
 
     try {
-        $headers = "Content-Type: application/x-www-form-urlencoded";
-
-        $response = sendRequest("$apiHost/api/token", 'POST', $headers, $urlencoded);
+        $jsonPayload = json_encode($payload);
+        $headers = "as-api-key: $api_key\r\nContent-Type: application/json";
+        $response = sendRequest("$apiHost/tracking/2024-07/trackings", 'POST', $headers, $jsonPayload);
 
         $result = [
             'statusCode' => $response['statusCode'],
-            'response' => json_decode($response['body'], true)
+            'response' => json_decode($response['body'], true),
+            'requestData' => $payload
         ];
+
+        /* $result = [
+            'apiHost' => $apiHost,
+            'api_key' => $api_key,
+            'requestData' => $requestData,
+            'payload' => $payload
+        ]; */
 
         echo json_encode($result);
     } catch (Exception $e) {

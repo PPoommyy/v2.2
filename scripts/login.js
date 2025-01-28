@@ -20,7 +20,7 @@ loginForm.addEventListener('submit', (event) => {
         return;
     }
 
-    axios.post('../datasets/lokin.php', { username, password })
+    axios.post('../backend/lokin.php', { username, password })
         .then(response => {
             if (response.data.res) {
                 const expirationTime = 60 * 60 * 1000;

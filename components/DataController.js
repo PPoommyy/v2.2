@@ -1,7 +1,7 @@
 async function insert (table, insertedData) {
     try {
         const response = await axios.post(
-            `../datasets/insert.php`,
+            `../backend/insert.php`,
             {
                 table,
                 insertedData
@@ -20,7 +20,7 @@ async function insert (table, insertedData) {
 
 async function updateByKey(table, conKey, conValue, key, value) {
     try {
-        const url = `../datasets/update_by_key.php?table=${table}&condition_key=${conKey}&condition_value=${conValue}`;
+        const url = `../backend/update_by_key.php?table=${table}&condition_key=${conKey}&condition_value=${conValue}`;
         const response = await axios.post(url, { key, value });
         return response.data;
     } catch (error) {
@@ -30,7 +30,7 @@ async function updateByKey(table, conKey, conValue, key, value) {
 
 async function update(table, key, value, toUpdate) {
     try {
-        const url = `../datasets/update.php?table=${table}`;
+        const url = `../backend/update.php?table=${table}`;
         const response = await axios.post(url, { key, value, toUpdate });
         return response.data;
     } catch (error) {
@@ -40,7 +40,7 @@ async function update(table, key, value, toUpdate) {
 
 async function _delete (table, key, value) {
     try {
-        const url = `../datasets/delete.php?table=${table}`;
+        const url = `../backend/delete.php?table=${table}`;
         const response = await axios.post(url, { key, value });
         return response.data;
     } catch (error) {
@@ -50,7 +50,7 @@ async function _delete (table, key, value) {
 
 async function upload (formData, uploadDir) {
     try {
-        const url = `../datasets/upload.php${uploadDir?"?uploadDir="+uploadDir:""}`;
+        const url = `../backend/upload.php${uploadDir?"?uploadDir="+uploadDir:""}`;
         const response = await axios.post(url, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -64,7 +64,7 @@ async function upload (formData, uploadDir) {
 
 async function download(pathname) {
     try {
-        const url = `../datasets/download.php${pathname ? "?pathname=" + encodeURIComponent(pathname) : ""}`;
+        const url = `../backend/download.php${pathname ? "?pathname=" + encodeURIComponent(pathname) : ""}`;
         const response = await axios.get(url, {
             responseType: 'blob'
         });
@@ -78,7 +78,7 @@ async function download(pathname) {
 const select = async(table, column, orderBy, limit, page) => {
     try {
         const response = await axios.post(
-            `../datasets/select.php`,
+            `../backend/select.php`,
             {
                 column
             },
@@ -103,7 +103,7 @@ const select = async(table, column, orderBy, limit, page) => {
 const selectByKey = async(table, key, value) => {
     try {
         const response = await axios.post(
-            `../datasets/get_value_by_key.php?table=${table}`,
+            `../backend/get_value_by_key.php?table=${table}`,
             {
                 key,
                 value

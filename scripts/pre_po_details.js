@@ -1,19 +1,7 @@
 import { Alert } from "../components/Alert.js";
 import { DataController } from "../components/DataController.js";
-import { Pagination } from "../components/Pagination.js";
-import { Cell } from "../components/Cell.js";
 
-// get factoryId from url
 const factoryId = new URLSearchParams(window.location.search).get('factory_id');
-const get_factory_list = async (limit, page) => {
-    try {
-        const url = `../datasets/get_factory_list.php?limit=${limit}&page=${page}`;
-        const response = await axios.get(url);
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
-};
 
 const get_factory_details = async (factoryId) => {
     try {
@@ -24,24 +12,42 @@ const get_factory_details = async (factoryId) => {
     }
 };
 
-const get_factory_skus = async (factory_id, page) => {
+const get_factory_sku_search = async(searchTerm, factory_id) => {
     try {
-        const url = `../datasets/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
-        const response = await axios.get(url);
+        const response = await axios.get(`../backend/get_factory_sku_search.php?factory_id=${factory_id}&searchTerm=${searchTerm}`);
         return response.data;
     } catch (error) {
-        Alert.showErrorMessage();
+        console.error(error);
+        throw error;
     }
-};
+}
 
-
-const get_pre_po_order = async (factory_id) => {
+const get_po_order_details = async(po_orders_id) => {
     try {
-        let url = `../datasets/get_pre_po_orders.php?factory_id=${factory_id}`;
-
-        const response = await axios.get(url);
+        const response = await axios.get(`../backend/get_po_order_details.php?po_orders_id=${po_orders_id}`);
         return response.data;
     } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+const get_sku_by_name = async (name) => {
+    try {
+        const response = await axios.get(`../backend/get_sku_by_name.php?name=${name}`);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+const get_last_timesort = async(yearAndMonth) => {
+    try {
+        const response = await axios.get(`../backend/get_last_timesort.php?table=po_orders&year_and_month=${yearAndMonth}`);
+        return response.data.last_timesort;
+    } catch (error) {
+        console.error(error);
         throw error;
     }
 }
@@ -55,324 +61,17 @@ function toggleSpinner(loading) {
     }
 }
 
-const generateDropdown = async () => {
-    const dropdownMenu = document.getElementById('dropdown-menu'); // Using getElementById
-    dropdownMenu.innerHTML = ''; // Clear existing options
-
-    try {
-        const factoryData = await get_factory_list(100, 1);
-        const factories = factoryData.data1;
-
-        factories.forEach(factory => {
-            const { details } = factory;
-            const { id, name } = details;
-
-            const option = document.createElement('a');
-            option.classList.add('dropdown-item');
-            option.href = '#';
-            option.textContent = name;
-            option.dataset.factoryId = id; // Add a data attribute for factory ID
-
-            // Add event listener for selecting a factory
-            option.addEventListener('click', (event) => {
-                event.preventDefault();
-                handleFactorySelection(option);
-            });
-
-            dropdownMenu.appendChild(option);
-        });
-    } catch (error) {
-        console.error("Error fetching factory list:", error);
-        Alert.showErrorMessage("Failed to load factory list.");
-    }
-};
-
-const handleFactorySelection = (selectedOption) => {
-    const selectButton = document.getElementById('select-factory');
-    selectButton.textContent = selectedOption.textContent;
-    selectButton.dataset.factoryId = selectedOption.dataset.factoryId;
-    loadFactorySkus(selectedOption.dataset.factoryId);
-};
-
-let checkboxStates = [];
-
-const loadFactorySkus = async (factoryId) => {
-    try {
-        /* 
-            1. show order table with items more than 1
-
-            example data:
-            [
-        {
-            "details": {
-                "order_id": "67402461ertto",
-                "payments_date": "2024-11-22 00:00:00",
-                "buyer_name": "Krzysztof Pietraszek",
-                "ship_phone_number": "T. 503985431",
-                "ship_promotion_discount": 0,
-                "shipping_fee": 10,
-                "deposit": null,
-                "ship_address_1": "Wojska Polskiego",
-                "ship_address_2": "46/9",
-                "ship_address_3": "Elk",
-                "ship_city": "Elk",
-                "ship_state": "Warminsko-Mazurskie",
-                "ship_postal_code": "19-300",
-                "ship_country": "PL",
-                "timesort": "24110002",
-                "raw_address": "Krzysztof Pietraszek\nWojska Polskiego\n46/9 · Wojska Polskiego\nElk · 19-300\nWarminsko-Mazurskie · Poland\nT. 503985431",
-                "override_address": null,
-                "order_note": "",
-                "fulfillment_status": "Processing",
-                "website_name": "boxsensegear.com",
-                "website_id": 19,
-                "currency_code": "USD",
-                "currency_id": 146,
-                "payment_methods": "Paypal",
-                "payment_method_id": 1,
-                "order_status": "Processing",
-                "order_status_id": 1
-            },
-            "items": [
-                {
-                    "unique_id": "67402461ertto,2205",
-                    "order_item_id": "2205",
-                    "sku_settings_id": 2205,
-                    "item_price": 123,
-                    "quantity_purchased": 1,
-                    "shipping_price": 0,
-                    "total": 123,
-                    "order_product_sku": "BXHW-BORAN",
-                    "report_product_name": "เชือกพันมือมวยโบราณ ผู้ใหญ่",
-                    "factory_sku_settings_id": 73
-                }
-            ]
-        },
-        {
-            "details": {
-                "order_id": "674023e9o595w",
-                "payments_date": "2024-11-22 00:00:00",
-                "buyer_name": "Joseph Rennie",
-                "ship_phone_number": "T. +44 7359 191184",
-                "ship_promotion_discount": 0,
-                "shipping_fee": 9.9900000000000002131628207280300557613372802734375,
-                "deposit": null,
-                "ship_address_1": "14 Cupar crescent",
-                "ship_address_2": "Corby",
-                "ship_address_3": "Northamptonshire",
-                "ship_city": "Corby",
-                "ship_state": "Northamptonshire",
-                "ship_postal_code": "NN17 1RG",
-                "ship_country": "UK",
-                "timesort": "24110001",
-                "raw_address": "Joseph Rennie\n14 Cupar crescent·\nCorby · NN17 1RG\nNorthamptonshire · United Kingdom\nT. +44 7359 191184\nJosephrennie2000@gmail.com",
-                "override_address": "",
-                "order_note": "",
-                "fulfillment_status": "Processing",
-                "website_name": "deboxe.com",
-                "website_id": 13,
-                "currency_code": "EUR",
-                "currency_id": 44,
-                "payment_methods": "Stripe Credit Card",
-                "payment_method_id": 17,
-                "order_status": "Processing",
-                "order_status_id": 1
-            },
-            "items": []
-        }]
-        */
-        toggleSpinner(true);
-        const pre_po_order = await get_pre_po_order(factoryId);
-        const orders = pre_po_order.data1;
-
-        const orderDataContainer = document.getElementById('order-skus');
-        orderDataContainer.innerHTML = '';
-        checkboxStates = [];
-
-        const tableElement = document.createElement('table');
-        tableElement.classList.add('table', 'table-bordered', 'table-striped', 'table-hover', 'table-condensed');
-
-        const tableHeader = document.createElement('thead');
-        const tableHeaderRow = document.createElement('tr');
-
-        // Checkbox เลือกทั้งหมด
-        tableHeaderRow.innerHTML = `
-            <th>
-                <input id="allItems" type="checkbox" name="Allitems" value="-1" data-toggle="tooltip" title="Select All"/>
-            </th>
-            <th>Detail</th>
-            <th>TIME SORT</th>
-            <th>Buyer Name</th>
-            <th>Report Product Name</th>
-            <th>Channel</th>
-            <th>Currency</th>
-            <th>Product Status</th>`;
-        tableHeader.appendChild(tableHeaderRow);
-        tableElement.appendChild(tableHeader);
-
-        const tableBody = document.createElement('tbody');
-
-        orders.forEach(order => {
-            const { details, items } = order;
-            
-            if (items.length === 0) return;
-            
-            const { timesort, order_id, buyer_name, website_name, currency_code, order_status, fulfillment_status, order_note } = details;
-        
-            // **สร้างแถวหลักของ Order**
-            const tableRow = document.createElement('tr');
-        
-            // **สร้าง Order Checkbox (เลือกทั้ง order)**
-            const orderCheckbox = document.createElement('input');
-            orderCheckbox.type = 'checkbox';
-            orderCheckbox.name = 'orderCheckbox';
-            orderCheckbox.value = timesort;
-            orderCheckbox.dataset.orderId = order_id;  // เพิ่ม order_id เป็น data attribute
-        
-            orderCheckbox.addEventListener('change', function () {
-                const itemCheckboxes = document.querySelectorAll(`input[name="itemCheckbox"][data-order-id="${order_id}"]`);
-                itemCheckboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                    updateCheckBoxList(checkbox.value, order_id, this.checked);
-                });
-            });            
-        
-            // **สร้าง Checkbox สำหรับ Item ตัวแรก**
-            const firstItemCheckbox = document.createElement('input');
-            firstItemCheckbox.type = 'checkbox';
-            firstItemCheckbox.name = 'itemCheckbox';
-            firstItemCheckbox.value = items[0].orders_skus_id;
-            firstItemCheckbox.dataset.orderId = order_id;  // เพิ่ม order_id เป็น data attribute
-        
-            // **อัปเดต Order Checkbox เมื่อกด item ตัวแรก**
-            firstItemCheckbox.addEventListener('change', function () {
-                updateCheckBoxList(this.value, order_id, this.checked);
-                updateOrderCheckboxState(order_id);
-            });
-            
-            const productName = document.createElement('span');
-            productName.innerText = items[0].report_product_name;
-        
-            const linkDetails = document.createElement('a');
-            linkDetails.href = `order_details.php?order_id=${order_id}`;
-            linkDetails.innerText = 'View Detail';
-            const isCancel = buyer_name.split(' ')[0] == 'ยกเลิก';
-            const buyerNameSpan = document.createElement('span');
-            if (isCancel) {
-                buyerNameSpan.classList.add('text-danger');
-                buyerNameSpan.innerHTML = `(ยกเลิก แก้ไขเป็น ${buyer_name.split(' ')[1]})`;
-            } else {
-                buyerNameSpan.innerHTML = buyer_name;
-            }
-            
-            const timesortDiv = document.createElement('div');
-            const timesortText = document.createElement('p');
-            timesortText.innerHTML = timesort;
-            timesortDiv.appendChild(timesortText);
-
-            tableRow.appendChild(Cell.createElementCell(orderCheckbox, false, items.length, ['th']));
-            tableRow.appendChild(Cell.createElementCell(linkDetails, false, items.length, false));
-            tableRow.appendChild(Cell.createElementCell(timesortDiv, false, items.length));
-            tableRow.appendChild(Cell.createSpanCell(buyer_name, false, items.length, false));
-            tableRow.appendChild(Cell.createElementCell([firstItemCheckbox, productName], false, false, ['d-flex', 'align-items-center', 'gap-3']));
-            tableRow.appendChild(Cell.createSpanCell(website_name, false, items.length));
-            tableRow.appendChild(Cell.createSpanCell(currency_code, false, items.length));
-            tableRow.appendChild(Cell.createSpanCell(fulfillment_status, false, items.length));
-        
-            tableBody.appendChild(tableRow);
-        
-            // **สร้างแถวของ Item ที่เหลือ**
-            items.slice(1).forEach(item => {
-                const itemRow = document.createElement('tr');
-        
-                // **Checkbox ของ Item**
-                const itemCheckbox = document.createElement('input');
-                itemCheckbox.type = 'checkbox';
-                itemCheckbox.name = 'itemCheckbox';
-                itemCheckbox.value = item.orders_skus_id;
-                itemCheckbox.dataset.orderId = order_id;  // เพิ่ม order_id เป็น data attribute
-        
-                itemCheckbox.addEventListener('change', function () {
-                    updateCheckBoxList(this.value, order_id, this.checked);
-                    updateOrderCheckboxState(order_id);
-                });
-        
-                const productNameSpan = document.createElement('span');
-                productNameSpan.innerText = item.report_product_name;
-        
-                itemRow.appendChild(Cell.createElementCell([itemCheckbox, productNameSpan], false, false, ['d-flex', 'align-items-center', 'gap-3']));
-                tableBody.appendChild(itemRow);
-            });
-        });
-
-        tableElement.appendChild(tableBody);
-        orderDataContainer.appendChild(tableElement);
-
-        // ฟังก์ชันอัปเดต state ของ Order Checkbox
-        function updateOrderCheckboxState(order_id) {
-            const itemCheckboxes = document.querySelectorAll(`input[name="itemCheckbox"][data-order-id="${order_id}"]`);
-            const orderCheckbox = document.querySelector('input[name="orderCheckbox"]');
-        
-            orderCheckbox.checked = [...itemCheckboxes].every(checkbox => checkbox.checked);
-        }
-
-        // ฟังก์ชัน Select All
-        const allItemsCheckbox = document.getElementById('allItems');
-        allItemsCheckbox.addEventListener('change', function () {
-            const orderCheckboxes = document.querySelectorAll('input[name="orderCheckbox"]');
-            const itemCheckboxes = document.querySelectorAll('input[name="itemCheckbox"]');
-
-            orderCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-                checkbox.dispatchEvent(new Event('change'));
-            });
-
-            itemCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-                updateCheckBoxList(checkbox.value, this.checked);
-            });
-        });
-    } catch (error) {
-        console.error(error);
-    } finally {
-        toggleSpinner(false);
-    }
-};
-
 const loadFactoryDetails = async (factoryId) => {
     try {
         toggleSpinner(true);
         const result = await get_factory_details(factoryId);
         const factoryDetails = result.status[0];
-        /* <div class="row mb-4">
-                    <div class="col-3 text-end">Factory Name</div>
-                    <div class="col-9">
-                        <input type="text" id="factory-name" class="form-control" placeholder="Factory Name" aria-label="Factory Name" disabled>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Factory Number</div>
-                    <div class="col-9">
-                        <input type="text" id="factory-number" class="form-control" placeholder="Factory Number" aria-label="Factory Number" disabled>
-                    </div>
-                </div>
-                <div class="row mb-4">
-                    <div class="col-3 text-end">Factory Email</div>
-                    <div class="col-9">
-                        <input type="text" id="factory-email" class="form-control" placeholder="Factory Email" aria-label="Factory Email" disabled>
-                    </div>
-                </div>
-                factoryDetails = {
-                    "id": 1,
-                    "name": "Shanghai Electronics",
-                    "location": "Shanghai, China",
-                    "contact_person": "Li Wei",
-                    "contact_number": "+86-21-12345678",
-                    "email_address": "liwei@shanghai-electronics.com"
-                }
-            */
-        const factoryName = document
-        console.log(factoryDetails);
+        const factoryName = document.getElementById('factory-name');
+        const factoryNumber = document.getElementById('factory-number');
+        const factoryEmail = document.getElementById('factory-email');
+        factoryName.value = factoryDetails.name;
+        factoryNumber.value = factoryDetails.contact_number;
+        factoryEmail.value = factoryDetails.email_address;
     } catch (error) {
         console.error(error);
     } finally {
@@ -380,62 +79,356 @@ const loadFactoryDetails = async (factoryId) => {
     }
 };
 
-function updateCheckBoxList(sku_id, order_id, checked) {
-    const createPoOrderButton = document.getElementById('createPoOrder');
-
-    if (checked) {
-        if (!checkboxStates[order_id]) {
-            checkboxStates[order_id] = [];
-        }
-        if (!checkboxStates[order_id].includes(sku_id)) {
-            checkboxStates[order_id].push(sku_id);
-        }
-    } else {
-        if (checkboxStates[order_id]) {
-            checkboxStates[order_id] = checkboxStates[order_id].filter(id => id !== sku_id);
-            if (checkboxStates[order_id].length === 0) {
-                delete checkboxStates[order_id];
-            }
-        }
+const createInput = (type, key, value, isDisabled) => {
+    const input = document.createElement('input');
+    input.type = type;
+    input.value = value;
+    input.setAttribute('for', key);
+    input.classList.add('w-100', key);
+    if (isDisabled) {
+        input.disabled = true;
     }
-   //    check to enable createPoOrderButton
-    if (Object.keys(checkboxStates).length > 0) {
-        createPoOrderButton.removeAttribute('disabled');
-    } else {
-        createPoOrderButton.setAttribute('disabled', '');
-    }
-    console.log("Updated checkboxStates: ", checkboxStates);
+    return input;
 }
 
-// const createPoOrderButton = document.getElementById('createPoOrder');
-// createPoOrderButton.addEventListener("click", function () {
-//     const selectedFactory = document.getElementById('select-factory').dataset.factoryId;
-//     console.log("selectedFactory", document.getElementById('select-factory').dataset);
+const createTableCell = (element, colspan) => {
+    const cell = document.createElement('td');
+    cell.classList.add(`col-${colspan}`);
+    cell.appendChild(element);
+    return cell;
+}
+
+const createSkuDiv = (skuInput) => {
+    const skuDiv = document.createElement('div');
+    skuDiv.classList.add('dropdown')
+    const skuDropdown = document.createElement('ul');
+    skuDropdown.classList.add('dropdown-menu');
+    skuInput.classList.add('dropdown-toggle');
+    skuInput.setAttribute('data-bs-toggle', 'dropdown');
+    skuInput.addEventListener('input', async () => {
+        skuInput.removeAttribute('order_product_id');
+        skuInput.removeAttribute('order_product_name');
+        const searchTerm = skuInput.value;
+        const skuOptions = await get_factory_sku_search(searchTerm, factoryId);
+        updateSkuDropdown(skuOptions.data, skuInput, skuDropdown);
+    });
+
+    skuInput.addEventListener('keyup', function (event) {
+        const activeOption = skuDropdown.querySelector('.dropdown-item.active');
+        const options = skuDropdown.querySelectorAll('.dropdown-item');
+        const currentIndex = Array.from(options).indexOf(activeOption);
+        if ((event.key === 'Enter' || event.keyCode === 13) && options.length > 0) {
+            event.preventDefault();
+            const selectedValue = activeOption.getAttribute('order_product_sku_option');
+            skuInput.setAttribute('order_product_id', activeOption.getAttribute('order_product_id'));
+            skuInput.setAttribute('order_product_name', activeOption.getAttribute('order_product_name'));
+            skuInput.value = selectedValue;
+        }
+        if ((event.key === 'ArrowUp' || event.keyCode === 38 || event.key === 'Up') && currentIndex > 0) {
+            event.preventDefault();
+            options[currentIndex].classList.remove('active');
+            options[currentIndex - 1].classList.add('active');
+        }
     
-//     if (!selectedFactory) {
-//         Alert.showErrorMessage("กรุณาเลือกโรงงานก่อนสร้าง PO Order");
-//         return;
-//     }
+        if ((event.key === 'ArrowDown' || event.keyCode === 40 || event.key === 'Down') && currentIndex < options.length - 1) {
+            event.preventDefault();
+            options[currentIndex].classList.remove('active');
+            options[currentIndex + 1].classList.add('active');
+        }
+    });
+    skuDiv.appendChild(skuInput);
+    skuDiv.appendChild(skuDropdown);
+    return skuDiv;
+}
 
-//     // Create a list of order IDs and their associated SKU IDs
-//     const selectedItems = [];
-//     for (const orderId in checkboxStates) {
-//         const orderSkuIds = checkboxStates[orderId];
-//         orderSkuIds.forEach(skuId => {
-//             selectedItems.push(`order_id=${orderId}&sku_id=${skuId}`);
-//         });
-//     }
+const updateSkuDropdown = (skuOptions, skuInput, skuDropdown) => {
+    skuDropdown.innerHTML = '';
+    if (skuOptions.length === 0) {
+        skuDropdown.classList.add('d-none');
+    } else{
+        skuDropdown.classList.remove('d-none');
+    }
+    skuOptions.forEach((order_product_sku, index) => {
+        const list = document.createElement('li');
+        const option = document.createElement('a');
+        const sku = order_product_sku.order_product_sku;
+        const id = order_product_sku.id;
+        const name = order_product_sku.report_product_name;
+        if (index === 0) {
+            option.classList.add('dropdown-item', 'active');
+        } else {
+            option.classList.add('dropdown-item');
+        }
+        option.setAttribute('order_product_sku_option', sku);
+        option.setAttribute('order_product_id', id);
+        option.setAttribute('order_product_name', name);
+        option.value = sku;
+        option.textContent = sku;
+        option.addEventListener('click', function (event) {
+            event.preventDefault();
+            const selectedValue = this.getAttribute('order_product_sku_option');
+            skuInput.setAttribute('order_product_id', this.getAttribute('order_product_id'));
+            skuInput.setAttribute('order_product_name', this.getAttribute('order_product_name'));
+            skuInput.value = selectedValue;
+        });
+        list.appendChild(option);
+        skuDropdown.appendChild(list);
+    });
+}
 
-//     if (selectedItems.length === 0) {
-//         Alert.showErrorMessage("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
-//         return;
-//     }
+const generateItemListTable = async () => {
+    try {
+        toggleSpinner(true);
 
-//     const queryString = `pre_po_details.php?factory_id=${selectedFactory}&${selectedItems.join('&')}`;
-//     window.location.href = queryString;
-// });
+        const urlParams = new URLSearchParams(window.location.search);
+        const factoryId = urlParams.get('factory_id');
+        const encodedData = urlParams.get('data');
+
+        if (!factoryId || !encodedData) {
+            console.error("Missing required parameters.");
+            return;
+        }
+
+        const selectedItems = JSON.parse(decodeURIComponent(encodedData));
+
+        const itemDataContainer = document.getElementById('item-data-container');
+        itemDataContainer.innerHTML = '';
+
+        const tableElement = document.createElement('table');
+        tableElement.classList.add('table', 'table-bordered', 'table-striped', 'table-hover');
+
+        const tableHeader = document.createElement('thead');
+        const tableHeaderRow = document.createElement('tr');
+        tableHeaderRow.classList.add('row');
+        tableHeaderRow.innerHTML =
+            `
+             <th class="col-4">Order ID</th>
+             <th class="col-4">Product SKU</th>
+             <th class="col-3">Quantity</th>
+             <th class="col-1"></th>`;
+        tableHeader.appendChild(tableHeaderRow);
+        tableElement.appendChild(tableHeader);
+
+        const tableBody = document.createElement('tbody');
+        tableBody.id = 'item-list-body';
+        selectedItems.forEach((selectedItem, index) => {
+            const { order_id, items } = selectedItem;
+            items.forEach(item => {
+                const tableRow = document.createElement('tr');
+                tableRow.classList.add('item', 'row');
+            
+                const orderIdSpan = document.createElement('span');
+                orderIdSpan.classList.add('order-id');
+                orderIdSpan.textContent = order_id;
+                tableRow.appendChild(createTableCell(orderIdSpan, 4));
+
+                const skuInput = createInput('text', 'order-product-sku', item.order_product_sku, false);
+                const skuDiv = createSkuDiv(skuInput)
+                tableRow.appendChild(createTableCell(skuDiv, 4));
+                const quantityInput = createInput('number', 'quantity-purchased', item.quantity_purchased, false);
+                quantityInput.addEventListener('change', () => updateTotal(tableRow));
+                tableRow.appendChild(createTableCell(quantityInput, 3));
+
+                const removeButton = document.createElement('button');
+                removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
+                removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+                removeButton.addEventListener('click', () =>{
+                    tableRow.remove();
+                });
+                tableRow.appendChild(createTableCell(removeButton, 1));
+
+                tableBody.appendChild(tableRow);
+            })
+        });
+        
+        tableElement.appendChild(tableBody);
+        itemDataContainer.appendChild(tableElement);
+    } catch (error) {
+        console.error("Error generating item list table:", error);
+    } finally {
+        toggleSpinner(false);
+    }
+};
+
+const uniqid = () => {
+    var timestamp = Math.floor(new Date().getTime() / 1000);
+    var random = Math.random().toString(36).substr(2, 5);
+    var uniqueId = timestamp.toString(16) + random;
+    return uniqueId;
+};
+
+const generateUniqueOrderId = async () => {
+    try {
+      let newOrderId;
+      do {
+        newOrderId = uniqid();
+  
+        const poOrderDetails = await get_po_order_details(newOrderId);
+  
+        if (!poOrderDetails || !poOrderDetails.data1 || poOrderDetails.data1.items.length <= 0) {
+          break;
+        }
+      } while (true);
+  
+      return newOrderId;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+};
+
+
+const formatDate = (date) => {
+    var _date = date.getFullYear() + '-' + (date.getMonth()+1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
+    var _time = "00:00:00";
+    var date_time = _date + ' ' + _time;
+    return date_time;
+}
+
+const generateNewTimeSort = (date, lastTimeSort) => {
+    const resultArray = lastTimeSort ? [lastTimeSort.toString().slice(0, 2), lastTimeSort.toString().slice(2, 4), lastTimeSort.toString().slice(4)] : [];
+    const year = String(date.getFullYear()).slice(-2);
+    const month = (date.getMonth()+1).toString().padStart(2, '0');
+    const sortOrder = (Number(resultArray[2]) + 1).toString().padStart(4, '0');
+    var newTimeSort = "";
+    newTimeSort += year === resultArray[0] ? resultArray[0] : year;
+    newTimeSort += year === resultArray[0] && month === resultArray[1] ? resultArray[1] : month;
+    newTimeSort += year === resultArray[0] && month === resultArray[1] ? sortOrder : "0001";
+    return newTimeSort;
+}
+
+const getFileExtension = (filename) => {
+    return filename.split('.').pop();
+} 
+
+const addProductButton = document.getElementById('add-product');
+const createDraftButton = document.getElementById('create-draft');
+
+addProductButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    const tbody = document.getElementById('item-list-body');
+    const tableRow = document.createElement('tr');
+    tableRow.classList.add('item', 'row');
+
+    const orderIdSpan = document.createElement('span');
+    orderIdSpan.classList.add('order-id');
+    orderIdSpan.textContent = null;
+    tableRow.appendChild(createTableCell(orderIdSpan, 4));
+
+    const skuInput = createInput('text', 'order-product-sku', '', false);
+    const skuDiv = createSkuDiv(skuInput)
+    tableRow.appendChild(createTableCell(skuDiv, 4));
+
+    const quantityInput = createInput('number', 'quantity-purchased', 1, false);
+    quantityInput.addEventListener('change', () => updateTotal(tableRow));
+    tableRow.appendChild(createTableCell(quantityInput, 3));
+
+    const removeButton = document.createElement('button');
+    removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
+    removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+    removeButton.addEventListener('click', () =>{
+        tableRow.remove();
+    });
+    tableRow.appendChild(createTableCell(removeButton, 1));
+    tbody.appendChild(tableRow);
+});
+
+
+createDraftButton.addEventListener('click', async() => {
+    try {
+        const tbody = document.getElementById('item-list-body');
+        const orderNoteInput = document.getElementById('order-note-input').value;
+        const fileInput = document.getElementById('file-input');
+
+        const po_orders_id = await generateUniqueOrderId();
+
+        const currentDate = new Date().toISOString().split('T')[0];
+        const odate = currentDate.split("-").join("/");
+        const idate = new Date(odate);
+        const idateYear = String(idate.getFullYear()).slice(-2);
+        const idateMonth = (idate.getMonth()+1).toString().padStart(2, '0');
+        const lastTimeSort = await get_last_timesort(idateYear+""+idateMonth);
+        const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
+
+        const formData = new FormData();
+        const file = fileInput.files[0];
+        if (file) {
+            const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
+            formData.append('file', file, filename);
+            const response = await DataController.upload(formData, "../files/");
+            
+            const to_insert_file = {
+                po_orders_id: factoryId,
+                file_name: response.fileName,
+                file_pathname: response.filePath,
+            }
+
+            const res = await DataController.insert("po_order_files", to_insert_file);
+        }
+
+        const newPOOrder = {
+            po_orders_id: po_orders_id,
+            timesort: newTimeSort,
+            factory_id: factoryId,
+            po_orders_status_id:1,
+            notes: orderNoteInput
+        };
+
+        const items = tbody.querySelectorAll('.item');
+        const itemsList = [];
+        for (const item of items) {
+            const orderID = item.querySelector('span.order-id').innerHTML;
+            const skuInput = item.querySelector('input.order-product-sku');
+            const quantityInput = item.querySelector('input.quantity-purchased');
+
+            let id = parseInt(skuInput.getAttribute('order_product_id'));
+
+            const sku = skuInput.value;
+            const quantity = parseInt(quantityInput.value);
+            if (sku) {
+                if (!id) {
+                    const result = await get_sku_by_name(sku);
+                    if (result.status === 200) {
+                        id = parseInt(result.data[0].id);
+                    } else {
+                        Alert.showErrorMessage(`Couldn't find Product "${sku}" in database`);
+                        return;
+                    }
+                }
+        
+                const newItem = {
+                    po_orders_id: po_orders_id,
+                    order_id: orderID,
+                    sku_settings_id: id,
+                    quantity: quantity,
+                    unit_price: 0,
+                    po_orders_items_status_id: 1,
+                };
+                itemsList.push(newItem);
+            }
+        }
+        if (itemsList.length==0) {
+            Alert.showErrorMessage("PO Order item is empty!");
+            return;
+        }
+        const result1 = await DataController.insert("po_orders", newPOOrder);
+        itemsList.forEach(async (item) => {
+            const result2 = await DataController.insert("po_orders_items", item);
+        });
+        if (result1.status) {
+            Alert.showSuccessMessage("PO Order Inserted Successfully");
+            setTimeout(() => {
+                window.location.href = `po_order_list.php`;
+            }, 2000);
+        } else {
+            Alert.showErrorMessage("PO Order Inserted Failed!");
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+});   
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("factoryId", factoryId);
     loadFactoryDetails(factoryId);
+    generateItemListTable();
 });

@@ -110,6 +110,38 @@
         }
     }
 
+    function get_factory_sku_by_search ($conn, $searchTerm, $factory_id) {
+        try {
+            $query = "
+            SELECT order_product_sku, id, report_product_name
+            FROM `sku_settings`
+            JOIN factory_sku_settings fss ON sku_settings.id = fss.sku_settings_id
+            WHERE `order_product_sku` LIKE :searchTerm_start
+            OR `order_product_sku` LIKE :searchTerm_contain
+            AND fss.factory_id = :factory_id
+            ORDER BY 
+                CASE 
+                    WHEN `order_product_sku` LIKE :searchTerm_start THEN 0
+                    ELSE 1
+                END,
+                `order_product_sku` ASC
+            LIMIT 8;
+            ";
+
+            $stmt = $conn->prepare($query);
+            $stmt->bindValue(':searchTerm_start', $searchTerm . '%', PDO::PARAM_STR);
+            $stmt->bindValue(':searchTerm_contain', '%' . $searchTerm . '%', PDO::PARAM_STR);
+            $stmt->bindValue(':factory_id', $factory_id, PDO::PARAM_INT);
+            $stmt->execute();
+        
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+            $jsonData = json_encode($result);
+            return $jsonData;
+        } catch(PDOException $e) {
+            return null;
+        }
+    }
+
     function get_order_by_timesort($conn, $searchTerm) {
         try {
             $query = "
@@ -352,11 +384,11 @@
         }
     }
 
-    function get_last_timesort ($conn, $start_with) {
+    function get_last_timesort ($conn, $table, $start_with) {
         try {
             $query = "
             SELECT timesort
-            FROM orders
+            FROM $table
             WHERE timesort IS NOT NULL 
                 AND timesort LIKE :start_with
             ORDER BY timesort DESC
@@ -372,6 +404,7 @@
             return $e->getMessage();
         }
     }
+    
 
     function get_country_code ($conn, $currency_id) {
         try {
@@ -458,76 +491,49 @@
 
     function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $joins = [], $where = [], $logical_operator = 'AND') {
         try {
-            // Convert array of columns to a comma-separated string
             $columnList = implode(", ", $key);
-    
-            // Start building the query
             $query = "SELECT $columnList FROM $table";
-    
-            // Process the JOIN clauses from the array
             foreach ($joins as $join) {
-                $tableToJoin = $join[0]; // Table to join
-                $firstCondition = $join[1]; // First condition (e.g., users.id)
-                $secondCondition = $join[2]; // Second condition (e.g., orders.user_id)
-    
-                // Add the JOIN clause to the query
+                $tableToJoin = $join[0];
+                $firstCondition = $join[1];
+                $secondCondition = $join[2];
                 $query .= " JOIN $tableToJoin ON $firstCondition = $secondCondition";
             }
-    
-            // Process the WHERE clauses from the array
             if (!empty($where)) {
                 $whereClauses = [];
                 foreach ($where as $condition) {
-                    $column = $condition[0]; // Column name (e.g., users.status)
-                    $operator = $condition[1]; // Comparison operator (e.g., =, <, >, LIKE)
-                    $value = $condition[2]; // Value to compare
-    
-                    // Add a placeholder for the value and build the condition
+                    $column = $condition[0];
+                    $operator = $condition[1];
+                    $value = $condition[2];
                     $whereClauses[] = "$column $operator :$column";
                 }
-                // Join conditions with the specified logical operator (AND/OR)
                 $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
             }
-    
-            // Append ORDER BY clause
             $query .= " ORDER BY $order_by ASC";
-            // Append LIMIT and OFFSET clauses if provided
             if ($limit) {
                 $query .= " LIMIT :limit";
             }
             if ($offset) {
                 $query .= " OFFSET :offset";
             }
-    
-            // Prepare the query
             $stmt = $conn->prepare($query);
-    
-            // Bind WHERE conditions
             if (!empty($where)) {
                 foreach ($where as $condition) {
-                    $column = $condition[0]; // Column name
-                    $value = $condition[2]; // Value to bind
+                    $column = $condition[0];
+                    $value = $condition[2];
                     $stmt->bindValue(":$column", $value);
                 }
             }
-    
-            // Bind LIMIT and OFFSET parameters if provided
             if ($limit) {
                 $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
             }
             if ($offset) {
                 $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
             }
-    
-            // Execute the query
             $stmt->execute();
-    
-            // Fetch and return the result as JSON
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
             return json_encode($result);
-            // return $query;
         } catch (PDOException $e) {
-            // Handle any exceptions by returning null
             return $e;
         }
     }    

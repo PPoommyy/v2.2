@@ -187,7 +187,7 @@ saveButton.addEventListener('click', async () => {
 
 const get_product_sets = async(limit, page) => {
     try {
-        let url = `../datasets/get_product_sets.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_product_sets.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;
@@ -198,7 +198,7 @@ const get_product_sets = async(limit, page) => {
 
 const get_sku_search = async(searchTerm) => {
     try {
-        const response = await axios.get(`../datasets/get_sku_search.php?searchTerm=${searchTerm}`);
+        const response = await axios.get(`../backend/get_sku_search.php?searchTerm=${searchTerm}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -208,7 +208,7 @@ const get_sku_search = async(searchTerm) => {
 
 const get_sku_by_name = async (name) => {
     try {
-        const response = await axios.get(`../datasets/get_sku_by_name.php?name=${name}`);
+        const response = await axios.get(`../backend/get_sku_by_name.php?name=${name}`);
         return response.data;
     } catch (error) {
         console.error(error);

@@ -618,7 +618,7 @@ const getFileExtension = (filename) => {
 
 const get_website_datas = async() => {
     try {
-        const response = await axios.get(`../datasets/get_website_datas.php`);
+        const response = await axios.get(`../backend/get_website_datas.php`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -628,7 +628,7 @@ const get_website_datas = async() => {
 
 const get_order_details = async(order_id) => {
     try {
-        const response = await axios.get(`../datasets/get_order_details.php?order_id=${order_id}`);
+        const response = await axios.get(`../backend/get_order_details.php?order_id=${order_id}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -638,7 +638,7 @@ const get_order_details = async(order_id) => {
 
 const get_order_list = async(limit, page) => {
     try {
-        let url = `../datasets/get_order_list.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_order_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -648,7 +648,7 @@ const get_order_list = async(limit, page) => {
 
 const get_sku_search = async(searchTerm) => {
     try {
-        const response = await axios.get(`../datasets/get_sku_search.php?searchTerm=${searchTerm}`);
+        const response = await axios.get(`../backend/get_sku_search.php?searchTerm=${searchTerm}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -658,7 +658,7 @@ const get_sku_search = async(searchTerm) => {
 
 const get_sku_by_name = async (name) => {
     try {
-        const response = await axios.get(`../datasets/get_sku_by_name.php?name=${name}`);
+        const response = await axios.get(`../backend/get_sku_by_name.php?name=${name}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -668,7 +668,7 @@ const get_sku_by_name = async (name) => {
 
 const get_country_code_by_name = async (name) => {
     try {
-        const response = await axios.get(`../datasets/get_country_code_by_name.php?name=${name}`);
+        const response = await axios.get(`../backend/get_country_code_by_name.php?name=${name}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -678,7 +678,7 @@ const get_country_code_by_name = async (name) => {
 
 const get_last_timesort = async(yearAndMonth) => {
     try {
-        const response = await axios.get(`../datasets/get_last_timesort.php?year_and_month=${yearAndMonth}`);
+        const response = await axios.get(`../backend/get_last_timesort.php?year_and_month=${yearAndMonth}`);
         return response.data.last_timesort;
     } catch (error) {
         console.error(error);
@@ -689,7 +689,7 @@ const get_last_timesort = async(yearAndMonth) => {
 const insert_order = async(order, items) => {
     try {
         const response = await axios.post(
-            `../datasets/insert_order.php`,
+            `../backend/insert_order.php`,
             {
                 order: order,
                 items: items
@@ -710,7 +710,7 @@ const insert_order = async(order, items) => {
 const update_order = async(key, value, toUpdate) => {
     try {
         const response = await axios.post(
-            `../datasets/update_order.php`,
+            `../backend/update_order.php`,
             {
                 key,
                 value,
@@ -732,7 +732,7 @@ const update_order = async(key, value, toUpdate) => {
 const update_order_item = async(key, value, toUpdate) => {
     try {
         const response = await axios.post(
-            `../datasets/update_order_item.php`,
+            `../backend/update_order_item.php`,
             {
                 key,
                 value,

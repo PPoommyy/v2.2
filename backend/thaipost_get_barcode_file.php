@@ -9,11 +9,8 @@ function getBlob($url) {
             'ignore_errors' => true
         ]
     ];
-
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
-
-    // Get the HTTP status code
     $responseHeaders = $http_response_header;
     $statusCode = 0;
     if (is_array($responseHeaders)) {
@@ -22,29 +19,21 @@ function getBlob($url) {
             $statusCode = intval($parts[1]);
         }
     }
-
     return [
         'statusCode' => $statusCode,
         'body' => $result
     ];
 }
-
 $requestData = json_decode(file_get_contents('php://input'), true);
 $fileUrl = $requestData['fileUrl'];
-
 try {
     $response = getBlob($fileUrl);
-
     if ($response['statusCode'] == 200) {
-        // Set headers for PDF file
         header("Content-Type: application/pdf");
         header("Content-Length: " . strlen($response['body']));
         header("Content-Disposition: inline; filename=label.pdf");
-        
-        // Output the binary data directly
         echo $response['body'];
     } else {
-        // There was an error
         header("Content-Type: application/json");
         $result = [
             'statusCode' => $response['statusCode'],

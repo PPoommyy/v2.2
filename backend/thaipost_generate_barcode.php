@@ -8,17 +8,12 @@
                 'method' => $method,
                 'header' => $headers,
                 'content' => $content,
-                'ignore_errors' => true // This allows us to get the response even if it's an error
+                'ignore_errors' => true
             ]
         ];
-
         $context = stream_context_create($options);
         $result = file_get_contents($url, false, $context);
-
-        // Get the response headers
         $responseHeaders = $http_response_header;
-
-        // Get the HTTP status code
         $statusCode = 0;
         if (is_array($responseHeaders)) {
             $parts = explode(' ', $responseHeaders[0]);
@@ -26,7 +21,6 @@
                 $statusCode = intval($parts[1]);
             }
         }
-
         return [
             'statusCode' => $statusCode,
             'headers' => $responseHeaders,
@@ -39,19 +33,14 @@
     //$apiHost = "https://dpinterapi.thailandpost.com";
     $payload = $requestData['payload'];
     $accessToken = $requestData['accessToken'];
-
     try {
         $jsonPayload = json_encode($payload);
-
         $headers = "Authorization: Bearer $accessToken\r\nContent-Type: application/json";
-
         $response = sendRequest("$apiHost/api/item/outbound", 'POST', $headers, $jsonPayload);
-
         $result = [
             'statusCode' => $response['statusCode'],
             'response' => json_decode($response['body'], true)
         ];
-
         echo json_encode($result);
     } catch (Exception $e) {
         $errorResult = [

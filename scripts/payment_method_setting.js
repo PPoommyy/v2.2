@@ -123,7 +123,7 @@ generateTable(100, 1);
 
 async function get_payment_methods(limit, page) {
     try {
-        let url = `../datasets/get_payment_methods.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_payment_methods.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;

@@ -3,20 +3,20 @@
         try {
             $query = "
             SELECT 
-                po.order_id,
-                po.order_date,
+                po.po_orders_id,
+                po.timesort,
+                po.po_orders_date,
                 po.factory_id,
-                po.status_id,
-                po.created_at,
-                po.updated_at,
+                po.po_orders_status_id,
+                po.total_amount,
+                po.notes,
                 f.name as factory_name,
-                ps.name as order_status,
-                po.total_amount
+                pos.name as order_status
             FROM po_orders po
             JOIN factories f ON po.factory_id = f.id
-            JOIN po_order_status ps ON po.status_id = ps.id
+            JOIN po_orders_status pos ON po.po_orders_status_id = pos.id
             $filter
-            ORDER BY po.order_id DESC
+            ORDER BY po.po_orders_id DESC
             LIMIT :limit OFFSET :offset;
             ";
             
@@ -30,40 +30,36 @@
             }
     
             $stmt->execute();
-            $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $po_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Debugging: Log the SQL query and results
             file_put_contents('debug_log.txt', "SQL Query: $query\n", FILE_APPEND);
-            file_put_contents('debug_log.txt', "Results: " . print_r($orders, true) . "\n", FILE_APPEND);
-    
-            foreach ($orders as &$order) {
-                $order['items'] = get_order_items($conn, $order['order_id']);
-            }
-    
-            return json_encode($orders);
+            file_put_contents('debug_log.txt', "Results: " . print_r($po_orders, true) . "\n", FILE_APPEND);
+            return json_encode($po_orders);
         } catch (PDOException $e) {
             return json_encode(['error' => 'Database error: ' . $e->getMessage()]);
         }
     }
     
-    function get_po_order_items($conn, $order_id) {
+    function get_po_orders_items($conn, $po_orders_id) {
         try {
             $query = "
             SELECT 
-                poi.order_item_id,
+                poi.po_orders_items_id,
+                poi.po_orders_id,
                 poi.order_id,
                 poi.sku_settings_id,
                 poi.quantity,
                 poi.unit_price,
-                poi.total_price,
+                poi.po_orders_items_status_id,
                 ss.order_product_sku, 
                 ss.report_product_name
-            FROM po_order_items poi
+            FROM po_orders_items poi
             JOIN sku_settings ss ON poi.sku_settings_id = ss.id
-            WHERE poi.order_id = :order_id;
+            WHERE poi.po_orders_id = :po_orders_id;
             ";
             $stmt = $conn->prepare($query);
-            $stmt->bindParam(':order_id', $order_id);
+            $stmt->bindParam(':po_orders_id', $po_orders_id);
             $stmt->execute();
             $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -77,6 +73,35 @@
             return json_encode(['error' => 'Database error: ' . $e->getMessage()]);
         } catch (Exception $e) {
             return json_encode(['error' => 'Error: ' . $e->getMessage()]);
+        }
+    }
+
+    function get_po_orders_details($conn, $po_orders_id) {
+        try {
+            $query = "
+            SELECT
+                po.order_id,
+                po.order_date,
+                po.factory_id,
+                po.status_id,
+                f.name as factory_name,
+                ps.name as order_status,
+                po.total_amount
+            FROM po_orders po
+            JOIN factories f ON po.factory_id = f.id
+            JOIN po_orders_status ps ON po.status_id = ps.id
+            WHERE po.po_orders_id = :po_orders_id;
+            ";
+            $stmt = $conn->prepare($query);
+            $stmt->bindParam(':po_orders_id', $po_orders_id);
+            $stmt->execute();
+            $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $order['items'] = json_decode(get_po_orders_items($conn, $po_orders_id), true);
+
+            return json_encode($order);
+        } catch (PDOException $e) {
+            return json_encode(['error' => 'Database error: ' . $e->getMessage()]);
         }
     }
 ?>

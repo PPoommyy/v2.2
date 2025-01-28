@@ -55,7 +55,7 @@ generateTable(200, 1);
 
 async function get_order_count(filters) {
     try {
-        let url = `../datasets/get_order_count.php?`;
+        let url = `../backend/get_order_count.php?`;
 
         Object.keys(filters).forEach((filter) => {
             const value = filters[filter].value;
@@ -74,7 +74,7 @@ async function get_order_count(filters) {
 
 async function get_order_list(limit, page, filters) {
     try {
-        let url = `../datasets/get_order_list.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_order_list.php?limit=${limit}&page=${page}`;
 
         Object.keys(filters).forEach((filter) => {
             const value = filters[filter].value;
@@ -737,6 +737,7 @@ const handleThpost = async (e) => {
                             generateBarcodeResult: 'pending',
                             updateTracking: 'pending',
                             uploadResponse: 'pending',
+                            createTracking: 'pending'
                         };
                         results.push(result);
                         await Swal.update({ html: createResultsHTML(results) });
@@ -746,9 +747,13 @@ const handleThpost = async (e) => {
                         await Swal.update({ html: createResultsHTML(results) });
 
                         if (generateBarcodeResult.fileUrl) {
+                            const createTracking = await AftershipAPIController.createTracking(filteredOrder, aftershipApiHost, generateBarcodeResult.listItemBarcode[0].barcode);
+                            result.createTracking = createTracking.status ? 'success' : 'failed';
+                            await Swal.update({ html: createResultsHTML(results) });
                             const insertData = {
                                 order_id: filteredOrder.details.order_id,
-                                tracking_number: generateBarcodeResult.listItemBarcode[0].barcode
+                                tracking_number: generateBarcodeResult.listItemBarcode[0].barcode,
+                                tracking_id: createTracking.data.id,
                             };
                             const updateTracking = await DataController.insert("tracking", insertData);
                             result.updateTracking = updateTracking.status ? 'success' : 'failed';
@@ -757,14 +762,10 @@ const handleThpost = async (e) => {
                             const uploadResponse = await ThaiPostAPIController.uploadFile(generateBarcodeResult.fileUrl, filteredOrder.details.order_id);
                             result.uploadResponse = uploadResponse.status ? 'success' : 'failed';
                             await Swal.update({ html: createResultsHTML(results) });
-                            /* const createTracking = await AftershipAPIController.createTracking(filteredOrder, aftershipApiHost, generateBarcodeResult.listItemBarcode[0].barcode);
-                            result.createTracking = createTracking.status ? 'success' : 'failed';
-                            await Swal.update({ html: createResultsHTML(results) }); */
-
-                            // console.log("createTracking", createTracking);
                         } else {
                             result.updateTracking = 'failed';
                             result.uploadResponse = 'failed';
+                            result.createTracking = 'failed';
                         }
                     } catch (error) {
                         console.error(`Error processing order ${filteredOrder.details.order_id}:`, error.response?.data.Message ? error.response.data.Message : error.response.data);

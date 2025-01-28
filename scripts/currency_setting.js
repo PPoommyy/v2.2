@@ -26,7 +26,7 @@ generateTable(100, 1);
 
 async function get_currency_list(limit, page) {
     try {
-        let url = `../datasets/get_currency_list.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_currency_list.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;

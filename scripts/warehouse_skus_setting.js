@@ -123,7 +123,7 @@ generateTable(100, 1);
 
 async function get_warehouse_skus(limit, page) {
     try {
-        let url = `../datasets/get_warehouse_skus.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_warehouse_skus.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;

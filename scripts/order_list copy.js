@@ -27,7 +27,7 @@ generateTable(20, 1);
 
 async function get_order_count() {
     try {
-        const response = await axios.get('../datasets/get_order_count.php');
+        const response = await axios.get('../backend/get_order_count.php');
         return response.data[0].count;
     } catch (error) {
         throw error;
@@ -36,7 +36,7 @@ async function get_order_count() {
 
 async function get_order_list(limit, page, filters) {
     try {
-        let url = `../datasets/get_order_list.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_order_list.php?limit=${limit}&page=${page}`;
 
         Object.keys(filters).forEach((filter) => {
             const value = filters[filter].value;

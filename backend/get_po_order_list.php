@@ -21,14 +21,14 @@
 
     $status = getFilterValue('order_status');
     if ($status) {
-        $filterConditions[] = "po.order_status_id = :order_status";
-        $filterParams[':order_status'] = $status;
+        $filterConditions[] = "po.po_orders_status_id = :po_orders_status";
+        $filterParams[':po_orders_status'] = $status;
     }
 
     $dateStart = getFilterValue('date_start');
     $dateEnd = getFilterValue('date_end');
     if ($dateStart && $dateEnd) {
-        $filterConditions[] = "po.order_date BETWEEN :date_start AND :date_end";
+        $filterConditions[] = "po.po_orders_date BETWEEN :date_start AND :date_end";
         $filterParams[':date_start'] = date_format(date_create($dateStart), 'Y-m-d H:i:s');
         $filterParams[':date_end'] = date_format(date_create($dateEnd), 'Y-m-d H:i:s');
     }
@@ -37,19 +37,19 @@
     $offset = ($page - 1) * $limit;
     
     try {
-        $pos = json_decode(get_po_orders($conn, $limit, $offset, $filter, $filterParams), true);
+        $po_orders = json_decode(get_po_orders($conn, $limit, $offset, $filter, $filterParams), true);
 
-        $arrayObject = array_map(function ($po) use ($conn) {
-            $items = json_decode(get_order_items($conn, $po['order_id']), true);
+        $arrayObject = array_map(function ($po_order) use ($conn) {
+            $items = json_decode(get_po_orders_items($conn, $po_order['po_orders_id']), true);
             return [
-                'details' => $po,
+                'details' => $po_order,
                 'items' => $items
             ];
-        }, $pos);
+        }, $po_orders);
 
-        // Fetch related data using get_data function
-        $factories = get_data($conn, 'factories', 'id, name');
-        $order_status = get_data($conn, 'order_status', 'id, name');
+        $factories = json_decode(get_data($conn, 'factories', 'id, name'), true);
+        $po_orders_status = json_decode(get_data($conn, 'po_orders_status', 'id, name'), true);
+        $count = json_decode(select_count($conn, "po_orders", "po_orders_id"), true);
         $payment_status = array(
             array("name" => "Paid"),
             array("name" => "Unpaid")
@@ -57,9 +57,9 @@
 
         $arrayObject2 = array(
             'factories' => $factories,
-            'order_status' => $order_status,
+            'po_orders_status' => $po_orders_status,
             'payment_status' => $payment_status,
-            'count' => count($pos)
+            'count' => $count
         );
 
         $response = [

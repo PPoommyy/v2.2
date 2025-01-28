@@ -2,7 +2,7 @@ import { AddressController } from "../components/AddressController.js";
 
 const readExcel = async (fileName) => {
     try {
-        const response = await axios.get(`../datasets/read_file.php?fileName=${fileName}`, {
+        const response = await axios.get(`../backend/read_file.php?fileName=${fileName}`, {
             responseType: 'arraybuffer',
         });
         
@@ -17,7 +17,7 @@ const readExcel = async (fileName) => {
 
 const readCSV = async (fileName) => {
     try {
-        const response = await axios.get(`../datasets/read_file.php?fileName=${fileName}`, {
+        const response = await axios.get(`../backend/read_file.php?fileName=${fileName}`, {
             responseType: 'text', // Fetch CSV as text
         });
 
@@ -114,7 +114,7 @@ const columnNumberToName = (columnNumber) => {
 
 const get_product_sets = async(limit, page) => {
     try {
-        let url = `../datasets/get_product_sets.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get_product_sets.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;
