@@ -91,6 +91,15 @@ async function get_po_order_list(limit, page, filters) {
     }
 }
 
+function handlePaperClipIconClick(files) {
+    const modalContent = generateFileListContent(files, 0); // Initialize with first file
+    const modalElement = createModalElement(modalContent); // Create modal element with content
+
+    // Open the modal using your custom Modal module
+    Modal.openModal(modalElement);
+}
+
+
 async function generateTable(limit, page) {
     try {
         toggleSpinner(true);
@@ -125,9 +134,9 @@ async function generateTable(limit, page) {
 
         const tableBody = document.createElement('tbody');
 
+        console.log("files", result);
         po_orders.forEach(order => {
-            const { details, items } = order;
-            
+            const { details, items, files } = order;
             if (items.length === 0) return;
             
             const { 
@@ -155,7 +164,14 @@ async function generateTable(limit, page) {
             const timesortText = document.createElement('p');
             timesortText.innerHTML = timesort;
             timesortDiv.appendChild(timesortText);
+            if (files.length > 0) {
+                const paperClipIcon = document.createElement('button');
+                paperClipIcon.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'fa-solid', 'fa-paperclip', 'me-1');
+                timesortDiv.appendChild(paperClipIcon);
             
+                // Add click event listener to paperClipIcon button
+                paperClipIcon.addEventListener('click', () => handlePaperClipIconClick(files));
+            }
             tableRow.appendChild(Cell.createElementCell(checkboxInput, false, items.length, ['th']));
             tableRow.appendChild(Cell.createElementCell(linkDetails, false, items.length, false));
             tableRow.appendChild(Cell.createElementCell(timesortDiv, false, items.length));

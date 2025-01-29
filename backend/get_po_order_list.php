@@ -41,9 +41,11 @@
 
         $arrayObject = array_map(function ($po_order) use ($conn) {
             $items = json_decode(get_po_orders_items($conn, $po_order['po_orders_id']), true);
+            $files = json_decode(select($conn, "po_orders_files", ["id", "po_orders_id", "file_name", "file_pathname"], "po_orders_id", $po_order['po_orders_id'], false), true);
             return [
                 'details' => $po_order,
-                'items' => $items
+                'items' => $items,
+                'files' => $files ? $files : []
             ];
         }, $po_orders);
 

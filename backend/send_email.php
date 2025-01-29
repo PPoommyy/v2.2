@@ -4,35 +4,31 @@ $api_url = 'https://tbs-email-api-gateway.omb.to/email/v1/send_template';
 $api_key = 'EMJXnVd5--VcxW6ZfWSwUVdxULMVPq';
 $api_secret = 'nERhn1Ye7I7coovI1NTNL9MuKKnmF8';
 
-// Replace with actual UUID of your template
+// UUID ของ Template อีเมล
 $template_uuid = '24092314-2820-8d99-a046-be37ae7e2dd2';
 
-function sendEmail($email, $title, $firstName, $skuSummary, $emailContent, $buttons, $skuImagePath = null) {
+function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl) {
     global $api_url, $api_key, $api_secret, $template_uuid;
-    
-    // Prepare email parameters
-    $OPTION_1 = 'http://localhost/test/work/v2.2/pages/pre_po.php';
-    $OPTION_2 = 'http://localhost/test/work/v2.2/pages/pre_po.php';
-    $OPTION_3 = 'http://localhost/test/work/v2.2/pages/pre_po.php';
-    
-    // If the image path is provided, include it, otherwise use a default value or leave it empty
-    $OPTION_4 = $skuImagePath ? 'http://localhost/test/work/v2.2/files/' . basename($skuImagePath) : 'No image uploaded';
-    
+
+    // ตรวจสอบว่า URL เป็น absolute URL แล้ว
+    if (!filter_var($pdfUrl, FILTER_VALIDATE_URL)) {
+        throw new Exception("Invalid PDF URL: " . $pdfUrl);
+    }
+    if (!filter_var($pngUrl, FILTER_VALIDATE_URL)) {
+        throw new Exception("Invalid PNG URL: " . $pngUrl);
+    }
+
     $emailParams = [
         'template_uuid' => $template_uuid,
-        'mail_from' => [
-            'email' => 's6404062630511@email.kmutnb.ac.th'
-        ],
-        'mail_to' => [
-            'email' => $email
-        ],
+        'mail_from' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
+        'mail_to' => ['email' => $email],
         'payload' => [
-            'OPTION_1' => $OPTION_1,
-            'OPTION_2' => $OPTION_2,
-            'OPTION_3' => $OPTION_3,
-            'OPTION_4' => $OPTION_4 // Include image path or placeholder
+            'OPTION_1' => 'http://localhost/test/work/v2.2/pages/pre_po.php',
+            'OPTION_2' => 'http://localhost/test/work/v2.2/pages/pre_po.php',
+            'OPTION_3' => $pdfUrl,
+            'OPTION_4' => $pngUrl
         ],
-        'subject' => $title, // Subject line of the email
+        'subject' => $title,
     ];
 
     return sendRequest($api_url, $emailParams);
@@ -51,16 +47,10 @@ function sendRequest($url, $params) {
         'Authorization: Basic ' . base64_encode($api_key . ':' . $api_secret)
     ]);
 
-    // Enable SSL verification
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-
     $response = curl_exec($ch);
 
     if ($response === false) {
-        $error = curl_error($ch);
-        curl_close($ch);
-        throw new Exception("cURL Error: " . $error);
+        throw new Exception("cURL Error: " . curl_error($ch));
     }
 
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -72,50 +62,29 @@ function sendRequest($url, $params) {
         throw new Exception("HTTP Error: " . $httpCode . ". Response: " . $response);
     }
 
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("JSON Decode Error: " . json_last_error_msg() . ". Raw response: " . $response);
-    }
-
     return $decodedResponse;
 }
 
+// รับค่า POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ?? '';
-    $firstName = $_POST['first_name'] ?? '';
     $email = $_POST['email'] ?? '';
     $buttons = json_decode($_POST['buttons'] ?? '[]', true);
-    $skuSummary = $_POST['skuSummary'] ?? '';
-    $emailContent = $_POST['emailContent'] ?? '';
-
-    // Initialize upload file path variable
-    $uploadFile = null;
+    $pdfUrl = $_POST['pdf_url'] ?? '';
+    $pngUrl = $_POST['png_url'] ?? '';
 
     try {
         if (empty($email)) {
             throw new Exception("Email address is missing");
         }
 
-        if (isset($_FILES['png_image']) && $_FILES['png_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = '../files/';
-            $filename = uniqid() . '.png';
-            $uploadFile = $uploadDir . basename($filename);
-
-            // Move the uploaded file to the target directory
-            if (move_uploaded_file($_FILES['png_image']['tmp_name'], $uploadFile)) {
-                echo json_encode(['success' => true, 'filePath' => $uploadFile]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Failed to move uploaded file.']);
-                $uploadFile = null; // Reset uploadFile if the file upload fails
-            }
-        }
-
-        // Send the email (include the image path if available)
-        $response = sendEmail($email, $title, $firstName, $skuSummary, $emailContent, $buttons, $uploadFile);
+        // ส่งอีเมลพร้อมลิงก์ไฟล์แนบ
+        $response = sendEmail($email, $title, '', $buttons, $pdfUrl, $pngUrl);
 
         if ($response['message_id']) {
-            echo json_encode(['success' => true, 'message' => 'Email sent successfully']);
+            echo json_encode(['success' => true, 'message' => 'Email sent successfully', 'request' => $pdfUrl . "\n" . $pngUrl]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Email sending failed: ' . ($response['message'] ?? 'Unknown error'), 'response' => $response]);
+            echo json_encode(['success' => false, 'message' => 'Email sending failed', 'response' => $response]);
         }
     } catch (Exception $e) {
         error_log("Error: " . $e->getMessage());
