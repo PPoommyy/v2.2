@@ -4,7 +4,7 @@
 <body>
     <?php include('../templates/header.php');?>
     <div class="container">
-        <p class="h1 mb-3">Invoice Settings</p>
+        <p class="h1 mb-3">Invoice Settings</p><!-- 
         <div class="row mb-3">
             <div class="col-md-6">
                 <div class="container bg-danger" style="width: 300px; height:200px;"></div>
@@ -12,7 +12,7 @@
             <div class="col-md-6">
                 <div class="container bg-success" style="width: 300px; height:200px;"></div>
             </div>
-        </div>
+        </div> -->
         <div class="row mb-3">
             <div class="col d-flex justify-content-end">
                 <div id="pagination1">

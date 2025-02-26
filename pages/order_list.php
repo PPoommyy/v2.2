@@ -158,27 +158,27 @@
                 <button id="downloadOrders" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Download Orders
 				</button>
-                <button id="newDownloadOrders" class="btn btn-warning btn-sm" disabled>
+                <!-- <button id="newDownloadOrders" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> New! Download Orders
-				</button>
+				</button> -->
 				<button id="createInvoices" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Create Invoice
 				</button>
 				<button id="itemSummaries" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Item Summary
 				</button>
-				<button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
+				<!-- <button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> DHL Pre-alert
 				</button>
 				<button id="dpost" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> DPOST
-				</button>
+				</button> -->
 				<button id="thpost" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> THPOST
 				</button>
-                <button id="aftershipCSV" class="btn btn-warning btn-sm" disabled>
+                <!-- <button id="aftershipCSV" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Aftership CSV
-				</button>
+				</button> -->
 				<button id="downloadBarcodes" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Download Barcodes
 				</button>

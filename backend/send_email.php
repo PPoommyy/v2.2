@@ -78,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Email address is missing");
         }
 
-        // ส่งอีเมลพร้อมลิงก์ไฟล์แนบ
         $response = sendEmail($email, $title, '', $buttons, $pdfUrl, $pngUrl);
 
         if ($response['message_id']) {

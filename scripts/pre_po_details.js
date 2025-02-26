@@ -204,7 +204,8 @@ const generateItemListTable = async () => {
             `
              <th class="col-4">Order ID</th>
              <th class="col-4">Product SKU</th>
-             <th class="col-3">Quantity</th>
+             <th class="col-1">Quantity</th>
+             <th class="col-2">Price</th>
              <th class="col-1"></th>`;
         tableHeader.appendChild(tableHeaderRow);
         tableElement.appendChild(tableHeader);
@@ -225,9 +226,14 @@ const generateItemListTable = async () => {
                 const skuInput = createInput('text', 'order-product-sku', item.order_product_sku, false);
                 const skuDiv = createSkuDiv(skuInput)
                 tableRow.appendChild(createTableCell(skuDiv, 4));
+
                 const quantityInput = createInput('number', 'quantity-purchased', item.quantity_purchased, false);
                 quantityInput.addEventListener('change', () => updateTotal(tableRow));
-                tableRow.appendChild(createTableCell(quantityInput, 3));
+                tableRow.appendChild(createTableCell(quantityInput, 1));
+
+                const itemPriceInput = createInput('number', 'item-price', item.item_price, false);
+                itemPriceInput.addEventListener('change', () => updateTotal(tableRow));
+                tableRow.appendChild(createTableCell(itemPriceInput, 2));
 
                 const removeButton = document.createElement('button');
                 removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
@@ -389,7 +395,7 @@ const sendEmail = async (pdfFile, newPOOrder) => {
         // Generate email content
         const emailContent = generateEmailContent([newPOOrder]);
         const email = "s6404062630511@email.kmutnb.ac.th";
-
+        // const email = "s6404062630554@email.kmutnb.ac.th";
         // Create FormData with both PDF and PNG
         const emailFormData = new FormData();
         emailFormData.append("title", emailContent.title);
@@ -527,7 +533,8 @@ async function createPOAsPDF(newPOOrder, itemsList) {
                 yOffset = height - 50;
             }
 
-            const lineTotal = item.quantity * item.unit_price;
+            const lineTotal = parseFloat(item.quantity) * parseFloat(item.item_price);
+            console.log(`lineTotal: ${lineTotal} = ${item.quantity} * ${item.item_price}`);
             totalAmount += lineTotal;
 
             // Draw alternating row background
@@ -546,7 +553,7 @@ async function createPOAsPDF(newPOOrder, itemsList) {
                 switch (colIndex) {
                     case 0: value = String(item.sku_settings_id); break;  // แปลงเป็น string
                     case 1: value = String(item.quantity); break;  // แปลงเป็น string
-                    case 2: value = item.unit_price.toFixed(2); break;  // toFixed จะคืนค่าเป็น string อยู่แล้ว
+                    case 2: value = item.item_price.toFixed(2); break;  // toFixed จะคืนค่าเป็น string อยู่แล้ว
                     case 3: value = lineTotal.toFixed(2); break;  // toFixed จะคืนค่าเป็น string อยู่แล้ว
                 }
                 drawText(value, col.x, yOffset, { size: 12 });
@@ -564,7 +571,7 @@ async function createPOAsPDF(newPOOrder, itemsList) {
             color: rgb(0, 0, 0),
         });
 
-        drawText('ยอดรวมทั้งสิ้น / Total Amount:', width - 250, totalsY, { font: thFontBold });
+        drawText('ยอดรวมทั้งสิ้น / Total Amount:', width - 300, totalsY, { font: thFontBold });
         drawText(String(totalAmount.toFixed(2)), width - 100, totalsY);  // แปลงเป็น string
 
         // Notes section
@@ -653,7 +660,11 @@ addProductButton.addEventListener('click', function (event) {
 
     const quantityInput = createInput('number', 'quantity-purchased', 1, false);
     quantityInput.addEventListener('change', () => updateTotal(tableRow));
-    tableRow.appendChild(createTableCell(quantityInput, 3));
+    tableRow.appendChild(createTableCell(quantityInput, 1));
+
+    const itemPriceInput = createInput('number', 'item-price', 1, false);
+    itemPriceInput.addEventListener('change', () => updateTotal(tableRow));
+    tableRow.appendChild(createTableCell(itemPriceInput, 2));
 
     const removeButton = document.createElement('button');
     removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
@@ -733,7 +744,7 @@ createDraftButton.addEventListener('click', async() => {
                     order_id: orderID,
                     sku_settings_id: id,
                     quantity: quantity,
-                    unit_price: 0,
+                    item_price: 0,
                     po_orders_items_status_id: 5,
                 };
                 itemsList.push(newItem);
@@ -805,7 +816,7 @@ sendEmailButton.addEventListener('click', async() => {
             const orderID = item.querySelector('span.order-id').innerHTML;
             const skuInput = item.querySelector('input.order-product-sku');
             const quantityInput = item.querySelector('input.quantity-purchased');
-
+            const itemPrice = parseFloat(item.querySelector('input.item-price').value);
             let id = parseInt(skuInput.getAttribute('order_product_id'));
 
             const sku = skuInput.value;
@@ -826,7 +837,7 @@ sendEmailButton.addEventListener('click', async() => {
                     order_id: orderID,
                     sku_settings_id: id,
                     quantity: quantity,
-                    unit_price: 0,
+                    item_price: itemPrice,
                     po_orders_items_status_id: 1,
                 };
                 itemsList.push(newItem);

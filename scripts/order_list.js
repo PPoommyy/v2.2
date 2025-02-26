@@ -602,13 +602,13 @@ function getFilterValues() {
 function updateCheckBoxList(key) {
     const index = checkboxStates.indexOf(key);
     // const downloadOrdersButton = document.getElementById('downloadOrders');
-    const newDownloadOrdersButton = document.getElementById('newDownloadOrders');
+    // const newDownloadOrdersButton = document.getElementById('newDownloadOrders');
     const createInvoiceButton = document.getElementById('createInvoices');
     const itemSummaryButton = document.getElementById('itemSummaries');
     // const dhlPreAlertButton = document.getElementById('dhlPreAlerts');
-    const dpostButton = document.getElementById('dpost');
+    // const dpostButton = document.getElementById('dpost');
     const thpostButton = document.getElementById('thpost');
-    const aftershipCSVButton = document.getElementById('aftershipCSV');
+    // const aftershipCSVButton = document.getElementById('aftershipCSV');
     const downloadBarcodes = document.getElementById('downloadBarcodes');
     const deleteOrders = document.getElementById('deleteOrders');
 
@@ -620,24 +620,24 @@ function updateCheckBoxList(key) {
     checkboxStates.sort(function(a, b) {return a-b});
     if (checkboxStates.length > 0) {
         // downloadOrdersButton.removeAttribute('disabled');
-        newDownloadOrdersButton.removeAttribute('disabled');
+        // newDownloadOrdersButton.removeAttribute('disabled');
         createInvoiceButton.removeAttribute('disabled');
         itemSummaryButton.removeAttribute('disabled');
         // dhlPreAlertButton.removeAttribute('disabled');
-        dpostButton.removeAttribute('disabled');
+        // dpostButton.removeAttribute('disabled');
         thpostButton.removeAttribute('disabled');
-        aftershipCSVButton.removeAttribute('disabled');
+        // aftershipCSVButton.removeAttribute('disabled');
         downloadBarcodes.removeAttribute('disabled');
         deleteOrders.removeAttribute('disabled');
     } else {
         // downloadOrdersButton.setAttribute('disabled', '');
-        newDownloadOrdersButton.setAttribute('disabled', '');
+        // newDownloadOrdersButton.setAttribute('disabled', '');
         createInvoiceButton.setAttribute('disabled', '');
         itemSummaryButton.setAttribute('disabled', '');
         // dhlPreAlertButton.setAttribute('disabled', '');
-        dpostButton.setAttribute('disabled', '');
+        // dpostButton.setAttribute('disabled', '');
         thpostButton.setAttribute('disabled', '');
-        aftershipCSVButton.setAttribute('disabled', '');
+        // aftershipCSVButton.setAttribute('disabled', '');
         downloadBarcodes.setAttribute('disabled', '');
         deleteOrders.setAttribute('disabled', '');
     }
@@ -661,7 +661,7 @@ const handleDownloadOrders = (e) => {
 
 const handleNewDownloadOrders = (e) => {
     e.preventDefault();
-    Downloader.generateOrderExcelVer2(orders, toggleSpinner, checkboxStates);
+    Downloader.generateOrderExcel2(orders, toggleSpinner, checkboxStates);
 };
 
 const handleCreateInvoice = async (e) => {
@@ -737,7 +737,7 @@ const handleThpost = async (e) => {
                             generateBarcodeResult: 'pending',
                             updateTracking: 'pending',
                             uploadResponse: 'pending',
-                            createTracking: 'pending'
+                            // createTracking: 'pending'
                         };
                         results.push(result);
                         await Swal.update({ html: createResultsHTML(results) });
@@ -747,13 +747,13 @@ const handleThpost = async (e) => {
                         await Swal.update({ html: createResultsHTML(results) });
 
                         if (generateBarcodeResult.fileUrl) {
-                            const createTracking = await AftershipAPIController.createTracking(filteredOrder, aftershipApiHost, generateBarcodeResult.listItemBarcode[0].barcode);
-                            result.createTracking = createTracking.status ? 'success' : 'failed';
-                            await Swal.update({ html: createResultsHTML(results) });
+                            // const createTracking = await AftershipAPIController.createTracking(filteredOrder, aftershipApiHost, generateBarcodeResult.listItemBarcode[0].barcode);
+                            // result.createTracking = createTracking.status ? 'success' : 'failed';
+                            // await Swal.update({ html: createResultsHTML(results) });
                             const insertData = {
                                 order_id: filteredOrder.details.order_id,
                                 tracking_number: generateBarcodeResult.listItemBarcode[0].barcode,
-                                tracking_id: createTracking.data.id,
+                                tracking_id: /* createTracking.data.id */"",
                             };
                             const updateTracking = await DataController.insert("tracking", insertData);
                             result.updateTracking = updateTracking.status ? 'success' : 'failed';
@@ -765,7 +765,7 @@ const handleThpost = async (e) => {
                         } else {
                             result.updateTracking = 'failed';
                             result.uploadResponse = 'failed';
-                            result.createTracking = 'failed';
+                            // result.createTracking = 'failed';
                         }
                     } catch (error) {
                         console.error(`Error processing order ${filteredOrder.details.order_id}:`, error.response?.data.Message ? error.response.data.Message : error.response.data);
@@ -809,7 +809,6 @@ const handleAftershipCSV = async (e) => {
 const handleDownloadBarcodes = async (e) => {
     e.preventDefault();
     
-    // Get the selected orders
     const selectedOrders = orders.filter(order => checkboxStates.includes(order.details.timesort));
     
     if (selectedOrders.length === 0) {
@@ -903,13 +902,13 @@ const removeAllEventListeners = () => {
 const addAllEventListeners = () => {
     const eventListeners = [
         // { element: downloadOrdersButton, type: 'click', listener: handleDownloadOrders },
-        { element: newDownloadOrdersButton, type: 'click', listener: handleNewDownloadOrders },
+        // { element: newDownloadOrdersButton, type: 'click', listener: handleNewDownloadOrders },
         { element: createInvoiceButton, type: 'click', listener: handleCreateInvoice },
         { element: itemSummaryButton, type: 'click', listener: handleItemSummary },
         // { element: dhlPreAlertButton, type: 'click', listener: handleDhlPreAlert },
-        { element: dpost, type: 'click', listener: handleDpost },
+        // { element: dpost, type: 'click', listener: handleDpost },
         { element: thpost, type: 'click', listener: handleThpost },
-        { element: aftershipCSV, type: 'click', listener: handleAftershipCSV },
+        // { element: aftershipCSV, type: 'click', listener: handleAftershipCSV },
         { element: downloadBarcodes, type: 'click', listener: handleDownloadBarcodes },
         { element: deleteOrders, type: 'click', listener: handleDeleteOrders },
     ];

@@ -407,4 +407,57 @@
         return null;
     }
   }
+
+  function count_orders_by($conn, $column, $value) {
+    try {
+        $query = "
+        SELECT 
+          YEAR(payments_date) as year,
+          MONTH(payments_date) as month,
+          DAY(payments_date) as day,
+          COUNT(*) as count
+        FROM orders
+        WHERE $column = :value
+        GROUP BY year, month, day
+        ORDER BY year, month, day;
+        ";
+
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':value', $value);
+        $stmt->execute();
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // จัดกลุ่มข้อมูลตามปี โดยให้ months เป็น array 12 ค่า และแต่ละวันเป็น array 31 ค่า
+        $groupedData = [];
+        foreach ($result as $row) {
+            $year = $row["year"];
+            $month = $row["month"] - 1; // index เดือนเริ่มที่ 0
+            $day = $row["day"] - 1; // index วันเริ่มที่ 0
+            $count = $row["count"];
+
+            // ถ้ายังไม่มีปีนี้ใน array ให้สร้าง entry ใหม่
+            if (!isset($groupedData[$year])) {
+                $groupedData[$year] = array_fill(0, 12, array_fill(0, 31, 0));
+            }
+
+            // ใส่ค่าจำนวน order ลงใน index ของเดือนและวัน
+            $groupedData[$year][$month][$day] = $count;
+        }
+
+        // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
+        $formattedData = [];
+        foreach ($groupedData as $year => $months) {
+            $formattedData[] = [
+                "year" => $year,
+                "months" => $months
+            ];
+        }
+
+        return json_encode($formattedData);
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
+    }
+  }
 ?>

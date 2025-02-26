@@ -1,5 +1,6 @@
 import { AddressController } from "../components/AddressController.js";
 import { Alert } from "../components/Alert.js";
+import { Cell } from "../components/Cell.js";
 import { DataController } from "../components/DataController.js";
 import { Pagination } from "../components/Pagination.js"
 
@@ -170,24 +171,26 @@ const generateSection2 = async (limit, page) => {
         <th>Sku ID</th>
         <th>Order Product Sku</th>
         <th>Report Product Name</th>
+        <th>Item Price</th>
         `;
         tableHeader.appendChild(tableHeaderRow);
         tableElement.appendChild(tableHeader);
         const tableBody = document.createElement('tbody');
         tableElement.appendChild(tableBody);
         factory.forEach(factorySku => {
-            const { factory_sku_settings_id, sku_settings_id, order_product_sku, report_product_name, exist } = factorySku;
+            const { factory_sku_settings_id, sku_settings_id, order_product_sku, report_product_name, item_price, exist } = factorySku;
             const tableRow = document.createElement('tr');
             //checkbox true when exist = 1
             tableRow.innerHTML =
             `
             <td>
-                <input type="checkbox" name="factory_sku_settings_id${factory_sku_settings_id}" value="${factory_sku_settings_id}" ${exist === 1 ? 'checked' : ''}>
+                <input type="checkbox" name="factory_sku_settings_id_${factory_sku_settings_id}" value="${factory_sku_settings_id}" ${exist === 1 ? 'checked' : ''} data-item-price="${item_price}">
             </td>
             <td>${sku_settings_id}</td>
             <td>${order_product_sku}</td>
             <td>${report_product_name}</td>
             `;
+            tableRow.appendChild(Cell.createInputCell("item_price", item_price));
             tableBody.appendChild(tableRow);
         });
         factorySkuDataContainer.appendChild(tableElement);
@@ -232,37 +235,50 @@ const saveFactory = async () => {
     const checkboxes = document.querySelectorAll('#factory-skus input[type="checkbox"]');
     const insertResults = [];
     const deleteOperations = [];
+    const updateOperations = [];
 
     for (const checkbox of checkboxes) {
-        const factorySkuSettingsId = checkbox.value;
+        const factorySkuSettingsId = checkbox.value; // Existing record ID
         const isChecked = checkbox.checked;
+        
+        // Get item_price
+        const itemPriceInput = checkbox.closest('tr').querySelector('input[for="item_price"]');
+        const item_price = parseFloat(itemPriceInput?.value || 0).toFixed(2);
 
         console.log("isChecked: ", isChecked);
         console.log("factorySkuSettingsId: ", factorySkuSettingsId);
-        console.log("insert row?: ", isChecked && factorySkuSettingsId == "null");
-        if (isChecked && factorySkuSettingsId == "null") {
+        console.log("item_price: ", item_price);
+
+        if (isChecked && factorySkuSettingsId === "null") {
             // Insert new row for checked item that does not exist
             console.log("insert new row");
             const skuSettingsId = checkbox.closest('tr').querySelector('td:nth-child(2)').textContent;
             try {
-                const result = await DataController.insert("factory_sku_settings", { factory_id: parseInt(factory_id), sku_settings_id: parseInt(skuSettingsId) });
+                const result = await DataController.insert("factory_sku_settings", { 
+                    factory_id: parseInt(factory_id), 
+                    sku_settings_id: parseInt(skuSettingsId), 
+                    item_price: item_price 
+                });
                 console.log("Insert result:", result);
                 insertResults.push(result);
             } catch (error) {
                 console.error("Error inserting SKU:", error);
             }
-        } else if (!isChecked && factorySkuSettingsId != null) {
-            // Add delete operation for unchecked item that exists
+        } else if (!isChecked && factorySkuSettingsId !== "null") {
+            // Delete unchecked item that exists
             deleteOperations.push(DataController._delete("factory_sku_settings", "factory_sku_settings_id", factorySkuSettingsId));
+        } else if (isChecked && factorySkuSettingsId !== "null") {
+            // Update existing record if item_price has changed
+            updateOperations.push(DataController.update("factory_sku_settings", "factory_sku_settings_id", factorySkuSettingsId, { item_price: item_price }));
         }
     }
 
     try {
-        // Execute all delete operations in parallel
-        await Promise.all(deleteOperations);
+        // Execute all updates and deletes in parallel
+        await Promise.all([...updateOperations, ...deleteOperations]);
         Alert.showSuccessMessage("Factory details and SKUs updated successfully.");
     } catch (error) {
-        console.error("Error deleting SKUs:", error);
+        console.error("Error updating/deleting SKUs:", error);
         Alert.showErrorMessage("Failed to update factory SKUs.");
     }
 };

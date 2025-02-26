@@ -463,7 +463,7 @@
         }
     }
 
-    function get_data($conn, $table, $columns, $key = '', $filter = '', $filterParams = [], $orderBy = '') {
+    function get_data($conn, $table, $columns, $filter = '', $filterParams = [], $orderBy = '') {
         try {
             $query = "
             SELECT $columns 
@@ -509,7 +509,9 @@
                 }
                 $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
             }
-            $query .= " ORDER BY $order_by ASC";
+            if ($order_by) {
+                $query .= " ORDER BY $order_by ASC";
+            }
             if ($limit) {
                 $query .= " LIMIT :limit";
             }
@@ -722,6 +724,53 @@
             return json_encode($result);
         } catch(PDOException $e) {
             return false;
+        }
+    }
+
+    function count_by($conn, $table, $key, $value, $date) {
+        try {
+            $query = "
+            SELECT 
+              YEAR($date) as year,
+              MONTH($date) as month,
+              COUNT(*) as count
+            FROM $table
+            WHERE $key = :value
+            GROUP BY year, month
+            ORDER BY year, month;
+            ";
+    
+            $stmt = $conn->prepare($query);
+            $stmt->bindParam(':value', $value);
+            $stmt->execute();
+    
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+            $groupedData = [];
+            foreach ($result as $row) {
+                $year = $row["year"];
+                $month = $row["month"] - 1;
+                $count = $row["count"];
+    
+                if (!isset($groupedData[$year])) {
+                    $groupedData[$year] = array_fill(0, 12, 0);
+                }
+    
+                $groupedData[$year][$month] = $count;
+            }
+    
+            $formattedData = [];
+            foreach ($groupedData as $year => $months) {
+                $formattedData[] = [
+                    "year" => $year,
+                    "months" => $months
+                ];
+            }
+    
+            return json_encode($formattedData);
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+            return null;
         }
     }
 ?>

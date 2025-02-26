@@ -225,6 +225,7 @@
                 ss.report_product_name,
                 fss.factory_id,
                 fss.factory_sku_settings_id AS factory_sku_settings_id,
+                fss.item_price,
                 fss.created_at,
                 fss.updated_at,
                 CASE 

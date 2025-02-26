@@ -8,6 +8,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarToggler">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+      <a class="nav-link" href="../pages/dashboard.php" role="button">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+      </a>
+
         <li class="nav-item dropdown">
             <a class="nav-link" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fa-solid fa-list-ul"></i> Orders
@@ -19,13 +24,18 @@
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fa-solid fa-warehouse"></i> PO
+              <i class="fa-solid fa-truck-moving"></i> PO
           </a>
           <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
               <li><a class="dropdown-item" href="../pages/pre_po.php">Pre po</a></li>
               <li><a class="dropdown-item" href="../pages/po_order_list.php">PO Order List</a></li>
               <li><a class="dropdown-item" href="../pages/po_order_details.php">Add PO Order</a></li>
           </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" role="button" href="../pages/stock.php">
+              <i class="fa-solid fa-warehouse"></i> Stock
+          </a>
         </li>
         <li class="nav-item dropdown">
             <a class="nav-link" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -371,7 +371,7 @@ const generateOrderExcel = async (orders, toggleSpinner, checkboxStates) => {
     }
 }
 
-const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => {
+const generateOrderExcel2 = async (orders, toggleSpinner, checkboxStates) => {
     try {
         toggleSpinner(true);
 
@@ -592,6 +592,137 @@ const generateOrderExcelVer2 = async (orders, toggleSpinner, checkboxStates) => 
         toggleSpinner(false);
     }
 }
+
+
+const generateOrderExcel3 = async (orders, toggleSpinner, checkboxStates) => {
+    try {
+        toggleSpinner(true);
+
+        const templateInfo = await readExcel('download_orders_3.xlsx');
+        const templateSheet = templateInfo.worksheets[0];
+        const wb = new ExcelJS.Workbook();
+        if (templateSheet.workbook._themes) wb._themes = { ...templateSheet.workbook._themes };
+        const ws = wb.addWorksheet('Orders');
+
+        const selectedOrders = orders.filter(order => checkboxStates.includes(order.details.timesort));
+        selectedOrders.sort((a, b) => a.details.timesort - b.details.timesort);
+
+        const { product_sets } = await get_product_sets(false, false);
+        replaceSetItems(selectedOrders, product_sets);
+
+        let orderIndex = 0;
+        for (const order of selectedOrders) {
+            orderIndex = processOrder(order, ws, templateSheet, orderIndex);
+        }
+
+        await saveExcelFile(wb, 'orders-' + Date.now() + '.xlsx');
+        return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    } finally {
+        toggleSpinner(false);
+    }
+};
+
+const processOrder = (order, ws, templateSheet, orderIndex) => {
+    const { details, all_total, items, tax_rate } = order;
+    const addressSplit = AddressController.splitAddressData(details.raw_address);
+    const orderNoteSplit = details.order_note ? details.order_note.split("\n").filter(line => line.trim()) : null;
+    const orderSliceNumber = Math.ceil(items.length / 5);
+
+    let total = all_total;
+    for (let sliceIndex = 0; sliceIndex < orderSliceNumber; sliceIndex++) {
+        applyTemplate(ws, templateSheet, orderIndex);
+        fillOrderDetails(ws, details, all_total, tax_rate, orderIndex, addressSplit);
+        fillOrderItems(ws, items.slice(sliceIndex * 5, (sliceIndex + 1) * 5), details.shipping_fee, orderSliceNumber, orderIndex);
+        if (sliceIndex === orderSliceNumber - 1) fillFooter(ws, details, all_total, orderIndex);
+        if (orderNoteSplit && sliceIndex === orderSliceNumber - 1) fillOrderNotes(ws, orderNoteSplit, orderIndex);
+        orderIndex += 7;
+    }
+    return orderIndex;
+};
+
+const saveExcelFile = async (wb, filename) => {
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+};
+
+const applyTemplate = (ws, templateSheet, orderIndex) => {
+    for (let i = 0; i < 7; i++) {
+        for (let char of generateColumnRange('A', 'AM')) {
+            const templateCellRef = `${char}${i + 1}`;
+            const { style, width } = getStyle(templateCellRef, templateSheet);
+            const outputCell = ws.getCell(orderIndex + i + 1, columnToNumber(char));
+            outputCell.style = style;
+            ws.getColumn(char).width = width;
+            outputCell.value = getValue(templateCellRef, templateSheet).value;
+            updateFormula(outputCell, orderIndex);
+        }
+    }
+};
+
+// กรอกข้อมูลพื้นฐานของออเดอร์
+const fillOrderDetails = (ws, details, all_total, tax_rate, orderIndex, addressSplit) => {
+    let addressIndex = 1;
+    addressSplit.forEach(line => ws.getCell(orderIndex + addressIndex++, columnToNumber("B")).value = line);
+    
+    ws.getCell(orderIndex + 1, columnToNumber('I')).value = details.timesort;
+    ws.getCell(orderIndex + 1, columnToNumber('J')).value = details.payments_date.split(" ")[0];
+    ws.getCell(orderIndex + 1, columnToNumber('K')).value = details.currency_code;
+    ws.getCell(orderIndex + 1, columnToNumber('L')).value = all_total.toFixed(2);
+    ws.getCell(orderIndex + 1, columnToNumber('N')).value = (tax_rate.tax_rate || 0) * 100;
+    ws.getCell(orderIndex + 1, columnToNumber('AM')).value = addressSplit.join();
+};
+
+// กรอกรายการสินค้าของออเดอร์
+const fillOrderItems = (ws, slicedItems, shippingFee, orderSliceNumber, orderIndex) => {
+    let itemIndex = 1;
+    slicedItems.forEach(({ report_product_name, item_price, quantity_purchased, sku, shipping_price }) => {
+        const shippingPrice = (itemIndex === 1) ? shippingFee : shipping_price;
+        const subTotal = (item_price * quantity_purchased) + shippingPrice;
+        
+        ws.getCell(orderIndex + itemIndex + 1, columnToNumber('C')).value = {
+            richText: [{ text: report_product_name, font: { color: { argb: 'FF000000' } } }]
+        };
+        ws.getCell(orderIndex + itemIndex + 1, columnToNumber('D')).value = sku;
+        ws.getCell(orderIndex + itemIndex + 1, columnToNumber('E')).value = item_price;
+        ws.getCell(orderIndex + itemIndex + 1, columnToNumber('F')).value = quantity_purchased;
+        ws.getCell(orderIndex + itemIndex + 1, columnToNumber('G')).value = shippingPrice;
+        ws.getCell(orderIndex + itemIndex + 1, columnToNumber('H')).value = subTotal;
+        
+        itemIndex++;
+    });
+};
+
+// ใส่ข้อมูลท้ายออเดอร์
+const fillFooter = (ws, details, all_total, orderIndex) => {
+    ws.getCell(orderIndex + 7, columnToNumber('C')).value = {
+        richText: [
+            { font: { size: 10, name: "Calibri" }, text: `${details.payment_methods} (${details.website_name})` },
+            { font: { size: 10, color: { argb: "FFFF0000" }, name: "Calibri" }, text: details.deposit ? `* มัดจำ ${details.deposit}` : "" }
+        ]
+    };
+    ws.getCell(orderIndex + 7, columnToNumber('D')).value = `Discount:`;
+    ws.getCell(orderIndex + 7, columnToNumber('E')).value = details.ship_promotion_discount;
+    ws.getCell(orderIndex + 7, columnToNumber('G')).value = details.currency_code;
+    ws.getCell(orderIndex + 7, columnToNumber('H')).value = all_total.toFixed(2);
+};
+
+// ใส่โน้ตของออเดอร์
+const fillOrderNotes = (ws, orderNoteSplit, orderIndex) => {
+    let noteIndex = 0;
+    orderNoteSplit.forEach(orderNote => {
+        ws.getCell(orderIndex + noteIndex + 1, columnToNumber('B')).value = {
+            richText: [{ text: orderNote, font: { color: { argb: 'FFFF0000' }, name: 'Calibri' } }]
+        };
+        noteIndex++;
+    });
+};
 
 const generateInvoiceExcel = async (orders, toggleSpinner, checkboxStates) => {
     try {
@@ -1090,13 +1221,11 @@ const generateMergedPDF = async (selectedOrders) => {
             });
         } catch (error) {
             console.error(`Error merging label for order ${order.details.order_id}:`, error);
-            // Alert.showErrorMessage(`Error merging label for order ${order.details.order_id}.`);
         }
     }
 
     const mergedPdfBytes = await mergedPdf.save();
 
-    // Create a Blob from the PDFBytes and download it
     const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1169,7 +1298,8 @@ const generateUserDataCSV = async (userData) => {
 export const Downloader = {
     generateInvoiceExcel,
     generateOrderExcel,
-    generateOrderExcelVer2,
+    generateOrderExcel2,
+    generateOrderExcel3,
     generateItemSummaryExcel,
     generateDhlPreAlertExcel,
     generateDpostExcel,

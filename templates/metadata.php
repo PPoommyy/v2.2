@@ -17,4 +17,5 @@
     <script src="../assets/js/axios.min.js"></script>
     <script src="../assets/js/pdf-lib.min.js"></script>
     <script src="../assets/js/html2canvas.min.js"></script>
+	<script src="../assets/js/chart.min.js"></script>
 </head>
