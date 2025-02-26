@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../templates/metadata.php');?>
+<?php include('../../templates/metadata.php');?>
 <body>
     <style>
         #logInF {
@@ -50,6 +50,6 @@
             </div>
         </div>
     </div>
-    <script type="module" src="../scripts/login.js"></script>
+    <script type="module" src="../../scripts/login.js"></script>
 </body>
 </html>

@@ -3,26 +3,26 @@
     
     SELECT 
         ss.id AS sku_settings_id,
-        ss.name AS product_name,
+        ss.order_product_sku AS product_order_product_sku,
         SUM(s.remaining_quantity) AS total_remaining
     FROM stock s
     JOIN sku_settings ss ON s.sku_settings_id = ss.id
-    GROUP BY ss.id, ss.name
+    GROUP BY ss.id, ss.order_product_sku
     HAVING total_remaining > 0
-    ORDER BY ss.name;
+    ORDER BY ss.order_product_sku;
  */
     function get_stock ($conn) {
         try {
             $query = "
             SELECT 
                 ss.id AS sku_settings_id,
-                ss.name AS product_name,
+                ss.order_product_sku AS product_order_product_sku,
                 SUM(s.remaining_quantity) AS total_remaining
             FROM stock s
             JOIN sku_settings ss ON s.sku_settings_id = ss.id
-            GROUP BY ss.id, ss.name
+            GROUP BY ss.id, ss.order_product_sku
             HAVING total_remaining > 0
-            ORDER BY ss.name;
+            ORDER BY ss.order_product_sku;
             ";
             $stmt = $conn->prepare($query); 
             $stmt->execute();
@@ -41,7 +41,7 @@
             SELECT 
                 s.id AS stock_id,
                 ss.id AS sku_settings_id,
-                ss.name AS product_name,
+                ss.order_product_sku AS product_order_product_sku,
                 s.quantity AS received_quantity,
                 s.remaining_quantity,
                 s.received_date
@@ -66,7 +66,7 @@
             SELECT 
                 so.id AS stock_out_id,
                 ss.id AS sku_settings_id,
-                ss.name AS product_name,
+                ss.order_product_sku AS product_order_product_sku,
                 so.quantity AS issued_quantity,
                 so.issued_date
             FROM stock_out so
@@ -82,5 +82,9 @@
         } catch(PDOException $e) {
             return $e->getMessage();
         }
+    }
+
+    function update_stock ($conn, ) {
+
     }
 ?>

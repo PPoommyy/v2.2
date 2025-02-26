@@ -1,4 +1,4 @@
-import { Alert } from "../components/Alert.js";
+import { Alert } from "../../components/Alert.js";
 const loginForm = document.getElementById('loginForm');
 
 window.onload = (event) => {
@@ -20,7 +20,7 @@ loginForm.addEventListener('submit', (event) => {
         return;
     }
 
-    axios.post('../backend/lokin.php', { username, password })
+    axios.post('../../backend/lokin.php', { username, password })
         .then(response => {
             if (response.data.res) {
                 const expirationTime = 60 * 60 * 1000;
@@ -33,7 +33,7 @@ loginForm.addEventListener('submit', (event) => {
 
                 sessionStorage.setItem('userData', JSON.stringify(dataToStore));
                 Alert.showSuccessMessage('Login successful!');
-                window.location.href = "../pages/order_list.php";
+                window.location.href = "../../pages/order_management/order_list.php";
             } else {
                 const dataToStore = {
                     isLogIn: false,

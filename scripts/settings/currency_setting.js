@@ -9,7 +9,7 @@ updateButton.addEventListener('click', async () => {
     const key = document.getElementById('editKey').value;
     const value = document.getElementById('editValue').value;
     if (value) {
-        const result = await DataController.updateByKey("country_currency", "id", id, key, value);
+        const result = await DataController.updateByKey("currencies", "id", id, key, value);
         if (result.status) {
             Cell.closeEditModal();
             Alert.showSuccessMessage('Update successful');
@@ -24,9 +24,9 @@ updateButton.addEventListener('click', async () => {
 
 generateTable(100, 1);
 
-async function get_country_list(limit, page) {
+async function get_currency_list(limit, page) {
     try {
-        let url = `../../backend/get_country_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get_currency_list.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;
@@ -38,14 +38,13 @@ async function get_country_list(limit, page) {
 async function generateTable(limit, page) {
     try {
         toggleSpinner(true);
-        const result = await get_country_list(limit, page);
-        const countries = result.data;
-        const currencies = result.currencies;
+        const result = await get_currency_list(limit, page);
+        const currencies = result.data;
         const totalCount = result.count;
         const totalPages = Math.ceil(totalCount / limit);
 
-        const countryDataContainer = document.getElementById('invoice-data-container');
-        countryDataContainer.innerHTML = '';
+        const currencyDataContainer = document.getElementById('currency-data-container');
+        currencyDataContainer.innerHTML = '';
 
         const tableElement = document.createElement('table');
         tableElement.classList.add('table', 'table-bordered', 'table-striped', 'table-hover');
@@ -53,30 +52,44 @@ async function generateTable(limit, page) {
         const tableHeader = document.createElement('thead');
         const tableHeaderRow = document.createElement('tr');
         tableHeaderRow.innerHTML =
-            `<th>Country</th>
-             <th>Country Code</th>
-             <th>Other Possible Name</th>
-             <th>Value</th>
-             <th>Currency</th>
-             <th>Make Invoice?</th>`;
+            `<th>Currency Code</th>
+             <th>Description</th>
+             <th>Show On Dropdown?</th>`;
         tableHeader.appendChild(tableHeaderRow);
         tableElement.appendChild(tableHeader);
 
         const tableBody = document.createElement('tbody');
-        countries.forEach(country => {
+        currencies.forEach(currency => {
             const tableRow = document.createElement('tr');
 
-            tableRow.appendChild(Cell.createSpanCell(country.short_name, false, false));
-            tableRow.appendChild(Cell.createSpanCell(country.country_code, false, false));
-            tableRow.appendChild(Cell.createSpanCell(country.full_name, false, false));
-            tableRow.appendChild(Cell.createInputOnModalCell('Value', country.id, 'default_value', country.default_value));
-            tableRow.appendChild(Cell.createSelectOnModalCell('Currency', currencies, country.id, 'currency_id', country.currency_name));
-            tableRow.appendChild(Cell.createDeleteButtonCell());
+            const switchInputCell = Cell.createSwitchInputCell(currency.is_enabled);
+            const switchInput = switchInputCell.querySelector('input');
+            switchInput.addEventListener('click', async () => {
+                const confirmAlert = await Alert.showConfirmModal(`Are you sure you want to ${switchInput.checked?"enable":"disable"} to show on dropdown?`);
+                
+                if (!confirmAlert.isConfirmed) {
+                    return;
+                }
+
+                const result = await DataController.updateByKey("currencies", "id", currency.id, "is_enabled", switchInput.checked ? 1 : 0);
+                if (result&&result.status) {
+                    Alert.showSuccessMessage('Update successful');
+                } else {
+                    Alert.showErrorMessage('Update failed');
+                }
+                generateTable(limit, page);
+                Cell.closeEditModal();
+            });
+
+            tableRow.appendChild(Cell.createInputOnModalCell('Name', currency.id, 'name', currency.name));
+            tableRow.appendChild(Cell.createInputOnModalCell('Description', currency.id, 'description', currency.description));
+            tableRow.appendChild(switchInputCell);
             tableBody.appendChild(tableRow);
         });
         tableElement.appendChild(tableBody);
 
-        countryDataContainer.appendChild(tableElement);
+        currencyDataContainer.appendChild(tableElement);
+
         Pagination.updatePagination(page, totalPages, 'pagination1', generateTable);
         Pagination.updatePagination(page, totalPages, 'pagination2', generateTable);
     } catch (error) {
@@ -85,6 +98,7 @@ async function generateTable(limit, page) {
         toggleSpinner(false);
     }
 }
+
 
 function toggleSpinner(loading) {
     const spinner = document.getElementById('loading-spinner');

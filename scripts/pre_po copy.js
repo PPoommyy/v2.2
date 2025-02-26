@@ -1,13 +1,13 @@
-import { Pagination } from "../components/Pagination.js";
-import { Downloader } from "../components/Downloader.js";
-import { Alert } from "../components/Alert.js";
-import { DataController } from "../components/DataController.js";
-import { Cell } from "../components/Cell.js";
-import { Modal } from "../components/Modal.js";
+import { Pagination } from "../../components/Pagination.js";
+import { Downloader } from "../../components/Downloader.js";
+import { Alert } from "../../components/Alert.js";
+import { DataController } from "../../components/DataController.js";
+import { Cell } from "../../components/Cell.js";
+import { Modal } from "../../components/Modal.js";
 
 const getFactory = async (limit, page) => {
     try {
-        let url = `../backend/get_factory_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {

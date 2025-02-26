@@ -23,8 +23,8 @@ function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl) {
         'mail_from' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
         'mail_to' => ['email' => $email],
         'payload' => [
-            'OPTION_1' => 'http://localhost/test/work/v2.2/pages/pre_po.php',
-            'OPTION_2' => 'http://localhost/test/work/v2.2/pages/pre_po.php',
+            'OPTION_1' => 'http://localhost/test/work/v2.2/pages/po_management/pre_po.php',
+            'OPTION_2' => 'http://localhost/test/work/v2.2/pages/po_management/pre_po.php',
             'OPTION_3' => $pdfUrl,
             'OPTION_4' => $pngUrl
         ],

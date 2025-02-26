@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-  <?php include('../templates/metadata.php');?>
+  <?php include('../../templates/metadata.php');?>
   <body>
-      <?php include('../templates/header.php');?>
+      <?php include('../../templates/header.php');?>
       <div class="container">
         <form id="exchangeRateForm">
           <div class="form-group">
@@ -16,7 +16,7 @@
           <button type="submit" class="btn btn-primary">Get Exchange Rate</button>
         </form>
       </div>
-      <?php include("../templates/footer.php"); ?>
-      <script type="module" src="../scripts/testBotApi.js"></script>
+      <?php include("../../templates/footer.php"); ?>
+      <script type="module" src="../../scripts/testBotApi.js"></script>
   </body>
 </html>
