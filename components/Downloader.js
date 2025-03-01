@@ -1,8 +1,9 @@
 import { AddressController } from "../components/AddressController.js";
+import { Alert } from "./Alert.js";
 
 const readExcel = async (fileName) => {
     try {
-        const response = await axios.get(`../backend/file/read_file.php?fileName=${fileName}`, {
+        const response = await axios.get(`../../backend/file/read_file.php?fileName=${fileName}`, {
             responseType: 'arraybuffer',
         });
         
@@ -17,7 +18,7 @@ const readExcel = async (fileName) => {
 
 const readCSV = async (fileName) => {
     try {
-        const response = await axios.get(`../backend/file/read_file.php?fileName=${fileName}`, {
+        const response = await axios.get(`../../backend/file/read_file.php?fileName=${fileName}`, {
             responseType: 'text', // Fetch CSV as text
         });
 
@@ -114,7 +115,7 @@ const columnNumberToName = (columnNumber) => {
 
 const get_product_sets = async(limit, page) => {
     try {
-        let url = `../backend/get/get_product_sets.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/get_product_sets.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;
@@ -1209,7 +1210,7 @@ const generateMergedPDF = async (selectedOrders) => {
     const mergedPdf = await PDFDocument.create();
     
     for (const order of selectedOrders) {
-        const labelUrl = `../files/label-${order.details.order_id}.pdf`;
+        const labelUrl = `../../files/label-${order.details.order_id}.pdf`;
         
         try {
             const existingPdfBytes = await fetch(labelUrl).then(res => res.arrayBuffer());
@@ -1233,7 +1234,6 @@ const generateMergedPDF = async (selectedOrders) => {
     a.download = 'merged-labels.pdf';
     a.click();
     URL.revokeObjectURL(url);
-    Alert.showSuccessMessage(`Barcode Downloaded Successfully`);
 }
 
 const generateUserDataCSV = async (userData) => {

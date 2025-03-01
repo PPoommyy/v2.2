@@ -20,7 +20,7 @@
             
             <div>
                 <a href="stock_in.php" class="btn btn-outline-success"><i class="fa-solid fa-square-plus"></i> Import</a>
-                <a href="export_stock.php" class="btn btn-outline-danger"><i class="fa-solid fa-square-minus"></i> Export</a>
+                <a href="stock_out.php" class="btn btn-outline-danger"><i class="fa-solid fa-square-minus"></i> Export</a>
             </div>
         </div>
         <div id="stock-container" class="overflow-scroll"></div>

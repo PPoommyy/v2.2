@@ -941,7 +941,7 @@ async function filterOrdersWithBarcodes(orders) {
     const filteredOrders = [];
 
     for (const order of orders) {
-        const fileUrl = `../files/label-${order.details.order_id}.pdf`;
+        const fileUrl = `../../files/label-${order.details.order_id}.pdf`;
         const fileExists = await checkFileExists(fileUrl);
 
         if (!fileExists) {

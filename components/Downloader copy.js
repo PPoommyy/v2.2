@@ -1,6 +1,6 @@
 const readExcel = async (fileName) => {
     try {
-        const response = await axios.get(`../backend/file/read_xlsx.php?fileName=${fileName}`, {
+        const response = await axios.get(`../../backend/file/read_xlsx.php?fileName=${fileName}`, {
             responseType: 'arraybuffer',
         });
         

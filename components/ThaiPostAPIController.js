@@ -6,8 +6,9 @@ let proxy_server = "https://cors-anywhere.herokuapp.com";
 const createToken = async (apiHost) => {
     try {
         const response = await axios.get(
-            `../backend/api/thaipost/thaipost_create_token.php`,
+            `../../backend/api/thaipost/thaipost_create_token.php`,
         );
+        console.log("response:", response);
         return response.data;
     } catch (error) {
         throw error;
@@ -109,7 +110,7 @@ const generateBarcode = async (order, apiHost, accessToken) => {
 
     try {
         const response = await axios.post(
-            `../backend/api/thaipost/thaipost_generate_barcode.php`,
+            `../../backend/api/thaipost/thaipost_generate_barcode.php`,
             {
                 payload,
                 accessToken
@@ -130,7 +131,7 @@ const generateBarcode = async (order, apiHost, accessToken) => {
 const uploadFile = async (fileUrl, orderId) => {
     try {
         const response = await axios.post(
-            `../backend/api/thaipost/thaipost_get_barcode_file.php`, 
+            `../../backend/api/thaipost/thaipost_get_barcode_file.php`, 
             { fileUrl },
             { 
                 responseType: 'blob',

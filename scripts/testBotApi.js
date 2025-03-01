@@ -16,7 +16,7 @@ form.addEventListener('submit', async function (event) {
 
   const apiUrl = 'https://apigw1.bot.or.th/bot/public/Stat-ExchangeRate/v2/DAILY_AVG_EXG_RATE/';
   const apiKey = 'e41875a4-c980-4c81-9a2e-b40f09bf961c';
-  const currency = 'EUR';
+  const currency = 'JPY';
   
   try {
     const response = await axios.get(apiUrl, {
@@ -31,7 +31,7 @@ form.addEventListener('submit', async function (event) {
       },
     });
 
-    console.log(response.data.result.data);
+    // console.log(response.data.result.data);
   } catch (error) {
     console.error('Error fetching data:', error);
     // Handle errors
