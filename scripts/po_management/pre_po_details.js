@@ -14,7 +14,7 @@ const get_factory_details = async (factoryId) => {
 
 const get_factory_sku_search = async(searchTerm, factory_id) => {
     try {
-        const response = await axios.get(`../../backend/get_factory_sku_search.php?factory_id=${factory_id}&searchTerm=${searchTerm}`);
+        const response = await axios.get(`../../backend/get/factory/get_factory_sku_search.php?factory_id=${factory_id}&searchTerm=${searchTerm}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -24,7 +24,7 @@ const get_factory_sku_search = async(searchTerm, factory_id) => {
 
 const get_po_order_details = async(po_orders_id) => {
     try {
-        const response = await axios.get(`../../backend/get_po_order_details.php?po_orders_id=${po_orders_id}`);
+        const response = await axios.get(`../../backend/get/get_po_order_details.php?po_orders_id=${po_orders_id}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -34,7 +34,7 @@ const get_po_order_details = async(po_orders_id) => {
 
 const get_sku_by_name = async (name) => {
     try {
-        const response = await axios.get(`../../backend/get_sku_by_name.php?name=${name}`);
+        const response = await axios.get(`../../backend/get/sku/get_sku_by_name.php?name=${name}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -44,7 +44,7 @@ const get_sku_by_name = async (name) => {
 
 const get_last_timesort = async(yearAndMonth) => {
     try {
-        const response = await axios.get(`../../backend/get_last_timesort.php?table=po_orders&year_and_month=${yearAndMonth}`);
+        const response = await axios.get(`../../backend/get/get_last_timesort.php?table=po_orders&year_and_month=${yearAndMonth}`);
         return response.data.last_timesort;
     } catch (error) {
         console.error(error);
@@ -406,7 +406,7 @@ const sendEmail = async (pdfFile, newPOOrder) => {
         emailFormData.append("png_url", pngUrl);
 
         // ส่งไปยัง send_email.php
-        const response = await axios.post("../../backend/send_email.php", emailFormData, {
+        const response = await axios.post("../../backend/api/thaibulksms/send_email.php", emailFormData, {
             headers: { "Content-Type": "multipart/form-data" },
         });
 

@@ -5,7 +5,7 @@ import { Cell } from "../../components/Cell.js";
 
 const get_factory_list = async (limit, page) => {
     try {
-        const url = `../../backend/get_factory_list.php?limit=${limit}&page=${page}`;
+        const url = `../../backend/get/factory/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -15,7 +15,7 @@ const get_factory_list = async (limit, page) => {
 
 const get_factory_skus = async (factory_id, page) => {
     try {
-        const url = `../../backend/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
+        const url = `../../backend/get/factory/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -26,7 +26,7 @@ const get_factory_skus = async (factory_id, page) => {
 
 const get_pre_po_order = async (factory_id) => {
     try {
-        let url = `../../backend/get_pre_po_orders.php?factory_id=${factory_id}`;
+        let url = `../../backend/get/get_pre_po_orders.php?factory_id=${factory_id}`;
 
         const response = await axios.get(url);
         return response.data;

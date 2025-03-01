@@ -4,7 +4,7 @@ import { DataController } from "../../components/DataController.js";
 
 const get_stock = async () => {
     try {
-        const response = await axios.get(`../../backend/get_stock.php`);
+        const response = await axios.get(`../../backend/get/stock/get_stock.php`);
         return response;
     } catch (error) {
         throw error;

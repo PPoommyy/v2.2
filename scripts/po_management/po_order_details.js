@@ -105,7 +105,7 @@ const getFileExtension = (filename) => {
 
 const get_website_datas = async() => {
     try {
-        const response = await axios.get(`../../backend/get_website_datas.php`);
+        const response = await axios.get(`../../backend/get/get_website_datas.php`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -114,7 +114,7 @@ const get_website_datas = async() => {
 }
 async function get_po_order_details(limit, page, filters) {
     try {
-        let url = `../../backend/get_po_order_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/get_po_order_list.php?limit=${limit}&page=${page}`;
 
         Object.keys(filters).forEach((filter) => {
             const value = filters[filter].value;
@@ -133,7 +133,7 @@ async function get_po_order_details(limit, page, filters) {
 }
 const get_po_order_list = async(po_order_id) => {
     try {
-        const response = await axios.get(`../../backend/get_po_order_details.php?po_order_id=${po_order_id}`);
+        const response = await axios.get(`../../backend/get/get_po_order_details.php?po_order_id=${po_order_id}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -144,7 +144,7 @@ const get_po_order_list = async(po_order_id) => {
 
 const get_order_list = async(limit, page) => {
     try {
-        let url = `../../backend/get_order_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/order/get_order_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -154,7 +154,7 @@ const get_order_list = async(limit, page) => {
 
 const get_order_search = async(searchTerm) => {
     try {
-        const response = await axios.get(`../../backend/search_orders.php?searchTerm=${searchTerm}`);
+        const response = await axios.get(`../../backend/get/order/search_orders.php?searchTerm=${searchTerm}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -164,7 +164,7 @@ const get_order_search = async(searchTerm) => {
 
 const get_sku_by_name = async (name) => {
     try {
-        const response = await axios.get(`../../backend/get_sku_by_name.php?name=${name}`);
+        const response = await axios.get(`../../backend/get/sku/get_sku_by_name.php?name=${name}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -174,7 +174,7 @@ const get_sku_by_name = async (name) => {
 
 const get_country_code_by_name = async (name) => {
     try {
-        const response = await axios.get(`../../backend/get_country_code_by_name.php?name=${name}`);
+        const response = await axios.get(`../../backend/get/get_country_code_by_name.php?name=${name}`);
         return response.data;
     } catch (error) {
         console.error(error);
@@ -184,7 +184,7 @@ const get_country_code_by_name = async (name) => {
 
 const get_last_timesort = async(yearAndMonth) => {
     try {
-        const response = await axios.get(`../../backend/get_last_timesort.php?year_and_month=${yearAndMonth}`);
+        const response = await axios.get(`../../backend/get/get_last_timesort.php?year_and_month=${yearAndMonth}`);
         return response.data.last_timesort;
     } catch (error) {
         console.error(error);
@@ -195,7 +195,7 @@ const get_last_timesort = async(yearAndMonth) => {
 const insert_order = async(order, items) => {
     try {
         const response = await axios.post(
-            `../../backend/insert_order.php`,
+            `../../backend/insert/insert_order.php`,
             {
                 order: order,
                 items: items
@@ -216,7 +216,7 @@ const insert_order = async(order, items) => {
 const update_order = async(key, value, toUpdate) => {
     try {
         const response = await axios.post(
-            `../../backend/update_order.php`,
+            `../../backend/update/update_order.php`,
             {
                 key,
                 value,
@@ -238,7 +238,7 @@ const update_order = async(key, value, toUpdate) => {
 const update_order_item = async(key, value, toUpdate) => {
     try {
         const response = await axios.post(
-            `../../backend/update_order_item.php`,
+            `../../backend/update/update_order_item.php`,
             {
                 key,
                 value,

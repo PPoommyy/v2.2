@@ -23,7 +23,7 @@ updateButton.addEventListener('click', async () => {
 
 async function get_websites() {
     try {
-        let url = `../../backend/get_websites.php`;
+        let url = `../../backend/get/get_websites.php`;
 
         const response = await axios.get(url);
         return response.data;

@@ -3,7 +3,7 @@ import { DataController } from "../../components/DataController.js";
 
 const get_sku_search = async(searchTerm) => {
     try {
-        const response = await axios.get(`../../backend/get_sku_search.php?searchTerm=${searchTerm}`);
+        const response = await axios.get(`../../backend/get/sku/get_sku_search.php?searchTerm=${searchTerm}`);
         return response.data;
     } catch (error) {
         console.error(error);

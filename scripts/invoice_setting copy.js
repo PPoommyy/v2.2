@@ -26,7 +26,7 @@ generateTable(100, 1);
 
 async function get_country_list(limit, page) {
     try {
-        let url = `../../backend/get_country_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/get_country_list.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;

@@ -9,7 +9,7 @@ const factory_id = document.getElementById('factoryId').value;
 console.log("factory_id ", factory_id);
 const get_factory_details = async (factory_id) => {
     try {
-        const url = `../../backend/get_value_by_key.php?table=factories`;
+        const url = `../../backend/get/get_value_by_key.php?table=factories`;
         /* const response = await axios.get(url,
             {
                 "key": "id",
@@ -28,7 +28,7 @@ const get_factory_details = async (factory_id) => {
 }
 const get_factory_skus = async (factory_id, page) => {
     try {
-        const url = `../../backend/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
+        const url = `../../backend/get/factory/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
         const response = await axios.get(url);
         return response;
     } catch (error) {

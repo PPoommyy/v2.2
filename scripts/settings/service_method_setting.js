@@ -123,7 +123,7 @@ generateTable(100, 1);
 
 async function get_service_methods(table, limit, page) {
     try {
-        let url = `../../backend/get_table_and_count.php`;
+        let url = `../../backend/get/get_table_and_count.php`;
         
         const response = await axios.get(url, {
             params: {

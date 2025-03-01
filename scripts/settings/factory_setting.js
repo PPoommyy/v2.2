@@ -26,7 +26,7 @@ updateButton.addEventListener('click', async () => {
 
 const get_factory_list = async (limit, page) => {
     try {
-        let url = `../../backend/get_factory_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/factory/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -36,7 +36,7 @@ const get_factory_list = async (limit, page) => {
 
 const get_sku_list = async (limit, page) => {
     try {
-        const url = `../../backend/get_sku_list.php?limit=${limit}&page=${page}`;
+        const url = `../../backend/get/sku/get_sku_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {

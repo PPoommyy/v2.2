@@ -18,7 +18,7 @@ const createTracking = async (order, apiHost, tracking_number) => {
     };
     try {
         const createTracking = await axios.post(
-            `../backend/aftership_create_tracking.php`,
+            `../backend/api/aftership/aftership_create_tracking.php`,
             {
                 payload
             },

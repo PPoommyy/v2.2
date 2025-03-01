@@ -16,7 +16,7 @@
         document.getElementById("exchangeRateForm").addEventListener("submit", function(event) {
           event.preventDefault();
 
-          axios.get("../../backend/get_user_data.php")
+          axios.get("../../backend/get/get_user_data.php")
             .then((response) => {
               const userData = response.data;
               console.log("userData: ", userData);

@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     try {
         // โหลดข้อมูล JSON จาก API
-        const response = await axios.get("http://localhost/v2.2/backend/count_by.php?table=factories&column=*&order_by=id&key=factory_id&data_key=id&date=po_orders_date&table_key=po_orders");
+        const response = await axios.get("../../backend/count/count_by.php?table=factories&column=*&order_by=id&key=factory_id&data_key=id&date=po_orders_date&table_key=po_orders");
         const orderData = response.data;
         console.log(response)
         console.log("Fetched data:", orderData);

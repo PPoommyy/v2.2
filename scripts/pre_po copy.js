@@ -7,7 +7,7 @@ import { Modal } from "../../components/Modal.js";
 
 const getFactory = async (limit, page) => {
     try {
-        let url = `../../backend/get_factory_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/factory/get_factory_list.php?limit=${limit}&page=${page}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {

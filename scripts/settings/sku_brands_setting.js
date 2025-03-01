@@ -121,7 +121,7 @@ generateTable(100, 1);
 
 async function get_sku_brands(limit, page) {
     try {
-        let url = `../../backend/get_sku_brands.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/sku/get_sku_brands.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;

@@ -1,6 +1,6 @@
 const readExcel = async (fileName) => {
     try {
-        const response = await axios.get(`../backend/read_xlsx.php?fileName=${fileName}`, {
+        const response = await axios.get(`../backend/file/read_xlsx.php?fileName=${fileName}`, {
             responseType: 'arraybuffer',
         });
         
@@ -102,7 +102,7 @@ const getValueByIndex = (array, length, isRequired) => {
 
 const get_product_sets = async(limit, page) => {
     try {
-        let url = `../backend/get_product_sets.php?limit=${limit}&page=${page}`;
+        let url = `../backend/get/get_product_sets.php?limit=${limit}&page=${page}`;
 
         const response = await axios.get(url);
         return response.data;

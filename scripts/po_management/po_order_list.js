@@ -54,7 +54,7 @@ generateTable(100, 1);
 
 async function get_order_count(filters) {
     try {
-        let url = `../../backend/get_order_count.php?`;
+        let url = `../../backend/get/order/get_order_count.php?`;
 
         Object.keys(filters).forEach((filter) => {
             const value = filters[filter].value;
@@ -73,7 +73,7 @@ async function get_order_count(filters) {
 
 async function get_po_order_list(limit, page, filters) {
     try {
-        let url = `../../backend/get_po_order_list.php?limit=${limit}&page=${page}`;
+        let url = `../../backend/get/get_po_order_list.php?limit=${limit}&page=${page}`;
 
         Object.keys(filters).forEach((filter) => {
             const value = filters[filter].value;
