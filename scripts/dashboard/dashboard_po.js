@@ -17,19 +17,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     let chartInstance = null;
 
     try {
-        // โหลดข้อมูล JSON จาก API
         const response = await axios.get("../../backend/count/count_by.php?table=factories&column=*&order_by=id&key=factory_id&data_key=id&date=po_orders_date&table_key=po_orders");
         const orderData = response.data;
-        console.log(response)
-        console.log("Fetched data:", orderData);
 
-        // ✅ ตรวจสอบว่า orderData.data มีค่าและเป็นอาร์เรย์หรือไม่
         if (!orderData || !Array.isArray(orderData.data)) {
             console.error("Invalid data format received:", orderData);
             return;
         }
 
-        // ฟังก์ชันสุ่มสีเข้มขึ้น (RGB ค่าสูงขึ้น)
         const getRandomDarkColor = () => {
             const r = Math.floor(Math.random() * 156) + 100;
             const g = Math.floor(Math.random() * 156) + 100;
@@ -39,7 +34,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const transparentize = (color, opacity) => color.replace("1)", `${opacity})`);
 
-        // กำหนด labels (ชื่อเดือน)
         const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
         function processOrderData(orderData) {
@@ -68,12 +62,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                         tension: 0.3,
                         pointRadius: 4,
                         borderWidth: 2,
-                        hidden: true, // ซ่อนกราฟเริ่มต้น
+                        hidden: true,
                     });
                 }
             });
 
-            console.log("Final dataset:", datasets);
             return datasets;
         }
 
@@ -116,7 +109,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         chartInstance = new Chart(ctx, config);
 
-        // ✅ แสดง Checkbox เป็น Grid แถวละ 3 คอลัมน์
         let checkboxHTML = "<div class='row'>";
         datasets.forEach((dataset, index) => {
             checkboxHTML += `
@@ -138,7 +130,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
         });
 
-        // ✅ ทำให้ Toggle Switch สามารถเปิด/ปิดกราฟทั้งหมด
         toggleChart.addEventListener("change", function () {
             const checkboxes = document.querySelectorAll(".website-checkbox");
             checkboxes.forEach((checkbox, index) => {

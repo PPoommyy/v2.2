@@ -1,5 +1,5 @@
 <?php
-    include('../../config.php');
+    include('../config.php');
     include('../controllers/data_controller.php');
 ?>
 <?php
@@ -10,7 +10,7 @@
     try {
         $res = insert($conn, $table, $insertedData);
         $response = [
-            'insertedData' => $insertedData,
+            'insertedData' => json_encode($insertedData),
             'status' => $res
         ];
 

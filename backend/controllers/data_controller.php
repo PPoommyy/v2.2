@@ -594,8 +594,7 @@
             $stmt->execute();
             return $conn->lastInsertId();
         } catch(PDOException $e) {
-            // return error message
-            return $e;
+            return $e->getMessage();
         }
     }
 

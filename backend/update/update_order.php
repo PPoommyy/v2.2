@@ -1,5 +1,5 @@
 <?php
-    include('../../config.php');
+    include('../config.php');
     include('../controllers/order_controller.php');
 ?>
 <?php

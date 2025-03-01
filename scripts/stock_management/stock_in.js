@@ -51,7 +51,7 @@ const createSkuDiv = (skuInput) => {
         skuInput.removeAttribute('order_product_name');
         const searchTerm = skuInput.value;
         const skuOptions = await get_sku_search(searchTerm);
-        console.log(skuOptions);
+        // console.log(skuOptions);
         updateSkuDropdown(skuOptions.data, skuInput, skuDropdown);
     });
 
@@ -179,7 +179,7 @@ insertStockButton.addEventListener('click', async function (event) {
             remaining_quantity: quantityInput.value
         }
     });
-    console.log(items);
+    // console.log(items);
     
     try {
         toggleSpinner(true);
@@ -192,7 +192,7 @@ insertStockButton.addEventListener('click', async function (event) {
         Alert.showSuccessMessage("Stock inserted successfully", "success");
         // delay 3 second to refresh page
         setTimeout(() => {
-            location.reload();
+            // location.reload();
         }, 3000);
     } catch (error) {
         console.error(error);

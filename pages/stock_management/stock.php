@@ -24,6 +24,9 @@
             </div>
         </div>
         <div id="stock-container" class="overflow-scroll"></div>
+        <div id="loading-spinner" class="spinner-border text-primary fixed-top top-50 start-50" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
     <?php include("../../templates/footer.php"); ?>
     <script type="module" src="../../scripts/stock_management/stock.js"></script>

@@ -11,7 +11,7 @@
     HAVING total_remaining > 0
     ORDER BY ss.order_product_sku;
  */
-    function get_stock ($conn) {
+    function get_stock ($conn, $limit, $offset) {
         try {
             $query = "
             SELECT 
@@ -24,7 +24,19 @@
             HAVING total_remaining > 0
             ORDER BY ss.order_product_sku;
             ";
+            if ($limit) {
+                $query .= " LIMIT :limit";
+            }
+            if ($offset) {
+                $query .= " OFFSET :offset";
+            }
             $stmt = $conn->prepare($query); 
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            }
+            if ($offset) {
+                $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            }
             $stmt->execute();
         
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
@@ -35,7 +47,7 @@
         }
     }
 
-    function get_stock_in ($conn) {
+    function get_stock_in ($conn, $limit, $offset) {
         try {
             $query = "
             SELECT 
@@ -49,7 +61,19 @@
             JOIN sku_settings ss ON s.sku_settings_id = ss.id
             ORDER BY s.received_date DESC;
             ";
+            if ($limit) {
+                $query .= " LIMIT :limit";
+            }
+            if ($offset) {
+                $query .= " OFFSET :offset";
+            }
             $stmt = $conn->prepare($query); 
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            }
+            if ($offset) {
+                $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            }
             $stmt->execute();
         
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
@@ -60,7 +84,7 @@
         }
     }
 
-    function get_stock_out ($conn) {
+    function get_stock_out ($conn, $limit, $offset) {
         try {
             $query = "
             SELECT 
@@ -73,7 +97,19 @@
             JOIN sku_settings ss ON so.sku_settings_id = ss.id
             ORDER BY so.issued_date DESC;
             ";
+            if ($limit) {
+                $query .= " LIMIT :limit";
+            }
+            if ($offset) {
+                $query .= " OFFSET :offset";
+            }
             $stmt = $conn->prepare($query); 
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+            }
+            if ($offset) {
+                $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+            }
             $stmt->execute();
         
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
