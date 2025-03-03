@@ -19,6 +19,9 @@
                             <label class="form-check-label ms-2" for="toggleChart">Show Chart</label>
                         </div>
 
+                        <!-- ✅ ปุ่มเลือกดูข้อมูล 1 เดือนล่าสุด -->
+                        <button id="latestMonthBtn" class="btn btn-secondary mb-3">1 เดือน</button>
+
                         <!-- ✅ Checkbox Controls -->
                         <div id="website-controls" class="mb-3"></div>
 

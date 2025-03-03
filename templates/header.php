@@ -15,6 +15,7 @@
           <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
               <li><a class="dropdown-item" href="../../pages/dashboard/dashboard_orders.php">Orders</a></li>
               <li><a class="dropdown-item" href="../../pages/dashboard/dashboard_po.php">PO</a></li>
+              <li><a class="dropdown-item" href="../../pages/dashboard/dashboard_po.php">Stock</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown">
