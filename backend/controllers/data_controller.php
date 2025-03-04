@@ -732,11 +732,12 @@
             SELECT 
               YEAR($date) as year,
               MONTH($date) as month,
+              DAY($date) as day,
               COUNT(*) as count
             FROM $table
             WHERE $key = :value
-            GROUP BY year, month
-            ORDER BY year, month;
+            GROUP BY year, month, day
+            ORDER BY year, month, day;
             ";
     
             $stmt = $conn->prepare($query);
@@ -748,16 +749,28 @@
             $groupedData = [];
             foreach ($result as $row) {
                 $year = $row["year"];
-                $month = $row["month"] - 1;
+                $month = $row["month"] - 1; // index เดือนเริ่มที่ 0
+                $day = $row["day"] - 1; // index วันเริ่มที่ 0
                 $count = $row["count"];
     
+                // ตรวจสอบจำนวนวันของเดือนนั้น ๆ
+                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month + 1, $year);
+    
+                // ถ้ายังไม่มีปีนี้ใน array ให้สร้าง entry ใหม่
                 if (!isset($groupedData[$year])) {
-                    $groupedData[$year] = array_fill(0, 12, 0);
+                    $groupedData[$year] = [];
                 }
     
-                $groupedData[$year][$month] = $count;
+                // ถ้ายังไม่มีเดือนนี้ในปี ให้สร้าง array ที่มีขนาดเท่าจำนวนวันของเดือน
+                if (!isset($groupedData[$year][$month])) {
+                    $groupedData[$year][$month] = array_fill(0, $daysInMonth, 0);
+                }
+    
+                // ใส่ค่าจำนวน order ลงใน index ของเดือนและวัน
+                $groupedData[$year][$month][$day] = $count;
             }
     
+            // แปลงข้อมูลให้อยู่ในรูปแบบ JSON
             $formattedData = [];
             foreach ($groupedData as $year => $months) {
                 $formattedData[] = [
@@ -772,4 +785,6 @@
             return null;
         }
     }
+    
+
 ?>
