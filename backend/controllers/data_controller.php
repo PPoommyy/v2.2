@@ -746,6 +746,25 @@
     
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
+            /* $groupedData = [];
+            foreach ($result as $row) {
+                $year = $row["year"];
+                $month = $row["month"] - 1;
+                $day = $row["day"] - 1;
+                $count = $row["count"];
+    
+                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month + 1, $year);
+    
+                if (!isset($groupedData[$year])) {
+                    $groupedData[$year] = [];
+                }
+    
+                if (!isset($groupedData[$year][$month])) {
+                    $groupedData[$year][$month] = array_fill(0, $daysInMonth, 0);
+                }
+    
+                $groupedData[$year][$month][$day] = $count;
+            } */
             $groupedData = [];
             foreach ($result as $row) {
                 $year = $row["year"];
@@ -753,24 +772,24 @@
                 $day = $row["day"] - 1; // index วันเริ่มที่ 0
                 $count = $row["count"];
     
-                // ตรวจสอบจำนวนวันของเดือนนั้น ๆ
-                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month + 1, $year);
-    
                 // ถ้ายังไม่มีปีนี้ใน array ให้สร้าง entry ใหม่
                 if (!isset($groupedData[$year])) {
-                    $groupedData[$year] = [];
-                }
-    
-                // ถ้ายังไม่มีเดือนนี้ในปี ให้สร้าง array ที่มีขนาดเท่าจำนวนวันของเดือน
-                if (!isset($groupedData[$year][$month])) {
-                    $groupedData[$year][$month] = array_fill(0, $daysInMonth, 0);
+                    $groupedData[$year] = array_fill(0, 12, array_fill(0, 31, 0));
                 }
     
                 // ใส่ค่าจำนวน order ลงใน index ของเดือนและวัน
                 $groupedData[$year][$month][$day] = $count;
             }
     
-            // แปลงข้อมูลให้อยู่ในรูปแบบ JSON
+            // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
+            $formattedData = [];
+            foreach ($groupedData as $year => $months) {
+                $formattedData[] = [
+                    "year" => $year,
+                    "months" => $months
+                ];
+            }
+    
             $formattedData = [];
             foreach ($groupedData as $year => $months) {
                 $formattedData[] = [
