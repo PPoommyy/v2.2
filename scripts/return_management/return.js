@@ -17,9 +17,38 @@ const get_requests = async (table, limit, page) => {
         ];
         const filterValues = getFilterValues();
         const where = [];
+
         // order_date BETWEEN order_date_start AND order_date_end
+        if (filterValues.order_date_start.include && filterValues.order_date_end.include) {
+            where.push([
+                "order_date", 
+                "BETWEEN", 
+                [filterValues.order_date_start.value, filterValues.order_date_end.value]
+            ]);
+        }
+
+        // request_date BETWEEN request_date_start AND request_date_end
+        if (filterValues.request_date_start.include && filterValues.request_date_end.include) {
+            where.push([
+                "request_date", 
+                "BETWEEN", 
+                [filterValues.request_date_start.value, filterValues.request_date_end.value]
+            ]);
+        }
+
         // request_status_id = request_status_id
+        if (filterValues.request_status_id.include) {
+            where.push(["request_status_id", "=", parseInt(filterValues.request_status_id.value)]);
+        }
+
+        // request_type_id = request_type_id
+        if (filterValues.request_type_id.include) {
+            where.push(["request_type_id", "=", parseInt(filterValues.request_type_id.value)]);
+        }
+
         console.log(where);
+        console.log("WHERE Condition:", JSON.stringify(where, null, 2));
+
         const response = await DataController.select(table, column, "request_date", limit, page, join, where);
         console.log(response);
         return response;

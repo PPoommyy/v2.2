@@ -14,9 +14,12 @@
     $logical_operator = isset($requestData['logical_operator']) ? $requestData['logical_operator'] : "AND";
 
     try {
-        $res = json_decode(select($conn, $table, $column, $order_by, $limit, $page, $join, $where, $logical_operator), true);
+        $responseData = select($conn, $table, $column, $order_by, $limit, $page, $join, $where, $logical_operator);
+        $response = json_decode($responseData, true);
+
         $response = [
-            'status' => $res
+            'status' => $response['result'],
+            'query' => $response['query']
         ];
 
         $jsonData = json_encode($response);
