@@ -37,11 +37,13 @@ const createHeaderCell = (value, colSpan, rowSpan) => {
     return cell;
 };
 
-const createSpanCell = (value, colSpan, rowSpan) => {
+const createSpanCell = (value, colSpan, rowSpan, classList = null) => {
     const cell = document.createElement('td');
     const span = document.createElement('span');
     if (colSpan) cell.colSpan = colSpan;
     if (rowSpan) cell.rowSpan = rowSpan;
+    if (classList) classList.forEach(className => cell.classList.add(className));
+    
     span.innerText = value;
     cell.appendChild(span);
     return cell;

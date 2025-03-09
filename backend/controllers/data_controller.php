@@ -489,22 +489,20 @@
         }
     }
 
-    function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $joins = [], $where = [], $logical_operator = 'AND') {
+    function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND') {
         try {
             $columnList = implode(", ", $key);
             $query = "SELECT $columnList FROM $table";
-            foreach ($joins as $join) {
-                $tableToJoin = $join[0];
-                $firstCondition = $join[1];
-                $secondCondition = $join[2];
-                $query .= " JOIN $tableToJoin ON $firstCondition = $secondCondition";
+            if (!empty($joins)) {
+                foreach ($joins as $join) {
+                    $query .= " JOIN $join[0] ON $join[1] = $join[2]";
+                }
             }
             if (!empty($where)) {
                 $whereClauses = [];
                 foreach ($where as $condition) {
                     $column = $condition[0];
                     $operator = $condition[1];
-                    $value = $condition[2];
                     $whereClauses[] = "$column $operator :$column";
                 }
                 $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
@@ -523,7 +521,7 @@
                 foreach ($where as $condition) {
                     $column = $condition[0];
                     $value = $condition[2];
-                    $stmt->bindValue(":$column", $value);
+                    $stmt->bindParam(":$column", $value);
                 }
             }
             if ($limit) {
@@ -536,7 +534,7 @@
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
             return json_encode($result);
         } catch (PDOException $e) {
-            return $e;
+            return $query;
         }
     }    
 
