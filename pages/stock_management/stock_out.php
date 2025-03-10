@@ -18,14 +18,19 @@
                 </div>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-7 row">
-                <div class="container" id="select-product-container">
-                <p>Add product: <div class="container" id="timesort-container">
-                <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add</button></p>
+                <div class="row mb-5">
+                    <div class="container" id="select-product-container">
+                        <p>Add product: 
+                            <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add</button>
+                            <button id="download-template" class="btn btn-warning"><i class="fa fa-file-arrow-down"></i> Download Template</button>
+                            <button id="import-csv" class="btn btn-warning"><i class="fa fa-file-csv"></i> import csv</button>
+                        </p>
+                    </div>
                 </div>
                 <div class="col-sm-12 col-md-12 col-lg-12" id="item-data-container"></div>
                 <div class="row mb-3">
                     <div class="col-6"></div>
-                    <button id="insert-stock" class="btn btn-warning"><i class="fa fa-save"></i> Insert</button>
+                    <button id="update-stock" class="btn btn-warning"><i class="fa fa-save"></i> Update</button>
                 </div>
             </div>
         </div>
@@ -34,6 +39,7 @@
         </div>
     </div>
     <?php include("../../templates/footer.php"); ?>
+    <script src="../../assets/js/exceljs4.4.0.min.js"></script>
     <script type="module" src="../../scripts/stock_management/stock_out.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
+import { Downloader } from "../../components/Downloader.js";
 
 const get_stock_search = async(searchTerm) => {
     try {
@@ -176,8 +177,91 @@ const generateItemListTable = () => {
     tableElement.appendChild(tableBody);
     itemDataContainer.appendChild(tableElement);
 }
+
+const handleCSVImport = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+
+    input.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            const reader = new FileReader();
+            reader.readAsText(file, "utf-8");
+
+            reader.onload = async (e) => {
+                const csvData = e.target.result;
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet("Sheet1");
+
+                const rows = csvData.split("\n").map(row => row.split(","));
+                
+                rows.forEach((row, index) => {
+                    worksheet.addRow(row);
+                });
+
+                const tbody = document.getElementById('item-list-body');
+
+                for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+                    const row = worksheet.getRow(rowNumber);
+                    const order_product_name = row.getCell(1).value;
+                    const quantity_to_issue = parseInt(row.getCell(2).value);
+
+                    if (!order_product_name || !quantity_to_issue || isNaN(quantity_to_issue)) continue;
+
+                    const stockData = await get_stock_search(order_product_name);
+                    if (!stockData || stockData.data.length === 0) {
+                        Alert.showErrorMessage(`❌ ไม่พบสินค้า: ${order_product_name}`);
+                        continue;
+                    }
+
+                    const product = stockData.data[0];
+                    const sku_settings_id = product.id;
+                    const total_remaining = product.total_remaining;
+
+                    const tableRow = document.createElement('tr');
+                    tableRow.classList.add('item', 'row');
+
+                    const skuInput = createInput('text', 'order-product-sku', order_product_name, true);
+                    skuInput.setAttribute('order_product_id', sku_settings_id);
+                    skuInput.setAttribute('order_product_name', order_product_name);
+                    tableRow.appendChild(createTableCell(skuInput, 6));
+
+                    const remainingQuantityInput = createInput('number', 'total-remaining', total_remaining, true);
+                    tableRow.appendChild(createTableCell(remainingQuantityInput, 2));
+
+                    const quantityInput = createInput('number', 'quantity-to-issue', (quantity_to_issue>total_remaining?total_remaining:quantity_to_issue), false);
+                    quantityInput.min = 1;
+                    quantityInput.max = total_remaining;
+                    tableRow.appendChild(createTableCell(quantityInput, 2));
+
+                    const removeButton = document.createElement('button');
+                    removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
+                    removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+                    removeButton.addEventListener('click', () => {
+                        tableRow.remove();
+                    });
+                    tableRow.appendChild(createTableCell(removeButton, 2));
+
+                    tbody.appendChild(tableRow);
+                }
+
+                Alert.showSuccessMessage("📥 CSV นำเข้าสำเร็จ!", "success");
+            };
+        } catch (error) {
+            console.error(error);
+            Alert.showErrorMessage("❌ ล้มเหลวในการนำเข้า CSV", "danger");
+        }
+    });
+
+    input.click();
+};
+
 const addProductButton = document.getElementById('add-product');
-const insertStockButton = document.getElementById('insert-stock');
+const updateStockButton = document.getElementById('update-stock');
+const importCSVButton = document.getElementById('import-csv');
 
 addProductButton.addEventListener('click', function (event) {
     event.preventDefault();
@@ -192,7 +276,7 @@ addProductButton.addEventListener('click', function (event) {
     const remainingQuantityInput = createInput('number', 'total-remaining', 1, false);
     tableRow.appendChild(createTableCell(remainingQuantityInput, 2));
 
-    const quantityInput = createInput('number', 'quantity', 1, false);
+    const quantityInput = createInput('number', 'quantity-to-issue', 1, false);
     quantityInput.min = 1;
     tableRow.appendChild(createTableCell(quantityInput, 2));
 
@@ -225,38 +309,36 @@ addProductButton.addEventListener('click', function (event) {
     tbody.appendChild(tableRow);
 });
 
-insertStockButton.addEventListener('click', async function (event) {
+updateStockButton.addEventListener('click', async function (event) {
     event.preventDefault();
     const itemRows = document.querySelectorAll('.item');
     const items = Array.from(itemRows).map((itemRow) => {
         const skuInput = itemRow.querySelector('.order-product-sku');
-        const quantityInput = itemRow.querySelector('.quantity-purchased');
+        const quantityInput = itemRow.querySelector('.quantity-to-issue');
         return {
-            sku_settings_id: skuInput.getAttribute('order_product_id'),
-            quantity: quantityInput.value,
-            total_remaining: quantityInput.value
-        }
+            sku_settings_id: parseInt(skuInput.getAttribute('order_product_id')),
+            quantity_to_issue: parseInt(quantityInput.value),
+        };
     });
-    // console.log(items);
-    
+
+    if (items.length === 0) {
+        Alert.showErrorMessage("⚠️ ไม่มีข้อมูลให้ส่งอัปเดต!", "warning");
+        return;
+    }
+
     try {
         toggleSpinner(true);
-        // const response = await DataController.insert("stock", items);
-        items.forEach(async (item) => {
-            const response = await DataController.insert("stock", item);
-            console.log(response);
-        });
-        Alert.showSuccessMessage("Stock inserted successfully", "success");
-        setTimeout(() => {
-            // location.reload();
-        }, 3000);
+        const response = await update_stock(items);
+        Alert.showSuccessMessage("✅ อัปเดตสต็อกสำเร็จ!", "success");
     } catch (error) {
         console.error(error);
-        Alert.showErrorMessage("Failed to insert stock", "danger");
+        Alert.showErrorMessage("❌ ล้มเหลวในการอัปเดตสต็อก", "danger");
     } finally {
         toggleSpinner(false);
     }
 });
+
+importCSVButton.addEventListener('click', handleCSVImport);
 
 document.addEventListener('DOMContentLoaded', () => {
     toggleSpinner(false);

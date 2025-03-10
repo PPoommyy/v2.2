@@ -124,25 +124,24 @@ const generateTable = async(table, limit, page) => {
         }
         else if (table === "stock_out") {
             const stockData = stock.data.stock_out;
-            // console.log(stockData);
-            tableHeaders = ["", "Product Name", "Receive Quantity","Remaining Quantity", "Received Date"];
+            console.log(stockData);
+            tableHeaders = ["", "Product Name", "Issued Quantity", "Issued Date"];
             tableHeaders.forEach(header => {
                 const th = document.createElement('th');
                 th.textContent = header;
                 tableHeaderRow.appendChild(th);
             });
             stockData.forEach((stock, index) => {
-                const { stock_id, product_order_product_sku, received_quantity, remaining_quantity, received_date } = stock;
+                const { stock_out_id, product_order_product_sku, sku_settings_id, issued_quantity, issued_date } = stock;
                 const tableRow = document.createElement('tr');
                 const checkboxInput = document.createElement('input');
                 checkboxInput.type = 'checkbox';
                 checkboxInput.name = 'items';
-                checkboxInput.value = stock_id;
+                checkboxInput.value = stock_out_id;
                 tableRow.appendChild(Cell.createElementCell(checkboxInput, false, false, ['th', 'w-auto', 'text-center', 'd-flex', 'justify-content-center']));
                 tableRow.appendChild(Cell.createSpanCell(product_order_product_sku, false, false));
-                tableRow.appendChild(Cell.createSpanCell(received_quantity, false, false));
-                tableRow.appendChild(Cell.createSpanCell(remaining_quantity, false, false));
-                tableRow.appendChild(Cell.createSpanCell(received_date, false, false));
+                tableRow.appendChild(Cell.createSpanCell(issued_quantity, false, false));
+                tableRow.appendChild(Cell.createSpanCell(issued_date, false, false));
                 tableBody.appendChild(tableRow);
             });
             tableHeader.appendChild(tableHeaderRow);
