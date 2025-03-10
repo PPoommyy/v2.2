@@ -74,5 +74,7 @@
       </ul>
     </div>
   </div>
-  <script type="module" src="../../scripts/checkSessionExpiration.js"></script>
+  <!-- <script type="module" src="../../scripts/checkSessionExpiration.js"></script> -->
+  <script type="module" src="../../scripts/lokin/header.js"></script>
+
 </nav>
