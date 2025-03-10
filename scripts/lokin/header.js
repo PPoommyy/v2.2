@@ -41,9 +41,17 @@ const menus = {
         "icon": "fa-gear",
         "label": "Settings",
         "submenus": [
+            { "name": "user_setting", "label": "User Settings", "link": "../../pages/settings/user_setting.php" },
             { "name": "sku_setting", "label": "SKU Settings", "link": "../../pages/settings/sku_setting.php" },
+            { "name": "product_set_setting", "label": "Product Set Settings", "link": "../../pages/settings/product_set_setting.php" },
             { "name": "factory_setting", "label": "Factory Settings", "link": "../../pages/settings/factory_setting.php" },
-            { "name": "product_set_setting", "label": "Product Set Settings", "link": "../../pages/settings/product_set_setting.php" }
+            { "name": "website_setting", "label": "Website Settings", "link": "../../pages/settings/website_setting.php" },
+            { "name": "currency_setting", "label": "Currency Settings", "link": "../../pages/settings/currency_setting.php" },
+            { "name": "invoice_setting", "label": "Invoice Settings", "link": "../../pages/settings/invoice_setting.php" },
+            { "name": "sku_brands_setting", "label": "SKU Brands Settings", "link": "../../pages/settings/sku_brands_setting.php" },
+            { "name": "warehouse_skus_setting", "label": "Warehouse SKU Settings", "link": "../../pages/settings/warehouse_skus_setting.php" },
+            { "name": "payment_method_setting", "label": "Payment Method Settings", "link": "../../pages/settings/payment_method_setting.php" },
+            { "name": "service_method_setting", "label": "Service Method Settings", "link": "../../pages/settings/service_method_setting.php" }
         ]
     }
 };
