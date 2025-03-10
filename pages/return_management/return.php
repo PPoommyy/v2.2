@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <div class="container mt-4">
         <div class="col-sm-12 col-md-6 col-lg-6 card mb-3 p-3 justify-content-start">
             <p class="h1 mb-4">Request Management</p>
@@ -113,7 +113,7 @@
             </div>
         </div>
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
     <script type="module" src="../../scripts/return_management/return.js"></script>
 </body>
 </html>

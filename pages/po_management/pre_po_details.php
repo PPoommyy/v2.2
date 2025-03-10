@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php'); ?>
+<?php include('../../templates_/metadata.php'); ?>
 <?php 
     $po_order_id = isset($_GET['po_order_id']) ? $_GET['po_order_id'] : null;
 ?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <input id="orderId" type="hidden" value="<?php echo $po_order_id ?>">
     <div class="container py-4">
         <div class="d-flex align-items-center mb-4">
@@ -87,7 +87,7 @@
             </div>
         </div>
     </div>
-    <?php include('../../templates/footer.php');?>
+    <?php include('../../templates_/footer.php');?>
     <script type='module' src="../../scripts/po_management/pre_po_details.js"></script>
     <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>

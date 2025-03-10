@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata_.php'); ?>
+<?php include('../../templates_/metadata_.php'); ?>
 
 <body>
-    <?php include('../../templates/header_.php'); ?>
+    <?php include('../../templates_/header_.php'); ?>
 
     <div class="container mt-4">
         <div class="card bg-light shadow-sm p-4">
@@ -79,7 +79,7 @@
         </div>
     </div>
 
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
     <script type="module" src="../../scripts/return_management/return_form.js"></script>
 </body>
 </html>

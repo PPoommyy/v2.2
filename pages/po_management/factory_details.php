@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php'); ?>
+<?php include('../../templates_/metadata.php'); ?>
 <?php 
     $factory_id = isset($_GET['factory_id']) ? $_GET['factory_id'] : null;
 ?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <input id="factoryId" type="hidden" value="<?php echo $factory_id ?>">
     <div class="container">
         <p class="mb-4">
@@ -98,7 +98,7 @@
             </div>
         </div>
     </div>
-    <?php include('../../templates/footer.php');?>
+    <?php include('../../templates_/footer.php');?>
     <script type='module' src="../../scripts/po_management/factory_details.js"></script>
 </body>
 </html>

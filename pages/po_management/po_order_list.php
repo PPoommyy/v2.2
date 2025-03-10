@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <div class="container">
         <div class="mb-3"></div>
         <div class="col-sm-12 col-md-6 col-lg-6 card mb-3 p-3 justify-content-start">
@@ -156,7 +156,7 @@
             </div>
         </div>
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
 </body>
 <script src="../assets/js/exceljs4.4.0.min.js"></script>
 <script type="module" src="../../scripts/po_management/po_order_list.js"></script>

@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php'); ?>
+<?php include('../../templates_/metadata.php'); ?>
 <?php 
     $po_order_id = isset($_GET['po_order_id']) ? $_GET['po_order_id'] : null;
 ?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <input id="orderId" type="hidden" value="<?php echo $po_order_id ?>">
     <div class="container">
         <p class="mb-4">
@@ -159,7 +159,7 @@
         <p class="h2">Recently Added/Updated Orders</p>
         <div id="order-data-container" class="overflow-scroll"></div>
     </div>
-    <?php include('../../templates/footer.php');?>
+    <?php include('../../templates_/footer.php');?>
     <script type='module' src="../../scripts/po_management/po_order_details.js"></script>
 </body>
 </html>

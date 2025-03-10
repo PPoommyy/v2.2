@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <div class="container">
         <div class="row">
             <div class="col-md-3"></div>
@@ -57,7 +57,7 @@
             <div class="col-md-3"></div>
         </div>        
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
     <script type="module" src="../../scripts/settings/payment_method_setting.js"></script>
 </body>
 </html>

@@ -1,23 +1,34 @@
 <?php
-include('../config.php');
+    include('../config.php');
+    include('../controllers/user_controller.php');
 
-header('Content-Type: application/json');
-session_start();
-
-$data = json_decode(file_get_contents("php://input"), true);
-$email = $data['email'];
-$password = $data['password'];
-
-$stmt = $conn->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-
-if ($user && password_verify($password, $user['password_hash'])) {
-    $_SESSION['user_id'] = $user['id'];
-    echo json_encode(["status" => "success", "user" => $user]);
-} else {
-    echo json_encode(["status" => "error", "message" => "Invalid credentials"]);
-}
+    try {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $email = $data['email'];
+        $password = $data['password'];
+        $user = json_decode(get_user_by_email($conn, $email), true);
+        if($user) {
+            if(password_verify($password, $user[0]['password_hash'])) {
+                $permissions = json_decode(get_permissions_by_user_id($conn, $user[0]['id']), true);
+                $user[0]['permissions'] = $permissions;
+                $response = [
+                    'message' => 'Login successful',
+                    'user' => $user,
+                    // 'permissions' => $permissions
+                ];
+            } else {
+                $response = [
+                    'message' => 'Invalid password'
+                ];
+            }
+        } else {
+            $response = [
+                'message' => 'User not found'
+            ];
+        }
+        $jsonData = json_encode($response);
+        echo $jsonData;
+    } catch (\Exception $e) {
+        echo $e->getMessage();
+    }
 ?>

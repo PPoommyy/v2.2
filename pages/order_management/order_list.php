@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <input type="hidden" id="filePathInput" value="../reports/download_orders_2.xlsx">
     <div class="container">
         <div class="mb-3"></div>
@@ -209,7 +209,7 @@
             </div>
         </div>
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
 </body>
 <script src="../../assets/js/exceljs4.4.0.min.js"></script>
 <script type="module" src="../../scripts/order_management/order_list.js"></script>

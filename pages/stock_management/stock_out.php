@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <div class="container">
         <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-5 container">
@@ -38,7 +38,7 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
     <script src="../../assets/js/exceljs4.4.0.min.js"></script>
     <script type="module" src="../../scripts/stock_management/stock_out.js"></script>
 </body>

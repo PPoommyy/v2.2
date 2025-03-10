@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <div class="container">
         <button class="btn btn-secondary dropdown-toggle overflow-hidden visually-hidden" type="button" id="limitDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             100
@@ -52,7 +52,7 @@
             </div>
         </div>
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
     <script type="module" src="../../scripts/settings/factory_setting.js"></script>
 </body>
 </html>

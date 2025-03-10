@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php'); ?>
+<?php include('../../templates_/metadata.php'); ?>
 <body class="bg-light">
 
-    <?php include('../../templates/header.php'); ?>
+    <?php include('../../templates_/header.php'); ?>
 
     <div class="container mt-4">
         <div class="row justify-content-center">
@@ -75,7 +75,7 @@
         </div>
     </div>
 
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
 
     <!-- Dashboard Script -->
     <script type="module" src="../../scripts/dashboard/dashboard_orders.js"></script>

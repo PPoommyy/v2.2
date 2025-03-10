@@ -2,32 +2,35 @@
 <html lang="en">
 <head>
     <title>Login</title>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <form id="loginForm">
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await axios.post('backend/auth.php', { email, password });
-                if (response.data.status === "success") {
-                    localStorage.setItem('user', JSON.stringify(response.data.user));
-                    window.location.href = 'dashboard.php';
-                } else {
-                    alert(response.data.message);
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        });
-    </script>
+    <!-- use bootstrap 5 to create beautiful login page for order management webapp -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 mt-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Login</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="loginForm">
+                            <div class="form-group
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="form-group
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php include("../../templates_/footer.php"); ?>
+    <script type="module" src="../../scripts/lokin/lokin.js"></script>
 </body>
 </html>

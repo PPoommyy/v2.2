@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates/metadata.php');?>
+<?php include('../../templates_/metadata.php');?>
 <body>
-    <?php include('../../templates/header.php');?>
+    <?php include('../../templates_/header.php');?>
     <div class="container">
         <p class="h1 mb-3">SKU Settings 
             <button id="add-button" class="btn btn-warning">
@@ -67,7 +67,7 @@
             </div>
         </div>
     </div>
-    <?php include("../../templates/footer.php"); ?>
+    <?php include("../../templates_/footer.php"); ?>
     <script type="module" src="../../scripts/settings/sku_setting.js"></script>
 </body>
 </html>
