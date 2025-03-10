@@ -38,6 +38,6 @@
     </div>
     <?php include("../../templates/footer.php"); ?>
 </body>
-<script src="../assets/js/exceljs4.4.0.min.js"></script>
+<script src="../../assets/js/exceljs4.4.0.min.js"></script>
 <script type="module" src="../../scripts/po_management/pre_po.js"></script>
 </html>

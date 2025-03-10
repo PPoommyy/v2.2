@@ -75,23 +75,15 @@ async function download(pathname) {
     }
 }
 
-const select = async(table, column, orderBy, limit, page) => {
+const select = async(table, column, order_by, limit, page, join = [], where = [], logical_operator) => {
     try {
         const response = await axios.post(
-            `../../backend/select/select.php`,
+            `../../backend/select/select.php?table=${table}&order_by=${order_by}&limit=${limit}&page=${page}`,
             {
-                column
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                parameters: {
-                    'table': table,
-                    'limit': limit,
-                    'page': page,
-                    'order_by': orderBy
-                }
+                column,
+                join,
+                where,
+                logical_operator
             }
         );
         return response.data;

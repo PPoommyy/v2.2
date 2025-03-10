@@ -132,23 +132,6 @@ async function generateTable(limit, page) {
             const tableRow = document.createElement('tr');
             const { details, items, all_total, files, tracking } = order;
             const { timesort, order_id, buyer_name, website_name, currency_code, order_status, fulfillment_status, order_note } = details;
-            /* 
-                tableRow.appendChild(Cell.createInputOnModalCell('Id', serviceMethod.id, 'id', serviceMethod.id));
-                tableRow.appendChild(Cell.createInputOnModalCell('Name', serviceMethod.id, 'name', serviceMethod.name));
-            */
-            /* tableRow.innerHTML =
-                `<th rowspan=${items.length}>
-                    <input type="checkbox" name="items" value=${timesort} />
-                 </th>
-                 <td rowspan=${items.length}><a href="order_details.php?order_id=${order_id}">View Detail</a></td>
-                 <td rowspan=${items.length}>${timesort}</td>
-                 <td rowspan=${items.length}>${buyer_name}</td>
-                 <td>${items[0].report_product_name}</td>
-                 <td rowspan=${items.length}>${website_name}</td>
-                 <td rowspan=${items.length}>${all_total.toFixed(2)}</td>
-                 <td rowspan=${items.length}>${currency_code}</td>
-                 <td rowspan=${items.length}>${order_status_id}</td>
-                 <td rowspan=${items.length}>${fulfillment_status}</td>`; */
             const checkboxInput = document.createElement('input');
             checkboxInput.type = 'checkbox';
             checkboxInput.name = 'items';
@@ -159,6 +142,7 @@ async function generateTable(limit, page) {
             linkDetails.innerText = 'View Detail';
             const isCancel = buyer_name.split(' ')[0] == 'ยกเลิก';
             const buyerNameSpan = document.createElement('span');
+
             if (isCancel) {
                 buyerNameSpan.classList.add('text-danger');
                 buyerNameSpan.innerHTML = `(ยกเลิก แก้ไขเป็น ${buyer_name.split(' ')[1]})`;
@@ -176,7 +160,6 @@ async function generateTable(limit, page) {
                 paperClipIcon.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'fa-solid', 'fa-paperclip', 'me-1');
                 timesortDiv.appendChild(paperClipIcon);
             
-                // Add click event listener to paperClipIcon button
                 paperClipIcon.addEventListener('click', () => handlePaperClipIconClick(files));
             }
 
@@ -204,10 +187,7 @@ async function generateTable(limit, page) {
                 const trackingNumber = tracking[0].tracking_number || null;
                 const trackingID = tracking[0].tracking_id || null;
                 const color = trackingNumber ? (trackingID ? "success" : "warning") : "danger";
-            
-                // console.log(`Tracking`, tracking);
-                // console.log(`TrackingID ${trackingID} TrackingID == null ? ${trackingID === null}`);
-            
+
                 // Create the envelopeIcon button
                 const envelopeIcon = document.createElement('button');
                 envelopeIcon.classList.add('btn', `btn-outline-${color}`, 'btn-sm', 'fa-solid', 'fa-envelope-circle-check', 'me-1');
@@ -430,14 +410,14 @@ function generateFileListContent(files) {
         if (isImageFile(file.file_name)) {
             // Display image if it's an image file
             const imageElement = document.createElement('img');
-            imageElement.src = file.file_pathname;
+            imageElement.src = "../"+file.file_pathname;
             imageElement.alt = file.file_name;
             imageElement.classList.add('img-fluid', 'mb-2'); // Use Bootstrap img-fluid class for responsive images
             fileItem.appendChild(imageElement);
         } else if (isTxtFile(file.file_name)) {
             // Display .txt file using iframe
             const iframeElement = document.createElement('iframe');
-            iframeElement.src = file.file_pathname;
+            iframeElement.src = "../"+file.file_pathname;
             iframeElement.width = '100%'; // Use Bootstrap width class for responsiveness
             iframeElement.classList.add('border', 'p-2', 'mb-2'); // Add border, padding, and margin
             fileItem.appendChild(iframeElement);

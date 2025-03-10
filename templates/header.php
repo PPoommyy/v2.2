@@ -42,6 +42,11 @@
               <i class="fa-solid fa-warehouse"></i> Stock
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" role="button" href="../../pages/return_management/return.php">
+              <i class="fa-solid fa-rotate-left"></i> Return
+          </a>
+        </li>
         <li class="nav-item dropdown">
             <a class="nav-link" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fa-solid fa-gear"></i> Settings

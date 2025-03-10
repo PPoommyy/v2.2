@@ -489,56 +489,81 @@
         }
     }
 
-    function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $joins = [], $where = [], $logical_operator = 'AND') {
+    function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND') {
         try {
             $columnList = implode(", ", $key);
             $query = "SELECT $columnList FROM $table";
-            foreach ($joins as $join) {
-                $tableToJoin = $join[0];
-                $firstCondition = $join[1];
-                $secondCondition = $join[2];
-                $query .= " JOIN $tableToJoin ON $firstCondition = $secondCondition";
-            }
-            if (!empty($where)) {
-                $whereClauses = [];
-                foreach ($where as $condition) {
-                    $column = $condition[0];
-                    $operator = $condition[1];
-                    $value = $condition[2];
-                    $whereClauses[] = "$column $operator :$column";
+    
+            if (!empty($joins)) {
+                foreach ($joins as $join) {
+                    if (count($join) == 3) {
+                        $query .= " JOIN $join[0] ON $join[1] = $join[2]";
+                    }
                 }
-                $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
             }
+    
+            $whereClauses = [];
+            $params = [];
+            if (!empty($where)) {
+                foreach ($where as $index => $condition) {
+                    if (count($condition) < 3) continue;
+                    $column = $condition[0];
+                    $operator = strtoupper($condition[1]);
+                    $paramKey = ":param$index";
+    
+                    if ($operator === 'BETWEEN' && is_array($condition[2]) && count($condition[2]) == 2) {
+                        $paramKey1 = ":param" . $index . "_1";
+                        $paramKey2 = ":param" . $index . "_2";
+                        $whereClauses[] = "$column BETWEEN $paramKey1 AND $paramKey2";
+                        $params[$paramKey1] = $condition[2][0];
+                        $params[$paramKey2] = $condition[2][1];
+                    } elseif ($operator === 'IN' && is_array($condition[2])) {
+                        $inParams = [];
+                        foreach ($condition[2] as $i => $val) {
+                            $inKey = ":param" . $index . "_" . $i;
+                            $inParams[] = $inKey;
+                            $params[$inKey] = $val;
+                        }
+                        $whereClauses[] = "$column IN (" . implode(",", $inParams) . ")";
+                    } else {
+                        $whereClauses[] = "$column $operator $paramKey";
+                        $params[$paramKey] = $condition[2];
+                    }
+                }
+                if (!empty($whereClauses)) {
+                    $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
+                }
+            }
+    
             if ($order_by) {
                 $query .= " ORDER BY $order_by ASC";
             }
+    
             if ($limit) {
                 $query .= " LIMIT :limit";
+                $params[':limit'] = (int) $limit;
             }
             if ($offset) {
                 $query .= " OFFSET :offset";
+                $params[':offset'] = (int) $offset;
             }
+    
             $stmt = $conn->prepare($query);
-            if (!empty($where)) {
-                foreach ($where as $condition) {
-                    $column = $condition[0];
-                    $value = $condition[2];
-                    $stmt->bindValue(":$column", $value);
+            foreach ($params as $param => $value) {
+                if (is_numeric($value)) {
+                    $stmt->bindValue($param, (int)$value, PDO::PARAM_INT);
+                } else {
+                    $stmt->bindValue($param, $value);
                 }
             }
-            if ($limit) {
-                $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-            }
-            if ($offset) {
-                $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-            }
+    
             $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-            return json_encode($result);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return json_encode(["result" => $result, "query" => $params]);
         } catch (PDOException $e) {
-            return $e;
+            return json_encode(["error" => $e->getMessage(), "query" => $query]);
         }
-    }    
+    }        
 
     function select_count($conn, $table, $order_by) {
         try {

@@ -19,16 +19,15 @@ const readExcel = async (fileName) => {
 const readCSV = async (fileName) => {
     try {
         const response = await axios.get(`../../backend/file/read_file.php?fileName=${fileName}`, {
-            responseType: 'text', // Fetch CSV as text
+            responseType: 'text',
         });
 
         const csvData = response.data;
 
-        // Split the CSV data into rows and columns
         const rows = csvData.split(/\r\n|\n/);
         const data = rows.map(row => row.split(','));
 
-        return data; // 2D array of CSV data
+        return data;
     } catch (error) {
         console.error("Error reading CSV file:", error);
         throw error;
@@ -1296,6 +1295,7 @@ const generateUserDataCSV = async (userData) => {
 }
 
 export const Downloader = {
+    readCSV,
     generateInvoiceExcel,
     generateOrderExcel,
     generateOrderExcel2,

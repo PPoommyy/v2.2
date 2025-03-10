@@ -95,6 +95,7 @@
                 so.issued_date
             FROM stock_out so
             JOIN sku_settings ss ON so.sku_settings_id = ss.id
+            JOIN stock s ON so.stock_id = s.id
             ORDER BY so.issued_date DESC;
             ";
             if ($limit) {
@@ -156,14 +157,40 @@
         }
     }
     
-
     function update_stock($conn, $to_update) {
         try {
             $conn->beginTransaction();
+            $results = [];
     
             foreach ($to_update as $item) {
                 $sku_settings_id = $item['sku_settings_id'];
                 $quantity_to_issue = $item['quantity_to_issue'];
+                $total_issued = 0;
+    
+                // ดึงจำนวนสินค้าในคลังทั้งหมด
+                $checkStock = "SELECT SUM(remaining_quantity) AS total_stock FROM stock WHERE sku_settings_id = ?";
+                $stmt = $conn->prepare($checkStock);
+                $stmt->execute([$sku_settings_id]);
+                $stockInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+                $total_stock = $stockInfo['total_stock'] ?? 0;
+    
+                if ($total_stock === 0) {
+                    $results[] = [
+                        'sku_settings_id' => $sku_settings_id,
+                        'quantity_requested' => $quantity_to_issue,
+                        'quantity_issued' => 0,
+                        'status' => 'not_found'
+                    ];
+                    continue;
+                } elseif ($total_stock < $quantity_to_issue) {
+                    $results[] = [
+                        'sku_settings_id' => $sku_settings_id,
+                        'quantity_requested' => $quantity_to_issue,
+                        'quantity_issued' => $total_stock,
+                        'status' => 'not_enough'
+                    ];
+                    $quantity_to_issue = $total_stock;
+                }
     
                 while ($quantity_to_issue > 0) {
                     $sql = "SELECT id, remaining_quantity FROM stock 
@@ -176,7 +203,7 @@
                     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     
                     if (!$row) {
-                        throw new Exception("สินค้า SKU ID: $sku_settings_id มีไม่เพียงพอ!");
+                        break;
                     }
     
                     $stock_id = $row['id'];
@@ -192,6 +219,7 @@
                         $stmt = $conn->prepare($insertOut);
                         $stmt->execute([$stock_id, $sku_settings_id, $quantity_to_issue]);
     
+                        $total_issued += $quantity_to_issue;
                         $quantity_to_issue = 0;
                     } else {
                         $updateStock = "UPDATE stock SET remaining_quantity = 0 WHERE id = ?";
@@ -203,16 +231,26 @@
                         $stmt = $conn->prepare($insertOut);
                         $stmt->execute([$stock_id, $sku_settings_id, $remaining]);
     
+                        $total_issued += $remaining;
                         $quantity_to_issue -= $remaining;
                     }
+                }
+    
+                if ($total_issued > 0) {
+                    $results[] = [
+                        'sku_settings_id' => $sku_settings_id,
+                        'quantity_requested' => $item['quantity_to_issue'],
+                        'quantity_issued' => $total_issued,
+                        'status' => 'success'
+                    ];
                 }
             }
     
             $conn->commit();
-            return "Stock updated successfully!";
+            return $results;
         } catch (Exception $e) {
             $conn->rollBack();
-            return "Error: " . $e->getMessage();
+            return ['error' => $e->getMessage()];
         }
     }
 ?>
