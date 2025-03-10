@@ -746,25 +746,6 @@
     
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-            /* $groupedData = [];
-            foreach ($result as $row) {
-                $year = $row["year"];
-                $month = $row["month"] - 1;
-                $day = $row["day"] - 1;
-                $count = $row["count"];
-    
-                $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month + 1, $year);
-    
-                if (!isset($groupedData[$year])) {
-                    $groupedData[$year] = [];
-                }
-    
-                if (!isset($groupedData[$year][$month])) {
-                    $groupedData[$year][$month] = array_fill(0, $daysInMonth, 0);
-                }
-    
-                $groupedData[$year][$month][$day] = $count;
-            } */
             $groupedData = [];
             foreach ($result as $row) {
                 $year = $row["year"];

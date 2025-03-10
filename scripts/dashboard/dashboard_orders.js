@@ -5,8 +5,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     const toggleChart = document.getElementById("toggleChart");
     const websiteControls = document.getElementById("website-controls");
     const latestMonthBtn = document.getElementById("latestMonthBtn");
+    const latest3MonthsBtn = document.getElementById("latest3MonthsBtn");
+    const latest6MonthsBtn = document.getElementById("latest6MonthsBtn");
+    const latestYearBtn = document.getElementById("latestYearBtn");
+    const filterDateRangeBtn = document.getElementById("filterDateRangeBtn");
+    const dateStartInput = document.getElementById("order-date-input-start");
+    const dateEndInput = document.getElementById("order-date-input-end");
 
-    if (!orderDashboard || !toggleChart || !websiteControls || !latestMonthBtn) {
+    if (!orderDashboard || !toggleChart || !websiteControls) {
         console.error("Required elements not found!");
         return;
     }
@@ -19,17 +25,15 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let chartInstance = null;
     let fullDatasets = [];
-    let dailyDatasets = [];
     let selectedYear = new Date().getFullYear();
-    let latestMonthIndex = new Date().getMonth();
-    let latestYear = new Date().getFullYear();
-    let showLatestMonth = false;
-    let selectedWebsites = new Set()
-    let isShowChartChecked = toggleChart.checked; // เก็บค่าของ toggle switch
+    let selectedWebsites = new Set();
+    let showMonthRange = 12; // ค่าเริ่มต้นให้แสดงทั้งปี
+    let isShowChartChecked = toggleChart.checked;
 
     try {
         const response = await axios.get("../../backend/count/count_by.php?table=websites&column=*&order_by=id&key=website_id&data_key=id&date=payments_date&table_key=orders");
         const orderData = response.data;
+
         const availableYears = [...new Set(orderData.data.flatMap(site => site.count_datas.map(order => order.year)))];
         availableYears.sort((a, b) => b - a);
         availableYears.forEach((year) => {
@@ -38,6 +42,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             item.addEventListener("click", function () {
                 selectedYear = parseInt(this.querySelector("a").dataset.year);
                 yearDropdownButton.textContent = `ปี ${selectedYear}`;
+                showMonthRange = 12;
                 loadChartData();
             });
             yearDropdownMenu.appendChild(item);
@@ -53,21 +58,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             return `rgba(${r}, ${g}, ${b}, 1)`;
         }
 
-        const transparentize = (color, opacity) => color.replace("1)", `${opacity})`);
-
         const monthLabels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const latestMonthDays = new Date(latestYear, latestMonthIndex + 1, 0).getDate();
-        const dailyLabels = Array.from({ length: latestMonthDays }, (_, i) => i + 1);
 
         function processOrderData(orderData) {
             const monthlyDatasets = [];
-            const dailyDatasets = [];
 
             orderData.data.forEach((site) => {
                 if (site.count_datas && Array.isArray(site.count_datas) && site.count_datas.length > 0) {
                     const siteName = site.details.name;
                     const siteMonthlyOrders = Array(12).fill(0);
-                    const siteDailyOrders = Array(latestMonthDays).fill(0);
 
                     site.count_datas.forEach((order) => {
                         if (order.year === selectedYear && Array.isArray(order.months) && order.months.length === 12) {
@@ -75,12 +74,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 if (Array.isArray(daysArray)) {
                                     const monthTotal = daysArray.reduce((sum, dayValue) => sum + (parseInt(dayValue) || 0), 0);
                                     siteMonthlyOrders[monthIndex] += monthTotal;
-
-                                    if (monthIndex === latestMonthIndex) {
-                                        daysArray.forEach((dayValue, dayIndex) => {
-                                            siteDailyOrders[dayIndex] += parseInt(dayValue) || 0;
-                                        });
-                                    }
                                 }
                             });
                         }
@@ -91,19 +84,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                         label: siteName,
                         data: siteMonthlyOrders,
                         borderColor: color,
-                        backgroundColor: transparentize(color, 0.3),
-                        fill: false,
-                        tension: 0.3,
-                        pointRadius: 4,
-                        borderWidth: 2,
-                        hidden: !selectedWebsites.has(siteName),
-                    });
-
-                    dailyDatasets.push({
-                        label: siteName,
-                        data: siteDailyOrders,
-                        borderColor: color,
-                        backgroundColor: transparentize(color, 0.3),
+                        backgroundColor: color.replace("1)", "0.3)"),
                         fill: false,
                         tension: 0.3,
                         pointRadius: 4,
@@ -113,37 +94,28 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             });
 
-            return { monthlyDatasets, dailyDatasets };
+            return { monthlyDatasets };
         }
 
         function loadChartData() {
-            // ✅ เก็บค่าที่ถูกเลือกไว้ก่อนโหลดข้อมูลใหม่
-            const prevSelectedWebsites = new Set(selectedWebsites);
-        
-            const { monthlyDatasets, dailyDatasets: processedDailyDatasets } = processOrderData(orderData);
+            const { monthlyDatasets } = processOrderData(orderData);
             fullDatasets = monthlyDatasets;
-            dailyDatasets = processedDailyDatasets;
-        
-            // ✅ คืนค่า `hidden` ของ dataset ตามที่เคยเลือกไว้
-            fullDatasets.forEach(dataset => {
-                dataset.hidden = !prevSelectedWebsites.has(dataset.label);
-                if (!dataset.hidden) selectedWebsites.add(dataset.label);
-            });
-        
-            dailyDatasets.forEach(dataset => {
-                dataset.hidden = !prevSelectedWebsites.has(dataset.label);
-                if (!dataset.hidden) selectedWebsites.add(dataset.label);
-            });
-        
+
+            const filteredDatasets = fullDatasets.map(dataset => ({
+                ...dataset,
+                data: dataset.data.slice(12 - showMonthRange), // แสดงข้อมูลตามช่วงเดือนที่เลือก
+                hidden: !selectedWebsites.has(dataset.label),
+            }));
+
             if (chartInstance) {
                 chartInstance.destroy();
             }
-        
+
             chartInstance = new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: showLatestMonth ? dailyLabels : monthLabels,
-                    datasets: showLatestMonth ? dailyDatasets : fullDatasets,
+                    labels: monthLabels.slice(12 - showMonthRange),
+                    datasets: filteredDatasets,
                 },
                 options: {
                     responsive: true,
@@ -156,28 +128,17 @@ document.addEventListener("DOMContentLoaded", async function () {
                     scales: {
                         y: {
                             beginAtZero: false,
-                            suggestedMin: 0,
-                            suggestedMax: Math.max(...fullDatasets.flatMap(d => d.data)) + 10,
                             title: { display: true, text: "Number of Orders" },
                         },
                         x: {
-                            title: { display: true, text: showLatestMonth ? `Days of ${monthLabels[latestMonthIndex]}` : "Months" },
+                            title: { display: true, text: "Months" },
                         },
                     },
                 },
             });
-        
+
             updateWebsiteControls();
-        
-            // ✅ คืนค่าที่ถูกเลือกไว้หลัง reload
-            document.querySelectorAll(".website-checkbox").forEach((checkbox) => {
-                if (selectedWebsites.has(checkbox.dataset.label)) {
-                    checkbox.checked = true;
-                }
-            });
-        
-            toggleChart.checked = isShowChartChecked;
-        }        
+        }
 
         function updateWebsiteControls() {
             let checkboxHTML = "<div class='row'>";
@@ -191,50 +152,33 @@ document.addEventListener("DOMContentLoaded", async function () {
                 `;
             });
             checkboxHTML += "</div>";
-        
+
             websiteControls.innerHTML = checkboxHTML;
-        
+
             document.querySelectorAll(".website-checkbox").forEach((checkbox) => {
                 checkbox.addEventListener("change", function () {
                     const siteName = this.dataset.label;
                     const datasetIndex = fullDatasets.findIndex(d => d.label === siteName);
-                    
-                    if (datasetIndex !== -1) {
-                        chartInstance.data.datasets[datasetIndex].hidden = !this.checked;
-                    }
-        
-                    if (this.checked) {
-                        selectedWebsites.add(siteName);
-                    } else {
-                        selectedWebsites.delete(siteName);
-                    }
-        
+                    chartInstance.data.datasets[datasetIndex].hidden = !this.checked;
+                    this.checked ? selectedWebsites.add(siteName) : selectedWebsites.delete(siteName);
                     chartInstance.update();
                 });
             });
-        }        
+        }
 
         toggleChart.addEventListener("change", function () {
-            isShowChartChecked = this.checked;
             document.querySelectorAll(".website-checkbox").forEach((checkbox, index) => {
                 checkbox.checked = this.checked;
                 chartInstance.data.datasets[index].hidden = !this.checked;
-        
-                if (this.checked) {
-                    selectedWebsites.add(chartInstance.data.datasets[index].label);
-                } else {
-                    selectedWebsites.delete(chartInstance.data.datasets[index].label);
-                }
+                this.checked ? selectedWebsites.add(chartInstance.data.datasets[index].label) : selectedWebsites.delete(chartInstance.data.datasets[index].label);
             });
             chartInstance.update();
         });
-        
 
-        latestMonthBtn.addEventListener("click", function () {
-            showLatestMonth = !showLatestMonth;
-            loadChartData();
-            latestMonthBtn.textContent = showLatestMonth ? "ดูทั้งปี" : "1 เดือน";
-        });
+        latestMonthBtn.addEventListener("click", () => { showMonthRange = 1; loadChartData(); });
+        latest3MonthsBtn.addEventListener("click", () => { showMonthRange = 3; loadChartData(); });
+        latest6MonthsBtn.addEventListener("click", () => { showMonthRange = 6; loadChartData(); });
+        latestYearBtn.addEventListener("click", () => { showMonthRange = 12; loadChartData(); });
 
         loadChartData();
     } catch (error) {
