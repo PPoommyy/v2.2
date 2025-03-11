@@ -14,10 +14,10 @@
 
     function get_permissions_by_user_id ($conn, $user_id) {
         try {
-            $stmt = $conn->prepare("SELECT p.permission_name FROM permissions p 
+            $stmt = $conn->prepare("SELECT p.name, p.page_url FROM permissions p 
                                     JOIN role_permissions rp ON p.id = rp.permission_id
-                                    JOIN user_roles ur ON rp.role_id = ur.role_id
-                                    WHERE ur.user_id = :user_id");
+                                    JOIN users u ON rp.role_id = u.role_id
+                                    WHERE u.id = :user_id");
             $stmt->bindParam(':user_id', $user_id);
             $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);

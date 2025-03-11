@@ -9,7 +9,7 @@ updateButton.addEventListener('click', async () => {
     const key = document.getElementById('editKey').value;
     const value = document.getElementById('editValue').value;
     if(value) {
-        const result = await DataController.updateByKey("users", "id", id, key, value);
+        const result = await DataController.updateByKey("permissions", "id", id, key, value);
         console.log(result);
         if (result&&result.status) {
             Alert.showSuccessMessage('Update successful');
@@ -23,15 +23,12 @@ updateButton.addEventListener('click', async () => {
     }
 });
 
-const get_user_list = async () => {
+const get_permission_list = async () => {
     try {
         const column = [
-            "*", "users.id as user_id", "roles.name as role_name"
+            "*"
         ]
-        const join = [
-            ["roles", "roles.id", "users.role_id"]
-        ]
-        const response = await DataController.select("users", column, "user_id", 100, 0, join);
+        const response = await DataController.select("permissions", column, "id", 100, 0);
         console.log(response);
         return response;
     } catch (error) {
@@ -41,45 +38,55 @@ const get_user_list = async () => {
 
 async function generateTable(limit, page) {
     try {
-        const userData = await get_user_list();
-        const users = userData.status;
-        const userDataContainer = document.getElementById('user-container');
-        userDataContainer.innerHTML = '';
+        const permissionData = await get_permission_list();
+        const permissions = permissionData.status;
+        const permissionDataContainer = document.getElementById('permission-container');
+        permissionDataContainer.innerHTML = '';
         const tableElement = document.createElement('table');
         tableElement.classList.add('table', 'table-sm', 'table-bordered', 'table-striped', 'table-hover');
         const tableHeader = document.createElement('thead');
         const tableHeaderRow = document.createElement('tr');
         tableHeaderRow.innerHTML =
         `
-        <th></th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Password Hash</th>
-        <th>Fullname</th>
-        <th>Role Name</th>
-        <th>Is Active?</th>`;
+        <th>Permission Name</th>
+        <th>Description</th>
+        <th>Page URL</th>
+        <th>Create Date</th>
+        <th>Action</th>`;
         tableHeader.appendChild(tableHeaderRow);
         tableElement.appendChild(tableHeader);
         const tableBody = document.createElement('tbody');
-        tableBody.id = 'user-data-tbody';
-        users.forEach(user => {
-            const { user_id, username, email, password_hash, full_name, is_active, role_name } = user
-            console.log(`user_id`, user_id);
+        tableBody.id = 'permission-data-tbody';
+        permissions.forEach(permission => {
+            const { id, name, description, page_url, created_at } = permission;
             const tableRow = document.createElement('tr');
-            const linkDetails = document.createElement('a');
-            linkDetails.href = `user_details.php?user_id=${user_id}`;
-            linkDetails.innerText = 'View Detail';
-            tableRow.appendChild(Cell.createElementCell(linkDetails, false, false, false));
-            tableRow.appendChild(Cell.createInputOnModalCell("Username", user_id, "username", username));
-            tableRow.appendChild(Cell.createInputOnModalCell("Email", user_id, "email", email));
-            tableRow.appendChild(Cell.createInputOnModalCell("Password Hash", user_id, "password_hash", password_hash));
-            tableRow.appendChild(Cell.createInputOnModalCell("Full Name", user_id, "full_name", full_name));
-            tableRow.appendChild(Cell.createSpanCell(role_name, false, false));
-            tableRow.appendChild(Cell.createSwitchInputCell(is_active));
+            const deleteButtonCell = Cell.createDeleteButtonCell();
+            const deleteButton = deleteButtonCell.firstChild;
+            deleteButton.addEventListener('click', async () => {
+                const confirmAlert = await Alert.showConfirmModal("Are you sure you want to delete the rows?");
+                
+                if (!confirmAlert.isConfirmed) {
+                    return;
+                }
+
+                const result = await DataController._delete("permissions", "id", id);
+                if (result&&result.status) {
+                    Alert.showSuccessMessage('Delete successful');
+                } else {
+                    Alert.showErrorMessage('Delete failed');
+                }
+                Cell.closeEditModal();
+                generateTable(100, 1);
+            });
+            tableRow.appendChild(Cell.createInputOnModalCell('Permission Name', id, 'name', name));
+            tableRow.appendChild(Cell.createInputOnModalCell('Description', id, 'description', description));
+            tableRow.appendChild(Cell.createInputOnModalCell('Page URL', id, 'page_url', page_url));
+            tableRow.appendChild(Cell.createInputOnModalCell('Create Date', id, 'created_at', created_at));
+            tableRow.appendChild(deleteButtonCell);
             tableBody.appendChild(tableRow);
         });
         tableElement.appendChild(tableBody);
-        userDataContainer.appendChild(tableElement);
+        permissionDataContainer.appendChild(tableElement);
     } catch (error) {
         console.error(error);
     }
@@ -99,15 +106,14 @@ const saveButton = document.getElementById('save-button');
 
 addButton.addEventListener('click', function (event) {
     event.preventDefault();
-    const tbody = document.getElementById('user-data-tbody');
+    const tbody = document.getElementById('permission-data-tbody');
     const tableRow = document.createElement('tr');
     tableRow.classList.add('new-row')
+    tableRow.appendChild(Cell.createInputCell("name"));
+    tableRow.appendChild(Cell.createInputCell("description"));
+    tableRow.appendChild(Cell.createInputCell("page_url"));
     tableRow.appendChild(Cell.createSpanCell("", false, false));
-    tableRow.appendChild(Cell.createInputCell("username"));
-    tableRow.appendChild(Cell.createInputCell("email"));
-    tableRow.appendChild(Cell.createInputCell("password_hash"));
-    tableRow.appendChild(Cell.createInputCell("full_name"));
-    tableRow.appendChild(Cell.createSpanCell(1, false, false));
+    tableRow.appendChild(Cell.createSpanCell("", false, false));
     const removeButton = document.createElement('button');
     removeButton.classList.add('btn', 'btn-danger');
     removeButton.innerHTML = '<i class="fa fa-xmark"></i>';
@@ -163,7 +169,7 @@ saveButton.addEventListener('click', async () => {
             }
 
             try {
-                const result = await DataController.insert("users", insertedData);
+                const result = await DataController.insert("permissions", insertedData);
                 results.push(result);
                 const confirmed = await swalQueue.fire({
                     title: `Row ${index + 1} inserted successfully!`,

@@ -5,53 +5,52 @@ const menus = {
         "icon": "fa-chart-line",
         "label": "Dashboard",
         "submenus": [
-            { "name": "dashboard_orders", "label": "Orders", "link": "../../pages/dashboard/dashboard_orders.php" },
-            { "name": "dashboard_po", "label": "PO", "link": "../../pages/dashboard/dashboard_po.php" },
-            { "name": "dashboard_stock", "label": "Stock", "link": "../../pages/dashboard/dashboard_stock.php" }
+            { "name": "dashboard_orders", "label": "Orders" },
+            { "name": "dashboard_po", "label": "PO" },
+            { "name": "dashboard_stock", "label": "Stock" }
         ]
     },
     "orders": {
         "icon": "fa-list-ul",
         "label": "Orders",
         "submenus": [
-            { "name": "order_list", "label": "Order List", "link": "../../pages/order_management/order_list.php" },
-            { "name": "order_add", "label": "Add Order", "link": "../../pages/order_management/order_details.php" }
+            { "name": "order_list", "label": "Order List" },
+            { "name": "order_add", "label": "Add Order" }
         ]
     },
     "po": {
         "icon": "fa-truck-moving",
         "label": "PO",
         "submenus": [
-            { "name": "pre_po", "label": "Pre PO", "link": "../../pages/po_management/pre_po.php" },
-            { "name": "po_order_list", "label": "PO Order List", "link": "../../pages/po_management/po_order_list.php" },
-            { "name": "po_order_add", "label": "Add PO Order", "link": "../../pages/po_management/po_order_details.php" }
+            { "name": "pre_po", "label": "Pre PO" },
+            { "name": "po_order_list", "label": "PO Order List" },
+            { "name": "po_order_add", "label": "Add PO Order" }
         ]
     },
     "stock": {
         "icon": "fa-warehouse",
-        "label": "Stock",
-        "link": "../../pages/stock_management/stock.php"
+        "label": "Stock"
     },
     "return": {
         "icon": "fa-rotate-left",
-        "label": "Return",
-        "link": "../../pages/return_management/return.php"
+        "label": "Return"
     },
     "settings": {
         "icon": "fa-gear",
         "label": "Settings",
         "submenus": [
-            { "name": "user_setting", "label": "User Settings", "link": "../../pages/settings/user_setting.php" },
-            { "name": "sku_setting", "label": "SKU Settings", "link": "../../pages/settings/sku_setting.php" },
-            { "name": "product_set_setting", "label": "Product Set Settings", "link": "../../pages/settings/product_set_setting.php" },
-            { "name": "factory_setting", "label": "Factory Settings", "link": "../../pages/settings/factory_setting.php" },
-            { "name": "website_setting", "label": "Website Settings", "link": "../../pages/settings/website_setting.php" },
-            { "name": "currency_setting", "label": "Currency Settings", "link": "../../pages/settings/currency_setting.php" },
-            { "name": "invoice_setting", "label": "Invoice Settings", "link": "../../pages/settings/invoice_setting.php" },
-            { "name": "sku_brands_setting", "label": "SKU Brands Settings", "link": "../../pages/settings/sku_brands_setting.php" },
-            { "name": "warehouse_skus_setting", "label": "Warehouse SKU Settings", "link": "../../pages/settings/warehouse_skus_setting.php" },
-            { "name": "payment_method_setting", "label": "Payment Method Settings", "link": "../../pages/settings/payment_method_setting.php" },
-            { "name": "service_method_setting", "label": "Service Method Settings", "link": "../../pages/settings/service_method_setting.php" }
+            { "name": "user_setting", "label": "User Settings" },
+            { "name": "permission_setting", "label": "Permission Settings" },
+            { "name": "sku_setting", "label": "SKU Settings" },
+            { "name": "product_set_setting", "label": "Product Set Settings" },
+            { "name": "factory_setting", "label": "Factory Settings" },
+            { "name": "website_setting", "label": "Website Settings" },
+            { "name": "currency_setting", "label": "Currency Settings" },
+            { "name": "invoice_setting", "label": "Invoice Settings" },
+            { "name": "sku_brands_setting", "label": "SKU Brands Settings" },
+            { "name": "warehouse_skus_setting", "label": "Warehouse SKU Settings" },
+            { "name": "payment_method_setting", "label": "Payment Method Settings" },
+            { "name": "service_method_setting", "label": "Service Method Settings" }
         ]
     }
 };
@@ -65,8 +64,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // ดึงรายการสิทธิ์ของผู้ใช้ (เป็น array ของ permission_name)
-    const userPermissions = user[0].permissions.map(p => p.permission_name);
+    console.log(user);
+
+    // ✅ แปลง permissions ให้อยู่ในรูปแบบของอาร์เรย์ที่เก็บ `{ name, page_url }`
+    const userPermissions = user[0].permissions.map(p => ({
+        name: p.name,
+        page_url: p.page_url
+    }));
+
+    console.log(userPermissions);
 
     const navbar = document.getElementById("navbarMenu");
     navbar.innerHTML = ""; // ล้างเมนูก่อนสร้างใหม่
@@ -76,19 +82,21 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const menuKey in menus) {
         const menu = menus[menuKey];
 
-        let hasAccess = userPermissions.includes(menuKey);
+        let hasAccess = userPermissions.some(p => p.name === menuKey);
         let menuItem = "";
         let submenuHTML = "";
 
         if (menu.submenus) {
             menu.submenus.forEach(submenu => {
-                if (userPermissions.includes(submenu.name)) {
+                // ✅ หาว่าผู้ใช้มีสิทธิ์เข้าถึงเมนูย่อยนี้หรือไม่
+                const permission = userPermissions.find(p => p.name === submenu.name);
+                if (permission) {
                     submenuHTML += `
                         <li>
-                            <a class="dropdown-item" href="${submenu.link}">${submenu.label}</a>
+                            <a class="dropdown-item" href="${permission.page_url}">${submenu.label}</a>
                         </li>
                     `;
-                    allowedPages.push(submenu.link); // บันทึกหน้าที่ user มีสิทธิ์
+                    allowedPages.push(permission.page_url);
                 }
             });
 
@@ -105,14 +113,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
             }
         } else if (hasAccess) {
+            const permission = userPermissions.find(p => p.name === menuKey);
             menuItem = `
                 <li class="nav-item">
-                    <a class="nav-link" href="${menu.link}">
+                    <a class="nav-link" href="${permission.page_url}">
                         <i class="fa-solid ${menu.icon}"></i> ${menu.label}
                     </a>
                 </li>
             `;
-            allowedPages.push(menu.link); // บันทึกหน้าที่ user มีสิทธิ์
+            allowedPages.push(permission.page_url); // บันทึกหน้าที่ user มีสิทธิ์
         }
 
         if (menuItem) {
@@ -144,8 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const currentPage = "../../" + relativePath; // นำ ../../ เข้ามาข้างหน้า
 
     if (!allowedPages.includes(currentPage)) {
-        // redirect ไปหน้า หน้าที่เข้าถึงได้
-        window.location.href = allowedPages[0];
+        window.location.href = allowedPages[0] || "../../pages/lokin/lokin.php";
     }
 });
-
