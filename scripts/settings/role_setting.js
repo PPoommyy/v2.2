@@ -36,6 +36,15 @@ const get_role_list = async () => {
     }
 }
 
+const get_permission = async () => {
+    try {
+        const response = DataController.select("permissions", ["*"], "id", 100, 0);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+
 async function generateTable(limit, page) {
     try {
         const roleData = await get_role_list();
@@ -107,7 +116,6 @@ addButton.addEventListener('click', function (event) {
     tableRow.classList.add('new-row')
     tableRow.appendChild(Cell.createInputCell("name"));
     tableRow.appendChild(Cell.createInputCell("description"));
-    tableRow.appendChild(Cell.createSpanCell("", false, false));
     const removeButton = document.createElement('button');
     removeButton.classList.add('btn', 'btn-danger');
     removeButton.innerHTML = '<i class="fa fa-xmark"></i>';

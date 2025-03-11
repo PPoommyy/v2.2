@@ -46,11 +46,7 @@ const get_requests = async (table, limit, page) => {
             where.push(["request_type_id", "=", parseInt(filterValues.request_type_id.value)]);
         }
 
-        console.log(where);
-        console.log("WHERE Condition:", JSON.stringify(where, null, 2));
-
         const response = await DataController.select(table, column, "request_date", limit, page, join, where);
-        console.log(response);
         return response;
     } catch (error) {
         throw error;

@@ -41,6 +41,7 @@ const menus = {
         "submenus": [
             { "name": "user_setting", "label": "User Settings" },
             { "name": "permission_setting", "label": "Permission Settings" },
+            { "name": "role_setting", "label": "Role Settings" },
             { "name": "sku_setting", "label": "SKU Settings" },
             { "name": "product_set_setting", "label": "Product Set Settings" },
             { "name": "factory_setting", "label": "Factory Settings" },

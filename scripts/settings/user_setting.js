@@ -26,7 +26,7 @@ updateButton.addEventListener('click', async () => {
 const get_user_list = async () => {
     try {
         const column = [
-            "*", "users.id as user_id", "roles.name as role_name"
+            "*", "users.id as user_id", "roles.name as role_name", "roles.id as role_id"
         ]
         const join = [
             ["roles", "roles.id", "users.role_id"]
@@ -39,10 +39,20 @@ const get_user_list = async () => {
     }
 }
 
+const get_role = async () => {
+    try {
+        const response = DataController.select("roles", ["*"], "id", 100, 0);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+};
+
 async function generateTable(limit, page) {
     try {
         const userData = await get_user_list();
         const users = userData.status;
+        const roles = await get_role();
         const userDataContainer = document.getElementById('user-container');
         userDataContainer.innerHTML = '';
         const tableElement = document.createElement('table');
@@ -74,7 +84,7 @@ async function generateTable(limit, page) {
             tableRow.appendChild(Cell.createInputOnModalCell("Email", user_id, "email", email));
             tableRow.appendChild(Cell.createInputOnModalCell("Password Hash", user_id, "password_hash", password_hash));
             tableRow.appendChild(Cell.createInputOnModalCell("Full Name", user_id, "full_name", full_name));
-            tableRow.appendChild(Cell.createSpanCell(role_name, false, false));
+            tableRow.appendChild(Cell.createSelectOnModalCell("Role Name", roles.status, user_id, "role_id", role_name));
             tableRow.appendChild(Cell.createSwitchInputCell(is_active));
             tableBody.appendChild(tableRow);
         });
