@@ -40,7 +40,7 @@ const get_role_list = async () => {
   }
 };
 
-const get_role_permission = async () => {
+const get_permission = async () => {
   try {
     const response = DataController.select("permissions", ["*"], "id", 100, 0);
     return response;
@@ -49,9 +49,27 @@ const get_role_permission = async () => {
   }
 };
 
-const get_permission = async () => {
+const get_role_permission_by_id = async (user_id) => {
   try {
-    const response = DataController.select("permissions", ["*"], "id", 100, 0);
+    const column = [
+      "*",
+      "permissions.name as permission_name",
+      "users.id as user_id",
+    ];
+    const join = [
+      ["users", "role_permissions.role_id", "users.role_id"],
+      ["permissions", "permission_id", "permissions.id"],
+    ];
+    const where = [["users.id", "=", user_id]];
+    const response = DataController.select(
+      "role_permissions",
+      column,
+      "permission_name",
+      100,
+      0,
+      join,
+      where
+    );
     return response;
   } catch (error) {
     throw error;
@@ -114,12 +132,10 @@ async function generateTable(limit, page) {
         const allPermissions = await get_permission();
 
         // ดึง permission ที่ role ปัจจุบันมีอยู่
-        const rolePermissions = await get_role_permission(id);
-
+        const rolePermissions = await get_role_permission_by_id(id);
+        console.log(rolePermissions);
         // แปลง rolePermissions ให้เป็น array ของ permission_id
-        const rolePermissionIds = rolePermissions.status.map(
-          (rp) => rp.permission_id
-        );
+        const rolePermissionIds = rolePermissions.status.map((rp) => rp.id);
 
         // แสดงรายการ permission ใน modal
         const permissionListContainer = document.getElementById(
