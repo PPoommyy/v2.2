@@ -16,7 +16,6 @@ updateButton.addEventListener("click", async () => {
       key,
       value
     );
-    console.log(result);
     if (result && result.status) {
       Alert.showSuccessMessage("Update successful");
     } else {
@@ -33,7 +32,6 @@ const get_role_list = async () => {
   try {
     const column = ["*"];
     const response = await DataController.select("roles", column, "id", 100, 0);
-    console.log(response);
     return response;
   } catch (error) {
     throw error;
@@ -49,18 +47,18 @@ const get_permission = async () => {
   }
 };
 
-const get_role_permission_by_id = async (user_id) => {
+const get_role_permission_by_id = async (role_id) => {
   try {
     const column = [
       "*",
       "permissions.name as permission_name",
-      "users.id as user_id",
+      "roles.id as role_id",
     ];
     const join = [
-      ["users", "role_permissions.role_id", "users.role_id"],
+      ["roles", "role_permissions.role_id", "roles.id"],
       ["permissions", "permission_id", "permissions.id"],
     ];
-    const where = [["users.id", "=", user_id]];
+    const where = [["roles.id", "=", role_id]];
     const response = DataController.select(
       "role_permissions",
       column,
@@ -128,46 +126,50 @@ async function generateTable(limit, page) {
       const editPermissionButtonCell = Cell.createEditButtonCell();
       const editPermissionButton = editPermissionButtonCell.firstChild;
       editPermissionButton.addEventListener("click", async () => {
-        // ดึงข้อมูล permission ทั้งหมด
         const allPermissions = await get_permission();
-
-        // ดึง permission ที่ role ปัจจุบันมีอยู่
         const rolePermissions = await get_role_permission_by_id(id);
-        console.log(rolePermissions);
-        // แปลง rolePermissions ให้เป็น array ของ permission_id
         const rolePermissionIds = rolePermissions.status.map((rp) => rp.id);
 
-        // แสดงรายการ permission ใน modal
         const permissionListContainer = document.getElementById(
           "permissionListContainer"
         );
-        permissionListContainer.innerHTML = ""; // ล้างข้อมูลเก่า
+        permissionListContainer.innerHTML = "";
+
+        // ใช้ Grid Layout ที่ responsive และเป็นระเบียบ
+        const gridContainer = document.createElement("div");
+        gridContainer.classList.add("row", "g-3"); // ใช้ row และ gap 3
 
         allPermissions.status.forEach((permission) => {
           const { id: permissionId, name } = permission;
+
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.value = permissionId;
-          checkbox.checked = rolePermissionIds.includes(permissionId); // เช็คว่ามีสิทธิ์นี้หรือไม่
-          checkbox.classList.add("form-check-input");
+          checkbox.checked = rolePermissionIds.includes(permissionId);
+          checkbox.classList.add("form-check-input", "me-2");
 
           const label = document.createElement("label");
           label.classList.add("form-check-label");
           label.textContent = name;
-          label.appendChild(checkbox);
 
           const div = document.createElement("div");
-          div.classList.add("form-check");
+          div.classList.add(
+            "col-12",
+            "col-sm-6",
+            "col-md-4",
+            "col-lg-3",
+            "d-flex",
+            "align-items-center"
+          );
           div.appendChild(checkbox);
           div.appendChild(label);
 
-          permissionListContainer.appendChild(div);
+          gridContainer.appendChild(div);
         });
 
-        // เซ็ต role_id สำหรับอัปเดต
-        document.getElementById("permissionRoleId").value = id;
+        permissionListContainer.appendChild(gridContainer);
 
-        // เปิด modal
+        document.getElementById("permissionRoleId").value = id;
         const permissionModal = new bootstrap.Modal(
           document.getElementById("permissionModal")
         );
@@ -207,6 +209,9 @@ function toggleSpinner(loading) {
 
 const addButton = document.getElementById("add-button");
 const saveButton = document.getElementById("save-button");
+const updatePermissionButton = document.getElementById(
+  "updatePermissionButton"
+);
 
 addButton.addEventListener("click", function (event) {
   event.preventDefault();
@@ -305,46 +310,59 @@ saveButton.addEventListener("click", async () => {
   generateTable(100, 1);
 });
 
-document
-  .getElementById("updatePermissionButton")
-  .addEventListener("click", async () => {
-    const roleId = document.getElementById("permissionRoleId").value;
-    const checkboxes = document.querySelectorAll(
-      "#permissionListContainer input[type='checkbox']"
-    );
+updatePermissionButton.addEventListener("click", async () => {
+  const roleId = document.getElementById("permissionRoleId").value;
+  console.log(roleId);
+  const checkboxes = document.querySelectorAll(
+    "#permissionListContainer input[type='checkbox']"
+  );
 
-    // รวบรวม permission_id ที่ถูกเลือก
-    const selectedPermissions = [];
-    checkboxes.forEach((checkbox) => {
-      if (checkbox.checked) {
-        selectedPermissions.push({
-          role_id: roleId,
-          permission_id: checkbox.value,
-        });
-      }
-    });
+  const rolePermissions = await get_role_permission_by_id(roleId);
+  const existingPermissions = new Set(
+    rolePermissions.status.map((rp) => rp.id)
+  );
 
-    console.log(selectedPermissions);
-    console.log(checkboxes);
-    // ลบ permission เดิมทั้งหมดก่อน
-    // await DataController._delete("role_permission", "role_id", roleId);
+  let to_insert = [];
+  let to_delete = [];
 
-    // เพิ่ม permission ใหม่
-    /* if (selectedPermissions.length > 0) {
-      await DataController.insertMultiple(
-        "role_permission",
-        selectedPermissions
-      );
-    } */
+  checkboxes.forEach((checkbox) => {
+    const permissionId = parseInt(checkbox.value);
+    const isChecked = checkbox.checked;
 
-    Alert.showSuccessMessage("Permissions updated successfully!");
+    if (isChecked && !existingPermissions.has(permissionId)) {
+      to_insert.push({ role_id: roleId, permission_id: permissionId });
+    }
 
-    // ปิด modal
-    const permissionModal = bootstrap.Modal.getInstance(
-      document.getElementById("permissionModal")
-    );
-    permissionModal.hide();
+    if (!isChecked && existingPermissions.has(permissionId)) {
+      to_delete.push({ role_id: roleId, permission_id: permissionId });
+    }
   });
+
+  if (to_insert.length > 0) {
+    for (const insert of to_insert) {
+      await DataController.insert("role_permissions", insert);
+    }
+  }
+
+  if (to_delete.length > 0) {
+    for (const del of to_delete) {
+      await DataController._delete(
+        "role_permissions",
+        "role_id",
+        del.role_id,
+        "permission_id",
+        del.permission_id
+      );
+    }
+  }
+
+  Alert.showSuccessMessage("Permissions updated successfully!");
+
+  const permissionModal = bootstrap.Modal.getInstance(
+    document.getElementById("permissionModal")
+  );
+  permissionModal.hide();
+});
 
 async function main() {
   try {

@@ -38,22 +38,26 @@
                 </div>
             </div>
         </div>
-        <div class="modal fade" id="permissionModal" tabindex="-1" role="dialog" aria-labelledby="permissionModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="permissionModalLabel">Edit Permissions</h5>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+        <div class="modal fade" id="permissionModal" tabindex="-1" aria-labelledby="permissionModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl"> <!-- เปลี่ยนเป็น modal-xl เพื่อให้กว้างขึ้น -->
+                <div class="modal-content shadow-lg">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="permissionModalLabel">
+                            <i class="fa fa-user-shield"></i> Edit Permissions
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <input type="number" id="permissionRoleId" class="form-control" hidden>
-                        <div id="permissionListContainer"></div>
+                        <input type="number" id="permissionRoleId" hidden>
+                        <div id="permissionListContainer" class="p-3 border rounded bg-light"></div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="updatePermissionButton">Update</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fa fa-times"></i> Close
+                        </button>
+                        <button type="button" class="btn btn-success" id="updatePermissionButton">
+                            <i class="fa fa-save"></i> Update
+                        </button>
                     </div>
                 </div>
             </div>

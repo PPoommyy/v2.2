@@ -70,15 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  console.log(user);
-
   // ✅ แปลง permissions ให้อยู่ในรูปแบบของอาร์เรย์ที่เก็บ `{ name, page_url }`
   const userPermissions = user[0].permissions.map((p) => ({
     name: p.name,
     page_url: p.page_url,
   }));
-
-  console.log(userPermissions);
 
   const navbar = document.getElementById("navbarMenu");
   navbar.innerHTML = ""; // ล้างเมนูก่อนสร้างใหม่

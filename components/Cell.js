@@ -147,7 +147,7 @@ const createEditButtonCell = () => {
   const button = document.createElement("button");
   const icon = document.createElement("i");
 
-  button.classList.add("btn", "btn-danger");
+  button.classList.add("btn", "btn-warning");
   button.setAttribute("data-toggle", "tooltip");
 
   icon.classList.add("fa-solid", "fa-pen-to-square");
