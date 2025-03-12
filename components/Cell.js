@@ -143,6 +143,23 @@ const createDeleteButtonCell = () => {
     return cell;
 }
 
+const createEditButtonCell = () => {
+    const cell = document.createElement('td');
+    const button = document.createElement('button');
+    const icon = document.createElement('i');
+
+    button.classList.add('btn', 'btn-danger');
+    button.setAttribute('data-toggle', 'tooltip');
+
+    icon.classList.add('fa-solid', 'fa-pen-to-square');
+    button.appendChild(icon);
+
+    cell.classList.add('text-center')
+    cell.colSpan = 2;
+    cell.appendChild(button);
+    return cell;
+}
+
 const createElementCell = (element, colSpan, rowSpan, classList) => {
     const cell = document.createElement('td');
     if (classList) {
@@ -189,6 +206,7 @@ export const Cell = {
     createInputCell,
     createSelectCell,
     createDeleteButtonCell,
+    createEditButtonCell,
     createSwitchInputCell,
     createInputOnModalCell,
     createSelectOnModalCell,
