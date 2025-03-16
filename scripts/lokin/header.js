@@ -39,6 +39,10 @@ const menus = {
   return: {
     icon: "fa-rotate-left",
     label: "Return",
+    submenus: [
+      { name: "return", label: "Request List" },
+      { name: "return_form", label: "Create Request" },
+    ],
   },
   settings: {
     icon: "fa-gear",

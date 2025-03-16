@@ -95,6 +95,22 @@
         <div id="loading-spinner" class="spinner-border text-primary fixed-top top-50 start-50" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
+        <div class="mb-3 row">
+            <div class="col-sm-12 col-md-7">
+                <button id="itemAccepted" class="btn btn-success btn-sm" disabled>
+                    <span class="fa-solid fa-clipboard-check"></span> Item Accepted
+                </button>
+                <button id="itemDamaged" class="btn btn-warning btn-sm" disabled>
+                    <span class="fa-solid fa-triangle-exclamation"></span> Item Damaged
+                </button>
+                <button id="deleteRequest" class="btn btn-danger btn-sm" disabled>
+                    <span class="fa-solid fa-trash"></span> Delete
+                </button>
+            </div>
+            <div class="col-sm-12 col-md-5" id="pagination2">
+                <ul class="pagination justify-content-end"></ul>
+            </div>
+        </div>
         <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
