@@ -140,8 +140,11 @@ async function generateTable(limit, page) {
         gridContainer.classList.add("row", "g-3"); // ใช้ row และ gap 3
 
         allPermissions.status.forEach((permission) => {
-          const { id: permissionId, name } = permission;
-
+          const {
+            id: permissionId,
+            name,
+            description: permission_description,
+          } = permission;
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.value = permissionId;
@@ -150,7 +153,9 @@ async function generateTable(limit, page) {
 
           const label = document.createElement("label");
           label.classList.add("form-check-label");
-          label.textContent = name;
+          label.textContent = permission_description
+            ? permission_description
+            : name;
 
           const div = document.createElement("div");
           div.classList.add(
@@ -312,7 +317,6 @@ saveButton.addEventListener("click", async () => {
 
 updatePermissionButton.addEventListener("click", async () => {
   const roleId = document.getElementById("permissionRoleId").value;
-  console.log(roleId);
   const checkboxes = document.querySelectorAll(
     "#permissionListContainer input[type='checkbox']"
   );

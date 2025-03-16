@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php include('../../templates_/metadata.php');?>
+<?php include('../../templates_/metadata.php'); ?>
+
 <body>
-    <?php include('../../templates_/header.php');?>
+    <?php include('../../templates_/header.php'); ?>
     <input type="hidden" id="filePathInput" value="../reports/download_orders_2.xlsx">
     <div class="container">
         <div class="mb-3"></div>
@@ -17,7 +18,7 @@
                 </div>
                 <div class="col-1">
                     <div>
-                        <input type="checkbox" id="website-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This"/>
+                        <input type="checkbox" id="website-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
                     </div>
                 </div>
             </div>
@@ -31,7 +32,9 @@
                                 <label class="input-group-text bg-secondary text-white" for="order-date-input-start"><span class="fa fa-calendar"></span></label>
                             </div>
                         </div>
-                        <div class="col-2 d-flex justify-content-center"><p class="h3"> - </p></div>
+                        <div class="col-2 d-flex justify-content-center">
+                            <p class="h3"> - </p>
+                        </div>
                         <div class="col-5">
                             <div class="input-group" id='dateEnd'>
                                 <input id="order-date-input-end" class="form-control" value="<?php echo date('Y-m-d'); ?>" type="date">
@@ -42,7 +45,7 @@
                 </div>
                 <div class="col-1">
                     <div>
-                        <input type="checkbox" id="daterange-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This"/>
+                        <input type="checkbox" id="daterange-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
                     </div>
                 </div>
             </div>
@@ -55,7 +58,7 @@
                 </div>
                 <div class="col-1">
                     <div>
-                        <input type="checkbox" id="order-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This"/>
+                        <input type="checkbox" id="order-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
                     </div>
                 </div>
             </div>
@@ -68,7 +71,7 @@
                 </div>
                 <div class="col-1">
                     <div>
-                        <input type="checkbox" id="fulfillment-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This"/>
+                        <input type="checkbox" id="fulfillment-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
                     </div>
                 </div>
             </div>
@@ -81,7 +84,7 @@
                 </div>
                 <div class="col-1">
                     <div>
-                        <input type="checkbox" id="payment-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This"/>
+                        <input type="checkbox" id="payment-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
                     </div>
                 </div>
             </div>
@@ -118,22 +121,20 @@
         <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="editId" class="form-control" hidden>
-                    <input type="text" id="editKey" class="form-control" hidden>
-                    <input type="text" id="editValue" class="form-control" hidden>
-                    <div id="editValueContainer"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="updateButton">Update</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="editId" class="form-control" hidden>
+                        <input type="text" id="editKey" class="form-control" hidden>
+                        <input type="text" id="editValue" class="form-control" hidden>
+                        <div id="editValueContainer"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="updateButton">Update</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -156,34 +157,34 @@
         <div class="mb-3 row">
             <div class="col-sm-12 col-md-7">
                 <button id="downloadOrders" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> Download Orders
-				</button>
+                    <span class="fa-solid fa-arrow-circle-down"></span> Download Orders
+                </button>
                 <!-- <button id="newDownloadOrders" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> New! Download Orders
 				</button> -->
-				<button id="createInvoices" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> Create Invoice
-				</button>
-				<button id="itemSummaries" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> Item Summary
-				</button>
-				<!-- <button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
+                <button id="createInvoices" class="btn btn-warning btn-sm" disabled>
+                    <span class="fa-solid fa-arrow-circle-down"></span> Create Invoice
+                </button>
+                <button id="itemSummaries" class="btn btn-warning btn-sm" disabled>
+                    <span class="fa-solid fa-arrow-circle-down"></span> Item Summary
+                </button>
+                <!-- <button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> DHL Pre-alert
 				</button>
 				<button id="dpost" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> DPOST
 				</button> -->
-				<button id="thpost" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> THPOST
-				</button>
+                <button id="thpost" class="btn btn-warning btn-sm" disabled>
+                    <span class="fa-solid fa-arrow-circle-down"></span> THPOST
+                </button>
                 <!-- <button id="aftershipCSV" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Aftership CSV
 				</button> -->
-				<button id="downloadBarcodes" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> Download Barcodes
-				</button>
-				<button id="deleteOrders" class="btn btn-danger btn-sm" disabled>
-					<span class="fa-solid fa-trash"></span> Delete
+                <button id="downloadBarcodes" class="btn btn-warning btn-sm" disabled>
+                    <span class="fa-solid fa-arrow-circle-down"></span> Download Barcodes
+                </button>
+                <button id="deleteOrders" class="btn btn-danger btn-sm" disabled>
+                    <span class="fa-solid fa-trash"></span> Delete
                 </button>
             </div>
             <div class="col-sm-12 col-md-5" id="pagination2">
@@ -213,4 +214,5 @@
 </body>
 <script src="../../assets/js/exceljs4.4.0.min.js"></script>
 <script type="module" src="../../scripts/order_management/order_list.js"></script>
+
 </html>

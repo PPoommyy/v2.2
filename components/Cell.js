@@ -78,27 +78,27 @@ const createSelectCell = (options, key) => {
 
 const createInputOnModalCell = (title, id, key, value) => {
   const cell = document.createElement("td");
-  const a = document.createElement("a");
   const input = document.createElement("input");
-  input.type = "text";
-  input.classList.add("form-control");
-  input.addEventListener("input", (e) => {
+  const inputOnModal = document.createElement("input");
+  inputOnModal.type = "text";
+  inputOnModal.classList.add("form-control");
+  inputOnModal.addEventListener("input", (e) => {
     const editValue = e.target.value;
     document.getElementById("editValue").value = editValue;
   });
-  a.innerText = value;
-  a.classList.add("link-primary");
-  a.addEventListener("click", () => {
+  input.value = value;
+  input.classList.add("form-control");
+  input.addEventListener("click", () => {
     document.getElementById("editValue").value = null;
-    openEditModal(`Enter ${title}`, input, id, key, value);
+    openEditModal(`Enter ${title}`, inputOnModal, id, key, value);
   });
-  cell.appendChild(a);
+  cell.appendChild(input);
   return cell;
 };
 
 const createSelectOnModalCell = (title, options, id, key, value) => {
   const cell = document.createElement("td");
-  const a = document.createElement("a");
+  const input = document.createElement("input");
   const select = document.createElement("select");
   select.classList.add("form-select");
 
@@ -114,14 +114,14 @@ const createSelectOnModalCell = (title, options, id, key, value) => {
     document.getElementById("editValue").value = editValue;
   });
 
-  a.innerText = value;
-  a.classList.add("link-primary");
-  a.addEventListener("click", async () => {
+  input.value = value;
+  input.classList.add("form-control");
+  input.addEventListener("click", async () => {
     document.getElementById("editValue").value = options[0].id;
     openEditModal(`Select ${title}`, select, id, key, value);
   });
 
-  cell.appendChild(a);
+  cell.appendChild(input);
   return cell;
 };
 

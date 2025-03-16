@@ -3,212 +3,248 @@ import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 import { Pagination } from "../../components/Pagination.js";
 
-const updateButton = document.getElementById('updateButton');
-updateButton.addEventListener('click', async () => {
-    const id = document.getElementById('editId').value;
-    const key = document.getElementById('editKey').value;
-    const value = document.getElementById('editValue').value;
-    if(value) {
-        const result = await DataController.updateByKey("permissions", "id", id, key, value);
-        console.log(result);
-        if (result&&result.status) {
-            Alert.showSuccessMessage('Update successful');
-        } else {
-            Alert.showErrorMessage('Update failed');
-        }
-        Cell.closeEditModal();
-        generateTable(100, 1);
-    }else {
-        Alert.showErrorMessage('Update failed');
+const updateButton = document.getElementById("updateButton");
+updateButton.addEventListener("click", async () => {
+  const id = document.getElementById("editId").value;
+  const key = document.getElementById("editKey").value;
+  const value = document.getElementById("editValue").value;
+  if (value) {
+    const result = await DataController.updateByKey(
+      "permissions",
+      "id",
+      id,
+      key,
+      value
+    );
+    console.log(result);
+    if (result && result.status) {
+      Alert.showSuccessMessage("Update successful");
+    } else {
+      Alert.showErrorMessage("Update failed");
     }
+    Cell.closeEditModal();
+    generateTable(100, 1);
+  } else {
+    Alert.showErrorMessage("Update failed");
+  }
 });
 
 const get_permission_list = async () => {
-    try {
-        const column = [
-            "*"
-        ]
-        const response = await DataController.select("permissions", column, "id", 100, 0);
-        console.log(response);
-        return response;
-    } catch (error) {
-        throw error;
-    }
-}
+  try {
+    const column = ["*"];
+    const response = await DataController.select(
+      "permissions",
+      column,
+      "name",
+      100,
+      0
+    );
+    console.log(response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
 
 async function generateTable(limit, page) {
-    try {
-        const permissionData = await get_permission_list();
-        const permissions = permissionData.status;
-        const permissionDataContainer = document.getElementById('permission-container');
-        permissionDataContainer.innerHTML = '';
-        const tableElement = document.createElement('table');
-        tableElement.classList.add('table', 'table-sm', 'table-bordered', 'table-striped', 'table-hover');
-        const tableHeader = document.createElement('thead');
-        const tableHeaderRow = document.createElement('tr');
-        tableHeaderRow.innerHTML =
-        `
+  try {
+    const permissionData = await get_permission_list();
+    const permissions = permissionData.status;
+    const permissionDataContainer = document.getElementById(
+      "permission-container"
+    );
+    permissionDataContainer.innerHTML = "";
+    const tableElement = document.createElement("table");
+    tableElement.classList.add(
+      "table",
+      "table-sm",
+      "table-bordered",
+      "table-striped",
+      "table-hover"
+    );
+    const tableHeader = document.createElement("thead");
+    const tableHeaderRow = document.createElement("tr");
+    tableHeaderRow.innerHTML = `
         <th>Permission Name</th>
         <th>Description</th>
         <th>Page URL</th>
         <th>Create Date</th>
         <th>Action</th>`;
-        tableHeader.appendChild(tableHeaderRow);
-        tableElement.appendChild(tableHeader);
-        const tableBody = document.createElement('tbody');
-        tableBody.id = 'permission-data-tbody';
-        permissions.forEach(permission => {
-            const { id, name, description, page_url, created_at } = permission;
-            const tableRow = document.createElement('tr');
-            const deleteButtonCell = Cell.createDeleteButtonCell();
-            const deleteButton = deleteButtonCell.firstChild;
-            deleteButton.addEventListener('click', async () => {
-                const confirmAlert = await Alert.showConfirmModal("Are you sure you want to delete the rows?");
-                
-                if (!confirmAlert.isConfirmed) {
-                    return;
-                }
+    tableHeader.appendChild(tableHeaderRow);
+    tableElement.appendChild(tableHeader);
+    const tableBody = document.createElement("tbody");
+    tableBody.id = "permission-data-tbody";
+    permissions.forEach((permission) => {
+      const { id, name, description, page_url, created_at } = permission;
+      const tableRow = document.createElement("tr");
+      const deleteButtonCell = Cell.createDeleteButtonCell();
+      const deleteButton = deleteButtonCell.firstChild;
+      deleteButton.addEventListener("click", async () => {
+        const confirmAlert = await Alert.showConfirmModal(
+          "Are you sure you want to delete the rows?"
+        );
 
-                const result = await DataController._delete("permissions", "id", id);
-                if (result&&result.status) {
-                    Alert.showSuccessMessage('Delete successful');
-                } else {
-                    Alert.showErrorMessage('Delete failed');
-                }
-                Cell.closeEditModal();
-                generateTable(100, 1);
-            });
-            tableRow.appendChild(Cell.createInputOnModalCell('Permission Name', id, 'name', name));
-            tableRow.appendChild(Cell.createInputOnModalCell('Description', id, 'description', description));
-            tableRow.appendChild(Cell.createInputOnModalCell('Page URL', id, 'page_url', page_url));
-            tableRow.appendChild(Cell.createInputOnModalCell('Create Date', id, 'created_at', created_at));
-            tableRow.appendChild(deleteButtonCell);
-            tableBody.appendChild(tableRow);
-        });
-        tableElement.appendChild(tableBody);
-        permissionDataContainer.appendChild(tableElement);
-    } catch (error) {
-        console.error(error);
-    }
+        if (!confirmAlert.isConfirmed) {
+          return;
+        }
+
+        const result = await DataController._delete("permissions", "id", id);
+        if (result && result.status) {
+          Alert.showSuccessMessage("Delete successful");
+        } else {
+          Alert.showErrorMessage("Delete failed");
+        }
+        Cell.closeEditModal();
+        generateTable(100, 1);
+      });
+      tableRow.appendChild(
+        Cell.createInputOnModalCell("Permission Name", id, "name", name)
+      );
+      tableRow.appendChild(
+        Cell.createInputOnModalCell(
+          "Description",
+          id,
+          "description",
+          description ? description : ""
+        )
+      );
+      tableRow.appendChild(
+        Cell.createInputOnModalCell("Page URL", id, "page_url", page_url)
+      );
+      tableRow.appendChild(
+        Cell.createInputOnModalCell("Create Date", id, "created_at", created_at)
+      );
+      tableRow.appendChild(deleteButtonCell);
+      tableBody.appendChild(tableRow);
+    });
+    tableElement.appendChild(tableBody);
+    permissionDataContainer.appendChild(tableElement);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 function toggleSpinner(loading) {
-    const spinner = document.getElementById('loading-spinner');
-    if (loading) {
-        spinner.style.display = 'inline-block';
-    } else {
-        spinner.style.display = 'none';
-    }
+  const spinner = document.getElementById("loading-spinner");
+  if (loading) {
+    spinner.style.display = "inline-block";
+  } else {
+    spinner.style.display = "none";
+  }
 }
 
-const addButton = document.getElementById('add-button');
-const saveButton = document.getElementById('save-button');
+const addButton = document.getElementById("add-button");
+const saveButton = document.getElementById("save-button");
 
-addButton.addEventListener('click', function (event) {
-    event.preventDefault();
-    const tbody = document.getElementById('permission-data-tbody');
-    const tableRow = document.createElement('tr');
-    tableRow.classList.add('new-row')
-    tableRow.appendChild(Cell.createInputCell("name"));
-    tableRow.appendChild(Cell.createInputCell("description"));
-    tableRow.appendChild(Cell.createInputCell("page_url"));
-    tableRow.appendChild(Cell.createSpanCell("", false, false));
-    tableRow.appendChild(Cell.createSpanCell("", false, false));
-    const removeButton = document.createElement('button');
-    removeButton.classList.add('btn', 'btn-danger');
-    removeButton.innerHTML = '<i class="fa fa-xmark"></i>';
-    removeButton.addEventListener('click', () => {
-        tableRow.remove();
-        const newRow = document.querySelectorAll('.new-row');
-        if (newRow.length === 0){
-            saveButton.setAttribute('disabled', '');
-        }
-    });
-    tableRow.appendChild(Cell.createElementCell(removeButton, 2, false, ['text-center']));
-    tbody.insertBefore(tableRow, tbody.firstChild);
-    saveButton.removeAttribute('disabled');
+addButton.addEventListener("click", function (event) {
+  event.preventDefault();
+  const tbody = document.getElementById("permission-data-tbody");
+  const tableRow = document.createElement("tr");
+  tableRow.classList.add("new-row");
+  tableRow.appendChild(Cell.createInputCell("name"));
+  tableRow.appendChild(Cell.createInputCell("description"));
+  tableRow.appendChild(Cell.createInputCell("page_url"));
+  tableRow.appendChild(Cell.createSpanCell("", false, false));
+  tableRow.appendChild(Cell.createSpanCell("", false, false));
+  const removeButton = document.createElement("button");
+  removeButton.classList.add("btn", "btn-danger");
+  removeButton.innerHTML = '<i class="fa fa-xmark"></i>';
+  removeButton.addEventListener("click", () => {
+    tableRow.remove();
+    const newRow = document.querySelectorAll(".new-row");
+    if (newRow.length === 0) {
+      saveButton.setAttribute("disabled", "");
+    }
+  });
+  tableRow.appendChild(
+    Cell.createElementCell(removeButton, 2, false, ["text-center"])
+  );
+  tbody.insertBefore(tableRow, tbody.firstChild);
+  saveButton.removeAttribute("disabled");
 });
 
-saveButton.addEventListener('click', async () => {
-    const confirmAlert = await Alert.showConfirmModal("Are you sure you want to insert the rows?");
+saveButton.addEventListener("click", async () => {
+  const confirmAlert = await Alert.showConfirmModal(
+    "Are you sure you want to insert the rows?"
+  );
 
-    if (!confirmAlert.isConfirmed) {
-        return;
-    }
+  if (!confirmAlert.isConfirmed) {
+    return;
+  }
 
-    const newRows = document.querySelectorAll('.new-row');
+  const newRows = document.querySelectorAll(".new-row");
 
-    const swalQueue = Alert.createQueue()
+  const swalQueue = Alert.createQueue();
 
-    const results = [];
-    try {
-        for (let index = 0; index < newRows.length; index++) {
-            const row = newRows[index];
-            const inputs = row.querySelectorAll('input');
-            const insertedData = {};
+  const results = [];
+  try {
+    for (let index = 0; index < newRows.length; index++) {
+      const row = newRows[index];
+      const inputs = row.querySelectorAll("input");
+      const insertedData = {};
 
-            let hasEmptyValue = false;
+      let hasEmptyValue = false;
 
-            inputs.forEach((input, inputIndex) => {
-                const key = input.getAttribute('for');
-                const value = input.value;
-                if (!value) {
-                    hasEmptyValue = true;
-                    return;
-                }
-                insertedData[key] = value;
-            });
-
-            if (hasEmptyValue) {
-                Alert.fire({
-                    title: `Row ${index + 1} has empty values`,
-                    text: 'Please fill in all fields for each row.',
-                    icon: 'error',
-                });
-                break;
-            }
-
-            try {
-                const result = await DataController.insert("permissions", insertedData);
-                results.push(result);
-                const confirmed = await swalQueue.fire({
-                    title: `Row ${index + 1} inserted successfully!`,
-                    icon: 'success',
-                    showCancelButton: false,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Next &rarr;',
-                });
-                if (!confirmed.isConfirmed) {
-                    break;
-                }
-            } catch (error) {
-                const confirmed = await swalQueue.fire({
-                    title: `Failed to insert Row ${index + 1}`,
-                    icon: 'error',
-                    showCancelButton: false,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Next &rarr;',
-                });
-                if (!confirmed.isConfirmed) {
-                    break;
-                }
-            }
+      inputs.forEach((input, inputIndex) => {
+        const key = input.getAttribute("for");
+        const value = input.value;
+        if (!value && key !== "description") {
+          hasEmptyValue = true;
+          return;
         }
-    } catch (error) {
-        console.error(error);
+        insertedData[key] = value;
+      });
+
+      if (hasEmptyValue) {
+        Alert.fire({
+          title: `Row ${index + 1} has empty values`,
+          text: "Please fill in all fields for each row.",
+          icon: "error",
+        });
+        break;
+      }
+
+      try {
+        const result = await DataController.insert("permissions", insertedData);
+        results.push(result);
+        const confirmed = await swalQueue.fire({
+          title: `Row ${index + 1} inserted successfully!`,
+          icon: "success",
+          showCancelButton: false,
+          showConfirmButton: true,
+          confirmButtonText: "Next &rarr;",
+        });
+        if (!confirmed.isConfirmed) {
+          break;
+        }
+      } catch (error) {
+        const confirmed = await swalQueue.fire({
+          title: `Failed to insert Row ${index + 1}`,
+          icon: "error",
+          showCancelButton: false,
+          showConfirmButton: true,
+          confirmButtonText: "Next &rarr;",
+        });
+        if (!confirmed.isConfirmed) {
+          break;
+        }
+      }
     }
-    generateTable(100, 1);
+  } catch (error) {
+    console.error(error);
+  }
+  generateTable(100, 1);
 });
 
 async function main() {
-    try {
-        toggleSpinner(true);
-        generateTable();
-    } catch (e) {
-        console.error(e);
-    } finally {
-        toggleSpinner(false);
-    }
+  try {
+    toggleSpinner(true);
+    generateTable();
+  } catch (e) {
+    console.error(e);
+  } finally {
+    toggleSpinner(false);
+  }
 }
 
-main()
+main();
