@@ -144,8 +144,6 @@ function toggleSpinner(loading) {
 }
 
 const handleDeleteRequest = async (e, requests, checkboxStates) => {
-  console.log("request", requests);
-  console.log("checkboxStates", checkboxStates);
   e.preventDefault();
   const confirmAlert = await Alert.showConfirmModal(
     "Are you sure you want to delete request?"
@@ -162,12 +160,10 @@ const handleDeleteRequest = async (e, requests, checkboxStates) => {
 
   requests.forEach((request) => {
     const { request_id } = request;
-    console.log("request", request);
     if (checkboxStates.includes(request_id)) {
       selectedRequests.push(request);
     }
   });
-  console.log("selectedRequests", selectedRequests);
 
   for (let index = 0; index < selectedRequests.length; index++) {
     const request = selectedRequests[index];
@@ -225,8 +221,6 @@ const handleUpdateRequestStatus = async (
   checkboxStates,
   status
 ) => {
-  console.log("request", requests);
-  console.log("checkboxStates", checkboxStates);
   e.preventDefault();
   const confirmAlert = await Alert.showConfirmModal(
     "Are you sure you item accepted?"
@@ -243,12 +237,10 @@ const handleUpdateRequestStatus = async (
 
   requests.forEach((request) => {
     const { request_id } = request;
-    console.log("request", request);
     if (checkboxStates.includes(request_id)) {
       selectedRequests.push(request);
     }
   });
-  console.log("selectedRequests", selectedRequests);
 
   for (let index = 0; index < selectedRequests.length; index++) {
     const request = selectedRequests[index];
@@ -256,8 +248,6 @@ const handleUpdateRequestStatus = async (
     const request_products = await get_request_products_by_request_id(
       request_id
     );
-    console.log(request_products);
-    console.log("request_products", request_products.status);
     try {
       if (status === "accepted") {
         request_products.status.forEach(async (item) => {
@@ -267,9 +257,7 @@ const handleUpdateRequestStatus = async (
             quantity: quantity_purchased,
             remaining_quantity: quantity_purchased,
           };
-          console.log(to_insert);
           const response = await DataController.insert("stock", to_insert);
-          console.log(response);
         });
       } else if (status === "damaged") {
         const result = await DataController.updateByKey(
@@ -334,7 +322,6 @@ function updateCheckBoxList(key, checkboxStates) {
   const acceptItemButton = document.getElementById("itemAccepted");
   const damagedItemButton = document.getElementById("itemDamaged");
   const deleteRequestedButton = document.getElementById("deleteRequest");
-  console.log(checkboxStates);
   if (index === -1) {
     checkboxStates.push(key);
   } else {
@@ -396,7 +383,6 @@ const addAllEventListeners = async (
     element.addEventListener(type, listener, false);
   });
 
-  console.log(eventListeners);
   eventListenersMap.set("buttons", eventListeners);
 };
 

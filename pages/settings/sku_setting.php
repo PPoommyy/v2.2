@@ -12,6 +12,9 @@
             <button id="save-button" class="btn btn-warning" disabled>
                 <i class="fa fa-floppy-disk"></i> Save
             </button>
+            <button id="export-csv" class="btn btn-success">
+                <i class="fa fa-file-csv"></i> Export as CSV
+            </button>
         </p>
         <div class="row">
             <div class="col mb-3 d-flex align-items-center justify-content-start ">

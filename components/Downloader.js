@@ -1,5 +1,6 @@
 import { AddressController } from "../components/AddressController.js";
 import { Alert } from "./Alert.js";
+import { DataController } from "./DataController.js";
 
 const readExcel = async (fileName) => {
   try {
@@ -137,6 +138,40 @@ const get_product_sets = async (limit, page) => {
 
     const response = await axios.get(url);
     return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const get_sku_data = async () => {
+  try {
+    const column = [
+      "sku_settings.id as sku_id",
+      "sku_settings.order_product_sku",
+      "sku_settings.report_product_name",
+      "warehouses.name as warehouse_name",
+      "warehouse_skus.name as warehouse_sku_name",
+      "sku_brands.name as sku_brand_name",
+    ];
+    /* 
+    JOIN warehouses w ON ss.warehouse_id = w.id
+    JOIN warehouse_skus ws ON ss.warehouse_sku_id = ws.id
+    JOIN sku_brands sb ON ss.sku_brand_id = sb.id
+    */
+    const join = [
+      ["warehouses", "sku_settings.warehouse_id", "warehouses.id"],
+      ["warehouse_skus", "sku_settings.warehouse_sku_id", "warehouse_skus.id"],
+      ["sku_brands", "sku_settings.sku_brand_id", "sku_brands.id"],
+    ];
+    const response = await DataController.select(
+      "sku_settings",
+      column,
+      "sku_id",
+      null,
+      null,
+      join
+    );
+    return response.status;
   } catch (error) {
     throw error;
   }
@@ -1686,33 +1721,6 @@ const generateMergedPDF = async (selectedOrders) => {
 };
 
 const generateUserDataCSV = async (userData) => {
-  /* TODO :
-        using exceljs to
-            1. generate csv file from userData 
-            2. download the file as userData.csv
-
-        example data:
-        [
-            {
-                "buyer_email": "aapo.vara1@gmail.com",
-                "buyer_name": "Aapo Heinonen",
-                "buyer_phone_number": "T. +358402142530",
-                "short_name": "Finland"
-            },
-            {
-                "buyer_email": "Alnievera@gmail.com",
-                "buyer_name": "Aaron Nievera",
-                "buyer_phone_number": "T. 650-892-5656",
-                "short_name": "United States"
-            },
-            {
-                "buyer_email": "heinis@gmail.com",
-                "buyer_name": "Aatos Putkonen",
-                "buyer_phone_number": "T. 0407688767",
-                "short_name": "Finland"
-            }
-        ]
-    */
   try {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("UserData");
@@ -1723,9 +1731,7 @@ const generateUserDataCSV = async (userData) => {
       { header: "buyer_phone_number", key: "buyer_phone_number", width: 20 },
       { header: "short_name", key: "short_name", width: 20 },
     ];
-    console.log("userData: " + userData);
     userData.forEach((user) => {
-      console.log("user: " + user);
       worksheet.addRow(user);
     });
 
@@ -1755,6 +1761,44 @@ const downloadBlob = (blob, filename) => {
   URL.revokeObjectURL(url);
 };
 
+const generateSKUDataCSV = async (toggleSpinner) => {
+  try {
+    toggleSpinner(true);
+    const skuData = await get_sku_data();
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("UserData");
+
+    worksheet.columns = [
+      { header: "sku_id", key: "sku_id", width: 20 },
+      { header: "order_product_sku", key: "order_product_sku", width: 20 },
+      { header: "report_product_name", key: "report_product_name", width: 20 },
+      { header: "warehouse_name", key: "warehouse_name", width: 20 },
+      { header: "warehouse_sku_name", key: "warehouse_sku_name", width: 20 },
+      { header: "sku_brand_name", key: "sku_brand_name", width: 20 },
+    ];
+    skuData.forEach((sku) => {
+      worksheet.addRow(sku);
+    });
+
+    const buffer = await workbook.csv.writeBuffer();
+    var blob = new Blob(["\uFEFF" + buffer], {
+      type: "text/csv; charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sku.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  } finally {
+    toggleSpinner(false);
+  }
+};
+
 export const Downloader = {
   readCSV,
   generateInvoiceExcel,
@@ -1767,5 +1811,6 @@ export const Downloader = {
   generateAftershipCSV,
   generateMergedPDF,
   generateUserDataCSV,
+  generateSKUDataCSV,
   downloadBlob,
 };

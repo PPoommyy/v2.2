@@ -1,7 +1,8 @@
 <?php
-    function get_skus($conn, $limit, $offset) {
-        try {
-            $query = "
+function get_skus($conn, $limit, $offset)
+{
+    try {
+        $query = "
             SELECT 
                 ss.id, 
                 ss.order_product_sku, 
@@ -18,25 +19,26 @@
             ORDER BY ss.order_product_sku ASC
             LIMIT :limit OFFSET :offset;
             ";
-    
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-    
-            $stmt->execute();
-    
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
-    }
 
-    function get_sku_count($conn) {
-        try {
-            $query = "
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
+    }
+}
+
+function get_sku_count($conn)
+{
+    try {
+        $query = "
             SELECT COUNT(*) as count 
             FROM sku_settings ss
             JOIN warehouses w ON ss.warehouse_id = w.id
@@ -44,94 +46,99 @@
             JOIN sku_brands sb ON ss.sku_brand_id = sb.id;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_sku_brands($conn) {
-        try {
-            $query = "
+function get_sku_brands($conn)
+{
+    try {
+        $query = "
             SELECT sb.id, sb.name
             FROM sku_brands sb
             ORDER BY sb.name ASC;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_sku_brands_count($conn) {
-        try {
-            $query = "
+function get_sku_brands_count($conn)
+{
+    try {
+        $query = "
             SELECT COUNT(*) as count 
             FROM sku_brands sb;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
-    
-    function get_warehouse_skus($conn) {
-        try {
-            $query = "
+}
+
+function get_warehouse_skus($conn)
+{
+    try {
+        $query = "
             SELECT ws.id, ws.name
             FROM warehouse_skus ws
             ORDER BY ws.name ASC;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_warehouse_skus_count($conn) {
-        try {
-            $query = "
+function get_warehouse_skus_count($conn)
+{
+    try {
+        $query = "
             SELECT COUNT(*) as count 
             FROM warehouse_skus ws;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_product_sets($conn) {
-        try {
-            $query = "
+function get_product_sets($conn)
+{
+    try {
+        $query = "
             SELECT 
                 ps.order_product_sku, 
                 ps.report_product_name,
@@ -144,20 +151,21 @@
                 psi.product_set_id;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_product_set_items($conn, $key, $value) {
-        try {
-            $query = "
+function get_product_set_items($conn, $key, $value)
+{
+    try {
+        $query = "
             SELECT
                 item.order_product_sku, 
                 item.report_product_name, 
@@ -180,21 +188,22 @@
                 $key = :value;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':value', $value, PDO::PARAM_INT);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':value', $value, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_product_sets_count($conn) {
-        try {
-            $query = "
+function get_product_sets_count($conn)
+{
+    try {
+        $query = "
             SELECT COUNT(*) as count 
             FROM 
                 product_set_items psi
@@ -205,20 +214,21 @@
             GROUP BY psi.product_set_id;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_factory_skus($conn, $factory_id, $limit, $offset) {
-        try {
-            $query = "
+function get_factory_skus($conn, $factory_id, $limit, $offset)
+{
+    try {
+        $query = "
             SELECT 
                 ss.id AS sku_settings_id, 
                 ss.order_product_sku, 
@@ -238,25 +248,28 @@
                 factory_sku_settings fss 
                 ON ss.id = fss.sku_settings_id AND fss.factory_id = :factory_id
             ORDER BY ss.order_product_sku ASC, ss.id ASC
-            LIMIT :limit OFFSET :offset;
             ";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
-            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
-    }
+        if ($limit) $query .= " LIMIT :limit";
+        if ($offset) $query .= " OFFSET :offset";
 
-    function get_factory_skus_count($conn, $factory_id) {
-        try {
-            $query = "
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
+    }
+}
+
+function get_factory_skus_count($conn, $factory_id)
+{
+    try {
+        $query = "
             SELECT 
                 COUNT(*) as count,
                 ss.id as sku_settings_id, 
@@ -270,24 +283,25 @@
             ORDER BY ss.order_product_sku ASC;
             ";
 
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
+}
 
-    function get_factory_order_skus($conn, $factory_id, $limit, $offset) {
-        try {
-            /* 
+function get_factory_order_skus($conn, $factory_id, $limit, $offset)
+{
+    try {
+        /* 
             retrive skus data in order_skus table that are in factory_sku_settings table by factory_id
              */
-            $query = "
+        $query = "
             SELECT 
                 os.id AS order_sku_id, 
                 os.order_product_sku, 
@@ -308,17 +322,16 @@
             ORDER BY os.order_product_sku ASC, os.id ASC
             LIMIT :limit OFFSET :offset;
             ";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
-            $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $jsonData = json_encode($result);
-            return $jsonData;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-            return null;
-        }
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':factory_id', $factory_id, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $jsonData = json_encode($result);
+        return $jsonData;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+        return null;
     }
-?>
+}

@@ -1,66 +1,81 @@
-import { Alert } from "../../components/Alert.js";
-
 const menus = {
   dashboard: {
     icon: "fa-chart-line",
     label: "Dashboard",
     submenus: [
-      { name: "dashboard_orders", label: "Orders" },
-      { name: "dashboard_po", label: "PO" },
-      { name: "dashboard_stock", label: "Stock" },
+      { name: "dashboard_orders", label: "Orders", show: true },
+      { name: "dashboard_po", label: "PO", show: true },
+      { name: "dashboard_stock", label: "Stock", show: true },
     ],
   },
   orders: {
     icon: "fa-list-ul",
     label: "Orders",
     submenus: [
-      { name: "order_list", label: "Order List" },
-      { name: "order_add", label: "Add Order" },
+      { name: "order_list", label: "Order List", show: true },
+      { name: "order_add", label: "Add Order", show: true },
     ],
   },
   po: {
     icon: "fa-truck-moving",
     label: "PO",
     submenus: [
-      { name: "pre_po", label: "Pre PO" },
-      { name: "po_order_list", label: "PO Order List" },
-      { name: "po_order_add", label: "Add PO Order" },
+      { name: "pre_po", label: "Pre PO", show: true },
+      { name: "po_order_list", label: "PO Order List", show: true },
+      { name: "po_order_add", label: "Add PO Order", show: true },
+      { name: "factory_details", label: "Factory Details", show: false },
     ],
   },
   stock: {
     icon: "fa-warehouse",
     label: "Stock",
     submenus: [
-      { name: "stock", label: "Stock" },
-      { name: "stock_in", label: "Import Stock" },
-      { name: "stock_out", label: "Export Stock" },
+      { name: "stock", label: "Stock", show: true },
+      { name: "stock_in", label: "Import Stock", show: true },
+      { name: "stock_out", label: "Export Stock", show: true },
     ],
   },
   return: {
     icon: "fa-rotate-left",
     label: "Return",
     submenus: [
-      { name: "return", label: "Request List" },
-      { name: "return_form", label: "Create Request" },
+      { name: "return", label: "Request List", show: true },
+      { name: "return_form", label: "Create Request", show: true },
     ],
   },
   settings: {
     icon: "fa-gear",
     label: "Settings",
     submenus: [
-      { name: "user_setting", label: "User Settings" },
-      { name: "permission_setting", label: "Permission Settings" },
-      { name: "role_setting", label: "Role Settings" },
-      { name: "sku_setting", label: "SKU Settings" },
-      { name: "product_set_setting", label: "Product Set Settings" },
-      { name: "factory_setting", label: "Factory Settings" },
-      { name: "website_setting", label: "Website Settings" },
-      { name: "currency_setting", label: "Currency Settings" },
-      { name: "invoice_setting", label: "Invoice Settings" },
-      { name: "sku_brands_setting", label: "SKU Brands Settings" },
-      { name: "warehouse_skus_setting", label: "Warehouse SKU Settings" },
-      { name: "payment_method_setting", label: "Payment Method Settings" },
-      { name: "service_method_setting", label: "Service Method Settings" },
+      { name: "user_setting", label: "User Settings", show: true },
+      { name: "permission_setting", label: "Permission Settings", show: true },
+      { name: "role_setting", label: "Role Settings", show: true },
+      { name: "sku_setting", label: "SKU Settings", show: true },
+      {
+        name: "product_set_setting",
+        label: "Product Set Settings",
+        show: true,
+      },
+      { name: "factory_setting", label: "Factory Settings", show: true },
+      { name: "website_setting", label: "Website Settings", show: true },
+      { name: "currency_setting", label: "Currency Settings", show: true },
+      { name: "invoice_setting", label: "Invoice Settings", show: true },
+      { name: "sku_brands_setting", label: "SKU Brands Settings", show: true },
+      {
+        name: "warehouse_skus_setting",
+        label: "Warehouse SKU Settings",
+        show: true,
+      },
+      {
+        name: "payment_method_setting",
+        label: "Payment Method Settings",
+        show: true,
+      },
+      {
+        name: "service_method_setting",
+        label: "Service Method Settings",
+        show: true,
+      },
     ],
   },
 };
@@ -68,22 +83,20 @@ const menus = {
 document.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // ถ้าไม่มี user ใน localStorage → Redirect ไปหน้า login
   if (!user) {
     window.location.href = "../../pages/lokin/lokin.php";
     return;
   }
 
-  // ✅ แปลง permissions ให้อยู่ในรูปแบบของอาร์เรย์ที่เก็บ `{ name, page_url }`
   const userPermissions = user[0].permissions.map((p) => ({
     name: p.name,
     page_url: p.page_url,
   }));
 
   const navbar = document.getElementById("navbarMenu");
-  navbar.innerHTML = ""; // ล้างเมนูก่อนสร้างใหม่
+  navbar.innerHTML = "";
 
-  let allowedPages = []; // เก็บหน้าที่ user มีสิทธิ์เข้าถึง
+  let allowedPages = [];
 
   for (const menuKey in menus) {
     const menu = menus[menuKey];
@@ -94,14 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (menu.submenus) {
       menu.submenus.forEach((submenu) => {
-        // ✅ หาว่าผู้ใช้มีสิทธิ์เข้าถึงเมนูย่อยนี้หรือไม่
         const permission = userPermissions.find((p) => p.name === submenu.name);
         if (permission) {
-          submenuHTML += `
-                        <li>
-                            <a class="dropdown-item" href="${permission.page_url}">${submenu.label}</a>
-                        </li>
-                    `;
+          if (submenu.show)
+            submenuHTML += `
+              <li>
+                  <a class="dropdown-item" href="${permission.page_url}">${submenu.label}</a>
+              </li>
+            `;
           allowedPages.push(permission.page_url);
         }
       });
@@ -127,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </a>
                 </li>
             `;
-      allowedPages.push(permission.page_url); // บันทึกหน้าที่ user มีสิทธิ์
+      allowedPages.push(permission.page_url);
     }
 
     if (menuItem) {
@@ -135,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ✅ เพิ่มเมนู Logout (แสดงทุก user)
   const logoutItem = `
         <li class="nav-item">
             <a class="nav-link" id="logoutBtn" href="#">
@@ -144,22 +156,20 @@ document.addEventListener("DOMContentLoaded", () => {
         </li>
     `;
   navbar.innerHTML += logoutItem;
-
-  // ✅ ฟังก์ชัน Logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("user"); // เคลียร์ session
-    window.location.href = "../../pages/lokin/lokin.php"; // Redirect ไปหน้า login
+    localStorage.removeItem("user");
+    window.location.href = "../../pages/lokin/lokin.php";
   });
 
-  // ✅ ป้องกันการเข้าถึงผ่าน URL
   const currentPath = window.location.pathname;
 
-  // แปลง currentPath ให้เหมือนกับ allowedPages (ใช้ ../../ นำหน้า)
   const relativePath = currentPath.substring(
     currentPath.indexOf("/pages/") + 1
-  ); // ตัดพาธก่อนหน้า /pages/
-  const currentPage = "../../" + relativePath; // นำ ../../ เข้ามาข้างหน้า
+  );
+  const currentPage = "../../" + relativePath;
 
+  /* console.log(currentPage);
+  console.log(allowedPages); */
   if (!allowedPages.includes(currentPage)) {
     window.location.href = allowedPages[0] || "../../pages/lokin/lokin.php";
   }
