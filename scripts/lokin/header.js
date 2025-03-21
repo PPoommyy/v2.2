@@ -21,8 +21,10 @@ const menus = {
     label: "PO",
     submenus: [
       { name: "pre_po", label: "Pre PO", show: true },
+      { name: "pre_po_details", label: "Pre PO Details", show: false },
       { name: "po_order_list", label: "PO Order List", show: true },
       { name: "po_order_add", label: "Add PO Order", show: true },
+      { name: "po_order_details", label: "PO Order Details", show: false },
       { name: "factory_details", label: "Factory Details", show: false },
     ],
   },

@@ -1,30 +1,30 @@
 SQL Query: 
             SELECT 
-                po.po_orders_id,
+                po.po_order_id,
                 po.timesort,
                 po.po_orders_date,
                 po.factory_id,
-                po.po_orders_status_id,
+                po.po_order_status_id,
                 po.total_amount,
                 po.notes,
                 f.name as factory_name,
                 pos.name as order_status
             FROM po_orders po
             JOIN factories f ON po.factory_id = f.id
-            JOIN po_orders_status pos ON po.po_orders_status_id = pos.id
+            JOIN po_orders_status pos ON po.po_order_status_id = pos.id
             
-            ORDER BY po.po_orders_id DESC
+            ORDER BY po.po_order_id DESC
             LIMIT :limit OFFSET :offset;
             
 Results: Array
 (
     [0] => Array
         (
-            [po_orders_id] => 67b8bc02l2xhw
+            [po_order_id] => 67b8bc02l2xhw
             [timesort] => 25020009
             [po_orders_date] => 2025-02-22 00:46:42
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -33,11 +33,11 @@ Results: Array
 
     [1] => Array
         (
-            [po_orders_id] => 67b8bb3b4elyc
+            [po_order_id] => 67b8bb3b4elyc
             [timesort] => 25020008
             [po_orders_date] => 2025-02-22 00:43:23
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -46,11 +46,11 @@ Results: Array
 
     [2] => Array
         (
-            [po_orders_id] => 67b8bb17c7z5m
+            [po_order_id] => 67b8bb17c7z5m
             [timesort] => 25020007
             [po_orders_date] => 2025-02-22 00:42:47
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -59,11 +59,11 @@ Results: Array
 
     [3] => Array
         (
-            [po_orders_id] => 67b8bab4iadt7
+            [po_order_id] => 67b8bab4iadt7
             [timesort] => 25020006
             [po_orders_date] => 2025-02-22 00:41:08
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -72,11 +72,11 @@ Results: Array
 
     [4] => Array
         (
-            [po_orders_id] => 67b8b9a3i8vus
+            [po_order_id] => 67b8b9a3i8vus
             [timesort] => 25020005
             [po_orders_date] => 2025-02-22 00:36:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -85,11 +85,11 @@ Results: Array
 
     [5] => Array
         (
-            [po_orders_id] => 67b8b9529paoa
+            [po_order_id] => 67b8b9529paoa
             [timesort] => 25020004
             [po_orders_date] => 2025-02-22 00:35:14
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -98,11 +98,11 @@ Results: Array
 
     [6] => Array
         (
-            [po_orders_id] => 67b8af31qetyn
+            [po_order_id] => 67b8af31qetyn
             [timesort] => 25020003
             [po_orders_date] => 2025-02-21 23:52:01
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -111,11 +111,11 @@ Results: Array
 
     [7] => Array
         (
-            [po_orders_id] => 67b8af165foui
+            [po_order_id] => 67b8af165foui
             [timesort] => 25020002
             [po_orders_date] => 2025-02-21 23:51:34
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -124,11 +124,11 @@ Results: Array
 
     [8] => Array
         (
-            [po_orders_id] => 67a734d34k9ov
+            [po_order_id] => 67a734d34k9ov
             [timesort] => 25020001
             [po_orders_date] => 2025-02-08 17:41:23
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -137,11 +137,11 @@ Results: Array
 
     [9] => Array
         (
-            [po_orders_id] => 679a06d3bbkcy
+            [po_order_id] => 679a06d3bbkcy
             [timesort] => 25010044
             [po_orders_date] => 2025-01-29 17:45:39
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -150,11 +150,11 @@ Results: Array
 
     [10] => Array
         (
-            [po_orders_id] => 679a0624dwqi9
+            [po_order_id] => 679a0624dwqi9
             [timesort] => 25010043
             [po_orders_date] => 2025-01-29 17:42:44
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -163,11 +163,11 @@ Results: Array
 
     [11] => Array
         (
-            [po_orders_id] => 679a05b8wq9la
+            [po_order_id] => 679a05b8wq9la
             [timesort] => 25010042
             [po_orders_date] => 2025-01-29 17:40:56
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -176,11 +176,11 @@ Results: Array
 
     [12] => Array
         (
-            [po_orders_id] => 679a051cu6v40
+            [po_order_id] => 679a051cu6v40
             [timesort] => 25010041
             [po_orders_date] => 2025-01-29 17:38:20
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -189,11 +189,11 @@ Results: Array
 
     [13] => Array
         (
-            [po_orders_id] => 679a03de4ng2t
+            [po_order_id] => 679a03de4ng2t
             [timesort] => 25010040
             [po_orders_date] => 2025-01-29 17:33:02
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -202,11 +202,11 @@ Results: Array
 
     [14] => Array
         (
-            [po_orders_id] => 679a0398nz6vr
+            [po_order_id] => 679a0398nz6vr
             [timesort] => 25010039
             [po_orders_date] => 2025-01-29 17:31:52
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -215,11 +215,11 @@ Results: Array
 
     [15] => Array
         (
-            [po_orders_id] => 679a0357p6e7t
+            [po_order_id] => 679a0357p6e7t
             [timesort] => 25010038
             [po_orders_date] => 2025-01-29 17:30:47
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -228,11 +228,11 @@ Results: Array
 
     [16] => Array
         (
-            [po_orders_id] => 679a0012luoav
+            [po_order_id] => 679a0012luoav
             [timesort] => 25010037
             [po_orders_date] => 2025-01-29 17:16:50
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -241,11 +241,11 @@ Results: Array
 
     [17] => Array
         (
-            [po_orders_id] => 6799fe7etlbab
+            [po_order_id] => 6799fe7etlbab
             [timesort] => 25010036
             [po_orders_date] => 2025-01-29 17:10:07
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -254,11 +254,11 @@ Results: Array
 
     [18] => Array
         (
-            [po_orders_id] => 6799fd26jqnp6
+            [po_order_id] => 6799fd26jqnp6
             [timesort] => 25010035
             [po_orders_date] => 2025-01-29 17:04:22
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -267,11 +267,11 @@ Results: Array
 
     [19] => Array
         (
-            [po_orders_id] => 6799fd063lfhl
+            [po_order_id] => 6799fd063lfhl
             [timesort] => 25010034
             [po_orders_date] => 2025-01-29 17:03:51
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -280,11 +280,11 @@ Results: Array
 
     [20] => Array
         (
-            [po_orders_id] => 6799fc68wulro
+            [po_order_id] => 6799fc68wulro
             [timesort] => 25010033
             [po_orders_date] => 2025-01-29 17:01:12
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -293,11 +293,11 @@ Results: Array
 
     [21] => Array
         (
-            [po_orders_id] => 6799fb7bj05f8
+            [po_order_id] => 6799fb7bj05f8
             [timesort] => 25010032
             [po_orders_date] => 2025-01-29 16:57:15
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -306,11 +306,11 @@ Results: Array
 
     [22] => Array
         (
-            [po_orders_id] => 6799f9eave0fg
+            [po_order_id] => 6799f9eave0fg
             [timesort] => 25010031
             [po_orders_date] => 2025-01-29 16:50:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -319,11 +319,11 @@ Results: Array
 
     [23] => Array
         (
-            [po_orders_id] => 6799f8d003k2e
+            [po_order_id] => 6799f8d003k2e
             [timesort] => 25010030
             [po_orders_date] => 2025-01-29 16:45:52
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -332,11 +332,11 @@ Results: Array
 
     [24] => Array
         (
-            [po_orders_id] => 6799f85dvnw0i
+            [po_order_id] => 6799f85dvnw0i
             [timesort] => 25010029
             [po_orders_date] => 2025-01-29 16:43:57
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -345,11 +345,11 @@ Results: Array
 
     [25] => Array
         (
-            [po_orders_id] => 6799f7f8njr32
+            [po_order_id] => 6799f7f8njr32
             [timesort] => 25010028
             [po_orders_date] => 2025-01-29 16:42:16
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -358,11 +358,11 @@ Results: Array
 
     [26] => Array
         (
-            [po_orders_id] => 6799f68blx1u3
+            [po_order_id] => 6799f68blx1u3
             [timesort] => 25010027
             [po_orders_date] => 2025-01-29 16:36:11
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -371,11 +371,11 @@ Results: Array
 
     [27] => Array
         (
-            [po_orders_id] => 6799f29flqj15
+            [po_order_id] => 6799f29flqj15
             [timesort] => 25010026
             [po_orders_date] => 2025-01-29 16:19:27
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -384,11 +384,11 @@ Results: Array
 
     [28] => Array
         (
-            [po_orders_id] => 6799f04bkxqv8
+            [po_order_id] => 6799f04bkxqv8
             [timesort] => 25010025
             [po_orders_date] => 2025-01-29 16:09:32
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -397,11 +397,11 @@ Results: Array
 
     [29] => Array
         (
-            [po_orders_id] => 6799efedfvrs6
+            [po_order_id] => 6799efedfvrs6
             [timesort] => 25010024
             [po_orders_date] => 2025-01-29 16:07:57
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -410,11 +410,11 @@ Results: Array
 
     [30] => Array
         (
-            [po_orders_id] => 6799efd7d3hbi
+            [po_order_id] => 6799efd7d3hbi
             [timesort] => 25010023
             [po_orders_date] => 2025-01-29 16:07:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -423,11 +423,11 @@ Results: Array
 
     [31] => Array
         (
-            [po_orders_id] => 6799dc9f2iq0j
+            [po_order_id] => 6799dc9f2iq0j
             [timesort] => 25010022
             [po_orders_date] => 2025-01-29 14:45:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -436,11 +436,11 @@ Results: Array
 
     [32] => Array
         (
-            [po_orders_id] => 6799dc79g80bt
+            [po_order_id] => 6799dc79g80bt
             [timesort] => 25010021
             [po_orders_date] => 2025-01-29 14:44:57
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -449,11 +449,11 @@ Results: Array
 
     [33] => Array
         (
-            [po_orders_id] => 6799daa4or68n
+            [po_order_id] => 6799daa4or68n
             [timesort] => 25010020
             [po_orders_date] => 2025-01-29 14:37:08
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -462,11 +462,11 @@ Results: Array
 
     [34] => Array
         (
-            [po_orders_id] => 6799da42bclby
+            [po_order_id] => 6799da42bclby
             [timesort] => 25010019
             [po_orders_date] => 2025-01-29 14:35:30
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -475,11 +475,11 @@ Results: Array
 
     [35] => Array
         (
-            [po_orders_id] => 6799da04bxljn
+            [po_order_id] => 6799da04bxljn
             [timesort] => 25010018
             [po_orders_date] => 2025-01-29 14:34:28
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -488,11 +488,11 @@ Results: Array
 
     [36] => Array
         (
-            [po_orders_id] => 6799d9c98x016
+            [po_order_id] => 6799d9c98x016
             [timesort] => 25010017
             [po_orders_date] => 2025-01-29 14:33:29
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -501,11 +501,11 @@ Results: Array
 
     [37] => Array
         (
-            [po_orders_id] => 6799d9b8manry
+            [po_order_id] => 6799d9b8manry
             [timesort] => 25010016
             [po_orders_date] => 2025-01-29 14:33:12
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -514,11 +514,11 @@ Results: Array
 
     [38] => Array
         (
-            [po_orders_id] => 6799d62bamqqx
+            [po_order_id] => 6799d62bamqqx
             [timesort] => 25010015
             [po_orders_date] => 2025-01-29 14:18:04
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -527,11 +527,11 @@ Results: Array
 
     [39] => Array
         (
-            [po_orders_id] => 6799d5a7djv3j
+            [po_order_id] => 6799d5a7djv3j
             [timesort] => 25010014
             [po_orders_date] => 2025-01-29 14:15:51
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -540,11 +540,11 @@ Results: Array
 
     [40] => Array
         (
-            [po_orders_id] => 67985fcfswa5d
+            [po_order_id] => 67985fcfswa5d
             [timesort] => 25010013
             [po_orders_date] => 2025-01-28 11:40:47
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -553,11 +553,11 @@ Results: Array
 
     [41] => Array
         (
-            [po_orders_id] => 67985f8fajnij
+            [po_order_id] => 67985f8fajnij
             [timesort] => 25010012
             [po_orders_date] => 2025-01-28 11:39:44
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -566,11 +566,11 @@ Results: Array
 
     [42] => Array
         (
-            [po_orders_id] => 67985f36bs28c
+            [po_order_id] => 67985f36bs28c
             [timesort] => 25010011
             [po_orders_date] => 2025-01-28 11:38:14
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -579,11 +579,11 @@ Results: Array
 
     [43] => Array
         (
-            [po_orders_id] => 67985ad69hhc9
+            [po_order_id] => 67985ad69hhc9
             [timesort] => 25010010
             [po_orders_date] => 2025-01-28 11:19:34
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -592,11 +592,11 @@ Results: Array
 
     [44] => Array
         (
-            [po_orders_id] => 67985a4buzfqo
+            [po_order_id] => 67985a4buzfqo
             [timesort] => 25010009
             [po_orders_date] => 2025-01-28 11:17:15
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -605,11 +605,11 @@ Results: Array
 
     [45] => Array
         (
-            [po_orders_id] => 6798598dgru8k
+            [po_order_id] => 6798598dgru8k
             [timesort] => 25010008
             [po_orders_date] => 2025-01-28 11:14:05
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -618,11 +618,11 @@ Results: Array
 
     [46] => Array
         (
-            [po_orders_id] => 6798597e4ip9l
+            [po_order_id] => 6798597e4ip9l
             [timesort] => 25010007
             [po_orders_date] => 2025-01-28 11:13:50
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -631,11 +631,11 @@ Results: Array
 
     [47] => Array
         (
-            [po_orders_id] => 6798594fw2bg7
+            [po_order_id] => 6798594fw2bg7
             [timesort] => 25010006
             [po_orders_date] => 2025-01-28 11:13:03
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -644,11 +644,11 @@ Results: Array
 
     [48] => Array
         (
-            [po_orders_id] => 67985733vpy9n
+            [po_order_id] => 67985733vpy9n
             [timesort] => 25010005
             [po_orders_date] => 2025-01-28 11:04:03
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -657,11 +657,11 @@ Results: Array
 
     [49] => Array
         (
-            [po_orders_id] => 679855cfhjnvv
+            [po_order_id] => 679855cfhjnvv
             [timesort] => 25010004
             [po_orders_date] => 2025-01-28 10:58:07
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -670,11 +670,11 @@ Results: Array
 
     [50] => Array
         (
-            [po_orders_id] => 679854f9mzrmt
+            [po_order_id] => 679854f9mzrmt
             [timesort] => 25010003
             [po_orders_date] => 2025-01-28 10:54:33
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -683,11 +683,11 @@ Results: Array
 
     [51] => Array
         (
-            [po_orders_id] => 679826e4cw316
+            [po_order_id] => 679826e4cw316
             [timesort] => 25010002
             [po_orders_date] => 2025-01-28 07:37:56
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -696,11 +696,11 @@ Results: Array
 
     [52] => Array
         (
-            [po_orders_id] => 67982692lkiuu
+            [po_order_id] => 67982692lkiuu
             [timesort] => 25010001
             [po_orders_date] => 2025-01-28 07:36:34
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -711,31 +711,31 @@ Results: Array
 
 SQL Query: 
             SELECT 
-                po.po_orders_id,
+                po.po_order_id,
                 po.timesort,
                 po.po_orders_date,
                 po.factory_id,
-                po.po_orders_status_id,
+                po.po_order_status_id,
                 po.total_amount,
                 po.notes,
                 f.name as factory_name,
                 pos.name as order_status
             FROM po_orders po
             JOIN factories f ON po.factory_id = f.id
-            JOIN po_orders_status pos ON po.po_orders_status_id = pos.id
+            JOIN po_orders_status pos ON po.po_order_status_id = pos.id
             
-            ORDER BY po.po_orders_id DESC
+            ORDER BY po.po_order_id DESC
             LIMIT :limit OFFSET :offset;
             
 Results: Array
 (
     [0] => Array
         (
-            [po_orders_id] => 67b8bc02l2xhw
+            [po_order_id] => 67b8bc02l2xhw
             [timesort] => 25020009
             [po_orders_date] => 2025-02-22 00:46:42
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -744,11 +744,11 @@ Results: Array
 
     [1] => Array
         (
-            [po_orders_id] => 67b8bb3b4elyc
+            [po_order_id] => 67b8bb3b4elyc
             [timesort] => 25020008
             [po_orders_date] => 2025-02-22 00:43:23
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -757,11 +757,11 @@ Results: Array
 
     [2] => Array
         (
-            [po_orders_id] => 67b8bb17c7z5m
+            [po_order_id] => 67b8bb17c7z5m
             [timesort] => 25020007
             [po_orders_date] => 2025-02-22 00:42:47
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -770,11 +770,11 @@ Results: Array
 
     [3] => Array
         (
-            [po_orders_id] => 67b8bab4iadt7
+            [po_order_id] => 67b8bab4iadt7
             [timesort] => 25020006
             [po_orders_date] => 2025-02-22 00:41:08
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -783,11 +783,11 @@ Results: Array
 
     [4] => Array
         (
-            [po_orders_id] => 67b8b9a3i8vus
+            [po_order_id] => 67b8b9a3i8vus
             [timesort] => 25020005
             [po_orders_date] => 2025-02-22 00:36:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -796,11 +796,11 @@ Results: Array
 
     [5] => Array
         (
-            [po_orders_id] => 67b8b9529paoa
+            [po_order_id] => 67b8b9529paoa
             [timesort] => 25020004
             [po_orders_date] => 2025-02-22 00:35:14
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -809,11 +809,11 @@ Results: Array
 
     [6] => Array
         (
-            [po_orders_id] => 67b8af31qetyn
+            [po_order_id] => 67b8af31qetyn
             [timesort] => 25020003
             [po_orders_date] => 2025-02-21 23:52:01
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -822,11 +822,11 @@ Results: Array
 
     [7] => Array
         (
-            [po_orders_id] => 67b8af165foui
+            [po_order_id] => 67b8af165foui
             [timesort] => 25020002
             [po_orders_date] => 2025-02-21 23:51:34
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -835,11 +835,11 @@ Results: Array
 
     [8] => Array
         (
-            [po_orders_id] => 67a734d34k9ov
+            [po_order_id] => 67a734d34k9ov
             [timesort] => 25020001
             [po_orders_date] => 2025-02-08 17:41:23
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -848,11 +848,11 @@ Results: Array
 
     [9] => Array
         (
-            [po_orders_id] => 679a06d3bbkcy
+            [po_order_id] => 679a06d3bbkcy
             [timesort] => 25010044
             [po_orders_date] => 2025-01-29 17:45:39
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -861,11 +861,11 @@ Results: Array
 
     [10] => Array
         (
-            [po_orders_id] => 679a0624dwqi9
+            [po_order_id] => 679a0624dwqi9
             [timesort] => 25010043
             [po_orders_date] => 2025-01-29 17:42:44
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -874,11 +874,11 @@ Results: Array
 
     [11] => Array
         (
-            [po_orders_id] => 679a05b8wq9la
+            [po_order_id] => 679a05b8wq9la
             [timesort] => 25010042
             [po_orders_date] => 2025-01-29 17:40:56
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -887,11 +887,11 @@ Results: Array
 
     [12] => Array
         (
-            [po_orders_id] => 679a051cu6v40
+            [po_order_id] => 679a051cu6v40
             [timesort] => 25010041
             [po_orders_date] => 2025-01-29 17:38:20
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -900,11 +900,11 @@ Results: Array
 
     [13] => Array
         (
-            [po_orders_id] => 679a03de4ng2t
+            [po_order_id] => 679a03de4ng2t
             [timesort] => 25010040
             [po_orders_date] => 2025-01-29 17:33:02
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -913,11 +913,11 @@ Results: Array
 
     [14] => Array
         (
-            [po_orders_id] => 679a0398nz6vr
+            [po_order_id] => 679a0398nz6vr
             [timesort] => 25010039
             [po_orders_date] => 2025-01-29 17:31:52
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -926,11 +926,11 @@ Results: Array
 
     [15] => Array
         (
-            [po_orders_id] => 679a0357p6e7t
+            [po_order_id] => 679a0357p6e7t
             [timesort] => 25010038
             [po_orders_date] => 2025-01-29 17:30:47
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -939,11 +939,11 @@ Results: Array
 
     [16] => Array
         (
-            [po_orders_id] => 679a0012luoav
+            [po_order_id] => 679a0012luoav
             [timesort] => 25010037
             [po_orders_date] => 2025-01-29 17:16:50
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -952,11 +952,11 @@ Results: Array
 
     [17] => Array
         (
-            [po_orders_id] => 6799fe7etlbab
+            [po_order_id] => 6799fe7etlbab
             [timesort] => 25010036
             [po_orders_date] => 2025-01-29 17:10:07
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -965,11 +965,11 @@ Results: Array
 
     [18] => Array
         (
-            [po_orders_id] => 6799fd26jqnp6
+            [po_order_id] => 6799fd26jqnp6
             [timesort] => 25010035
             [po_orders_date] => 2025-01-29 17:04:22
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -978,11 +978,11 @@ Results: Array
 
     [19] => Array
         (
-            [po_orders_id] => 6799fd063lfhl
+            [po_order_id] => 6799fd063lfhl
             [timesort] => 25010034
             [po_orders_date] => 2025-01-29 17:03:51
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -991,11 +991,11 @@ Results: Array
 
     [20] => Array
         (
-            [po_orders_id] => 6799fc68wulro
+            [po_order_id] => 6799fc68wulro
             [timesort] => 25010033
             [po_orders_date] => 2025-01-29 17:01:12
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1004,11 +1004,11 @@ Results: Array
 
     [21] => Array
         (
-            [po_orders_id] => 6799fb7bj05f8
+            [po_order_id] => 6799fb7bj05f8
             [timesort] => 25010032
             [po_orders_date] => 2025-01-29 16:57:15
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1017,11 +1017,11 @@ Results: Array
 
     [22] => Array
         (
-            [po_orders_id] => 6799f9eave0fg
+            [po_order_id] => 6799f9eave0fg
             [timesort] => 25010031
             [po_orders_date] => 2025-01-29 16:50:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1030,11 +1030,11 @@ Results: Array
 
     [23] => Array
         (
-            [po_orders_id] => 6799f8d003k2e
+            [po_order_id] => 6799f8d003k2e
             [timesort] => 25010030
             [po_orders_date] => 2025-01-29 16:45:52
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1043,11 +1043,11 @@ Results: Array
 
     [24] => Array
         (
-            [po_orders_id] => 6799f85dvnw0i
+            [po_order_id] => 6799f85dvnw0i
             [timesort] => 25010029
             [po_orders_date] => 2025-01-29 16:43:57
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1056,11 +1056,11 @@ Results: Array
 
     [25] => Array
         (
-            [po_orders_id] => 6799f7f8njr32
+            [po_order_id] => 6799f7f8njr32
             [timesort] => 25010028
             [po_orders_date] => 2025-01-29 16:42:16
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1069,11 +1069,11 @@ Results: Array
 
     [26] => Array
         (
-            [po_orders_id] => 6799f68blx1u3
+            [po_order_id] => 6799f68blx1u3
             [timesort] => 25010027
             [po_orders_date] => 2025-01-29 16:36:11
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1082,11 +1082,11 @@ Results: Array
 
     [27] => Array
         (
-            [po_orders_id] => 6799f29flqj15
+            [po_order_id] => 6799f29flqj15
             [timesort] => 25010026
             [po_orders_date] => 2025-01-29 16:19:27
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1095,11 +1095,11 @@ Results: Array
 
     [28] => Array
         (
-            [po_orders_id] => 6799f04bkxqv8
+            [po_order_id] => 6799f04bkxqv8
             [timesort] => 25010025
             [po_orders_date] => 2025-01-29 16:09:32
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1108,11 +1108,11 @@ Results: Array
 
     [29] => Array
         (
-            [po_orders_id] => 6799efedfvrs6
+            [po_order_id] => 6799efedfvrs6
             [timesort] => 25010024
             [po_orders_date] => 2025-01-29 16:07:57
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1121,11 +1121,11 @@ Results: Array
 
     [30] => Array
         (
-            [po_orders_id] => 6799efd7d3hbi
+            [po_order_id] => 6799efd7d3hbi
             [timesort] => 25010023
             [po_orders_date] => 2025-01-29 16:07:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1134,11 +1134,11 @@ Results: Array
 
     [31] => Array
         (
-            [po_orders_id] => 6799dc9f2iq0j
+            [po_order_id] => 6799dc9f2iq0j
             [timesort] => 25010022
             [po_orders_date] => 2025-01-29 14:45:35
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1147,11 +1147,11 @@ Results: Array
 
     [32] => Array
         (
-            [po_orders_id] => 6799dc79g80bt
+            [po_order_id] => 6799dc79g80bt
             [timesort] => 25010021
             [po_orders_date] => 2025-01-29 14:44:57
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1160,11 +1160,11 @@ Results: Array
 
     [33] => Array
         (
-            [po_orders_id] => 6799daa4or68n
+            [po_order_id] => 6799daa4or68n
             [timesort] => 25010020
             [po_orders_date] => 2025-01-29 14:37:08
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1173,11 +1173,11 @@ Results: Array
 
     [34] => Array
         (
-            [po_orders_id] => 6799da42bclby
+            [po_order_id] => 6799da42bclby
             [timesort] => 25010019
             [po_orders_date] => 2025-01-29 14:35:30
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1186,11 +1186,11 @@ Results: Array
 
     [35] => Array
         (
-            [po_orders_id] => 6799da04bxljn
+            [po_order_id] => 6799da04bxljn
             [timesort] => 25010018
             [po_orders_date] => 2025-01-29 14:34:28
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1199,11 +1199,11 @@ Results: Array
 
     [36] => Array
         (
-            [po_orders_id] => 6799d9c98x016
+            [po_order_id] => 6799d9c98x016
             [timesort] => 25010017
             [po_orders_date] => 2025-01-29 14:33:29
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1212,11 +1212,11 @@ Results: Array
 
     [37] => Array
         (
-            [po_orders_id] => 6799d9b8manry
+            [po_order_id] => 6799d9b8manry
             [timesort] => 25010016
             [po_orders_date] => 2025-01-29 14:33:12
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1225,11 +1225,11 @@ Results: Array
 
     [38] => Array
         (
-            [po_orders_id] => 6799d62bamqqx
+            [po_order_id] => 6799d62bamqqx
             [timesort] => 25010015
             [po_orders_date] => 2025-01-29 14:18:04
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1238,11 +1238,11 @@ Results: Array
 
     [39] => Array
         (
-            [po_orders_id] => 6799d5a7djv3j
+            [po_order_id] => 6799d5a7djv3j
             [timesort] => 25010014
             [po_orders_date] => 2025-01-29 14:15:51
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1251,11 +1251,11 @@ Results: Array
 
     [40] => Array
         (
-            [po_orders_id] => 67985fcfswa5d
+            [po_order_id] => 67985fcfswa5d
             [timesort] => 25010013
             [po_orders_date] => 2025-01-28 11:40:47
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1264,11 +1264,11 @@ Results: Array
 
     [41] => Array
         (
-            [po_orders_id] => 67985f8fajnij
+            [po_order_id] => 67985f8fajnij
             [timesort] => 25010012
             [po_orders_date] => 2025-01-28 11:39:44
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1277,11 +1277,11 @@ Results: Array
 
     [42] => Array
         (
-            [po_orders_id] => 67985f36bs28c
+            [po_order_id] => 67985f36bs28c
             [timesort] => 25010011
             [po_orders_date] => 2025-01-28 11:38:14
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1290,11 +1290,11 @@ Results: Array
 
     [43] => Array
         (
-            [po_orders_id] => 67985ad69hhc9
+            [po_order_id] => 67985ad69hhc9
             [timesort] => 25010010
             [po_orders_date] => 2025-01-28 11:19:34
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1303,11 +1303,11 @@ Results: Array
 
     [44] => Array
         (
-            [po_orders_id] => 67985a4buzfqo
+            [po_order_id] => 67985a4buzfqo
             [timesort] => 25010009
             [po_orders_date] => 2025-01-28 11:17:15
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1316,11 +1316,11 @@ Results: Array
 
     [45] => Array
         (
-            [po_orders_id] => 6798598dgru8k
+            [po_order_id] => 6798598dgru8k
             [timesort] => 25010008
             [po_orders_date] => 2025-01-28 11:14:05
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1329,11 +1329,11 @@ Results: Array
 
     [46] => Array
         (
-            [po_orders_id] => 6798597e4ip9l
+            [po_order_id] => 6798597e4ip9l
             [timesort] => 25010007
             [po_orders_date] => 2025-01-28 11:13:50
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1342,11 +1342,11 @@ Results: Array
 
     [47] => Array
         (
-            [po_orders_id] => 6798594fw2bg7
+            [po_order_id] => 6798594fw2bg7
             [timesort] => 25010006
             [po_orders_date] => 2025-01-28 11:13:03
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1355,11 +1355,11 @@ Results: Array
 
     [48] => Array
         (
-            [po_orders_id] => 67985733vpy9n
+            [po_order_id] => 67985733vpy9n
             [timesort] => 25010005
             [po_orders_date] => 2025-01-28 11:04:03
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1368,11 +1368,11 @@ Results: Array
 
     [49] => Array
         (
-            [po_orders_id] => 679855cfhjnvv
+            [po_order_id] => 679855cfhjnvv
             [timesort] => 25010004
             [po_orders_date] => 2025-01-28 10:58:07
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1381,11 +1381,11 @@ Results: Array
 
     [50] => Array
         (
-            [po_orders_id] => 679854f9mzrmt
+            [po_order_id] => 679854f9mzrmt
             [timesort] => 25010003
             [po_orders_date] => 2025-01-28 10:54:33
             [factory_id] => 1
-            [po_orders_status_id] => 5
+            [po_order_status_id] => 5
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1394,11 +1394,11 @@ Results: Array
 
     [51] => Array
         (
-            [po_orders_id] => 679826e4cw316
+            [po_order_id] => 679826e4cw316
             [timesort] => 25010002
             [po_orders_date] => 2025-01-28 07:37:56
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1
@@ -1407,11 +1407,11 @@ Results: Array
 
     [52] => Array
         (
-            [po_orders_id] => 67982692lkiuu
+            [po_order_id] => 67982692lkiuu
             [timesort] => 25010001
             [po_orders_date] => 2025-01-28 07:36:34
             [factory_id] => 1
-            [po_orders_status_id] => 1
+            [po_order_status_id] => 1
             [total_amount] => 
             [notes] => 
             [factory_name] => โรงงาน 1

@@ -22,15 +22,6 @@ updateButton.addEventListener("click", async () => {
   }
 });
 
-const get_factory_list = async () => {
-  try {
-    const response = await DataController.select("factories", ["*"], "id");
-    return response.status;
-  } catch (error) {
-    throw error;
-  }
-};
-
 async function generateTable(limit, page) {
   try {
     const factories = await get_factory_list();

@@ -159,7 +159,7 @@
     </div>
     <?php include("../../templates_/footer.php"); ?>
 </body>
-<script src="../assets/js/exceljs4.4.0.min.js"></script>
+<script src="../../assets/js/exceljs4.4.0.min.js"></script>
 <script type="module" src="../../scripts/po_management/po_order_list.js"></script>
 
 </html>

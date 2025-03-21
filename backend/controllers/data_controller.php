@@ -509,7 +509,7 @@ function get_data($conn, $table, $columns, $filter = '', $filterParams = [], $or
     }
 }
 
-function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND')
+function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND')
 {
     try {
         $columnList = implode(", ", $key);
@@ -559,7 +559,7 @@ function select($conn, $table, $key, $order_by, $limit = null, $offset = null, $
         }
 
         if ($order_by) {
-            $query .= " ORDER BY $order_by ASC";
+            $query .= " ORDER BY $order_by $order_by_type";
         }
 
         if ($limit) {

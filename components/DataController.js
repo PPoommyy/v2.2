@@ -107,6 +107,39 @@ const select = async (
   }
 };
 
+const selectNested = async (
+  table1,
+  column1,
+  order_by1,
+  order_by_type1,
+  limit1,
+  page1,
+  join1 = [[]],
+  where1 = [[]],
+  logical_operator1,
+  nestedKey,
+  nestedTables // Array ของ nested table
+) => {
+  try {
+    const response = await axios.post(
+      `../../backend/select/select_nested.php?table1=${table1}&order_by1=${order_by1}${
+        order_by_type1 ? "&order_by_type1=" + order_by_type1 : ""
+      }${limit1 ? "&limit1=" + limit1 : ""}${page1 ? "&page1=" + page1 : ""}`,
+      {
+        column1,
+        join1,
+        where1,
+        logical_operator1,
+        nestedKey,
+        nestedTables, // ส่ง array ของ nested tables
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const selectByKey = async (table, key, value) => {
   try {
     const response = await axios.post(
@@ -131,6 +164,7 @@ export const DataController = {
   insert,
   update,
   select,
+  selectNested,
   selectByKey,
   _delete,
   updateByKey,

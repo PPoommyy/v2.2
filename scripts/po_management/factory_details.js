@@ -4,138 +4,10 @@ import { Cell } from "../../components/Cell.js";
 import { DataController } from "../../components/DataController.js";
 import { Downloader } from "../../components/Downloader.js";
 import { Pagination } from "../../components/Pagination.js";
+import { PODataController } from "../../components/PODataController.js";
 
 const factory_id = document.getElementById("factoryId").value;
 
-const get_factory_details = async (factory_id) => {
-  try {
-    const url = `../../backend/get/get_value_by_key.php?table=factories`;
-    const response = await axios.post(url, {
-      key: "id",
-      value: factory_id,
-    });
-
-    return response;
-  } catch (error) {
-    Alert.showErrorMessage();
-  }
-};
-const get_factory_skus = async (factory_id) => {
-  try {
-    const column = [
-      "ss.id AS sku_settings_id",
-      "ss.order_product_sku",
-      "ss.report_product_name",
-      "fss.factory_id",
-      "fss.factory_sku_settings_id AS factory_sku_settings_id",
-      "fss.item_price",
-      "fss.created_at",
-      "fss.updated_at",
-      `CASE 
-          WHEN fss.factory_sku_settings_id IS NOT NULL THEN 1 
-          ELSE 0 
-      END AS exist`,
-    ];
-    const join = [
-      [
-        "LEFT JOIN",
-        "factory_sku_settings fss",
-        "ss.id",
-        "fss.sku_settings_id AND fss.factory_id = " + factory_id,
-      ],
-    ];
-    const response = await DataController.select(
-      "sku_settings ss",
-      column,
-      "ss.order_product_sku ASC, ss.id",
-      null,
-      null,
-      join
-    );
-    return response.status;
-  } catch (error) {
-    Alert.showErrorMessage();
-  }
-};
-
-/*
- sample data from get_factory_skus
-    {
-    "data": [
-        {
-            "sku_settings_id": 3,
-            "order_product_sku": "BXSKID-003-3S",
-            "report_product_name": "กางเกงเด็ก BXSKID-003   3S",
-            "factory_id": null,
-            "factory_sku_settings_id": null,
-            "created_at": null,
-            "updated_at": null,
-            "exist": 0
-        },
-        {
-            "sku_settings_id": 5,
-            "order_product_sku": "BXSKID-005-3S",
-            "report_product_name": "กางเกงเด็ก BXSKID-005   3S",
-            "factory_id": null,
-            "factory_sku_settings_id": null,
-            "created_at": null,
-            "updated_at": null,
-            "exist": 0
-        },
-        {
-            "sku_settings_id": 6,
-            "order_product_sku": "BXSKID-006-3S",
-            "report_product_name": "กางเกงเด็ก BXSKID-006   3S",
-            "factory_id": null,
-            "factory_sku_settings_id": null,
-            "created_at": null,
-            "updated_at": null,
-            "exist": 0
-        },
-        {
-            "sku_settings_id": 10,
-            "order_product_sku": "BXSKID-010-3S",
-            "report_product_name": "กางเกงเด็ก BXSKID-010  ชมพู  3S",
-            "factory_id": null,
-            "factory_sku_settings_id": null,
-            "created_at": null,
-            "updated_at": null,
-            "exist": 0
-        },
-        {
-            "sku_settings_id": 12,
-            "order_product_sku": "BXSKID-012-3S",
-            "report_product_name": "กางเกงเด็ก BXSKID-012   3S",
-            "factory_id": null,
-            "factory_sku_settings_id": null,
-            "created_at": null,
-            "updated_at": null,
-            "exist": 0
-        }
-    ]
-}
-
- sample data from get_factory_details
-     {
-    "id": null,
-    "table": "factories",
-    "column": "*",
-    "request": {
-        "key": "id",
-        "value": 1
-    },
-    "status": [
-        {
-            "id": 1,
-            "name": "Shanghai Electronics",
-            "location": "Shanghai, China",
-            "contact_person": "Li Wei",
-            "contact_number": "+86-21-12345678",
-            "email_address": "liwei@shanghai-electronics.com"
-        }
-    ]
-}
-*/
 function toggleSpinner(loading) {
   const spinner = document.getElementById("loading-spinner");
   if (loading) {
@@ -147,7 +19,7 @@ function toggleSpinner(loading) {
 
 const generateSection1 = async () => {
   if (factory_id) {
-    const result = await get_factory_details(factory_id);
+    const result = await PODataController.get_factory_details(factory_id);
     const factory = result.data.status[0];
     const { name, location, contact_person, contact_number, email_address } =
       factory;
@@ -176,7 +48,7 @@ const generateSection2 = async (limit, page) => {
   if (factory_id) {
     try {
       toggleSpinner(true);
-      const factory = await get_factory_skus(factory_id);
+      const factory = await PODataController.get_factory_skus(factory_id);
       const factorySkuDataContainer = document.getElementById("factory-skus");
       factorySkuDataContainer.innerHTML = "";
       const tableElement = document.createElement("table");
@@ -405,7 +277,7 @@ const handleCSVImport = async () => {
 
       try {
         toggleSpinner(true);
-        const factorySkus = await get_factory_skus(factory_id);
+        const factorySkus = await PODataController.get_factory_skus(factory_id);
 
         csvSkus.forEach(({ order_product_sku, price }) => {
           const match = factorySkus.find(
