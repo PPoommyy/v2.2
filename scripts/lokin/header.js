@@ -80,6 +80,13 @@ const menus = {
       },
     ],
   },
+  test: {
+    icon: "fa-rotate-left",
+    label: "Test",
+    submenus: [
+      { name: "test_db_import", label: "Test Database Import", show: true },
+    ],
+  },
 };
 
 document.addEventListener("DOMContentLoaded", () => {

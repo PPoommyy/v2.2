@@ -2,6 +2,7 @@ import { Cell } from "../../components/Cell.js";
 import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 import { Pagination } from "../../components/Pagination.js";
+import { PODataController } from "../../components/PODataController.js";
 
 const updateButton = document.getElementById("updateButton");
 updateButton.addEventListener("click", async () => {
@@ -24,7 +25,7 @@ updateButton.addEventListener("click", async () => {
 
 async function generateTable(limit, page) {
   try {
-    const factories = await get_factory_list();
+    const factories = await PODataController.get_factory_list();
     const factorySkuDataContainer = document.getElementById(
       "factory-sku-container"
     );

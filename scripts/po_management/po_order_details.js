@@ -1,5 +1,6 @@
 import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
+import { PODataController } from "../../components/PODataController.js";
 
 const factoryId = new URLSearchParams(window.location.search).get("factory_id");
 const poOrderId = document.getElementById("orderId").value;
@@ -74,24 +75,78 @@ function toggleSpinner(loading) {
   }
 }
 
-const loadFactoryDetails = async (factoryId) => {
-  try {
-    toggleSpinner(true);
-    const result = await get_factory_details(factoryId);
-    const factoryDetails = result.status[0];
-    const factoryName = document.getElementById("factory-name");
-    const factoryNumber = document.getElementById("factory-number");
-    const factoryEmail = document.getElementById("factory-email");
-    factoryName.value = factoryDetails.name;
-    factoryNumber.value = factoryDetails.contact_number;
-    factoryEmail.value = factoryDetails.email_address;
-  } catch (error) {
-    console.error(error);
-  } finally {
-    toggleSpinner(false);
-  }
+const updateFactoryDetails = async (factoryDetails) => {
+  toggleSpinner(true);
+  const factoryName = document.getElementById("factory-name");
+  const factoryNumber = document.getElementById("factory-number");
+  const factoryEmail = document.getElementById("factory-email");
+  const PONotes = document.getElementById("order-note-input");
+  factoryName.value = factoryDetails.factory_name;
+  factoryNumber.value = factoryDetails.contact_number;
+  factoryEmail.value = factoryDetails.email_address;
+  PONotes.value = factoryDetails.notes;
 };
 
+const updateFilesList = async (files) => {
+  if (files.length > 0) {
+    const fileListGroup = document.getElementById("file-list");
+    fileListGroup.innerHTML = "";
+
+    files.forEach((file) => {
+      const listItem = document.createElement("li");
+      listItem.classList.add(
+        "list-group-item",
+        "list-group-item-secondary",
+        "mb-2"
+      );
+
+      const fileList = document.createElement("span");
+      fileList.classList.add("me-2");
+      fileList.innerHTML = file.file_name;
+
+      const deleteButton = document.createElement("button");
+      deleteButton.classList.add("btn", "btn-danger", "me-1");
+      deleteButton.innerHTML = "Delete";
+
+      deleteButton.addEventListener("click", async () => {
+        const result = await DataController._delete(
+          "po_orders_files",
+          "id",
+          file.id
+        );
+        if (result.status) {
+          Alert.showSuccessMessage("Delete file successfully!");
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          Alert.showErrorMessage("File deleted failed!");
+        }
+      });
+
+      const downloadButton = document.createElement("button");
+      downloadButton.classList.add("btn", "btn-primary");
+      downloadButton.innerHTML = "Download";
+      downloadButton.addEventListener("click", async () => {
+        try {
+          const result = await DataController.download(file.file_pathname);
+          const link = document.createElement("a");
+          link.href = window.URL.createObjectURL(result);
+          link.download = file.file_name;
+          link.click();
+          Alert.showSuccessMessage("Download file successfully!");
+        } catch (error) {
+          Alert.showErrorMessage("File Downloaded failed!");
+        }
+      });
+
+      listItem.appendChild(fileList);
+      listItem.appendChild(deleteButton);
+      listItem.appendChild(downloadButton);
+      fileListGroup.appendChild(listItem);
+    });
+  }
+};
 const createInput = (type, key, value, isDisabled) => {
   const input = document.createElement("input");
   input.type = type;
@@ -211,7 +266,7 @@ const updateSkuDropdown = (skuOptions, skuInput, skuDropdown) => {
   });
 };
 
-const generateItemListTable = async () => {
+const generateItemListTable = async (po_order_id) => {
   try {
     toggleSpinner(true);
 
@@ -226,41 +281,44 @@ const generateItemListTable = async () => {
 
     // const selectedItems = JSON.parse(decodeURIComponent(encodedData));
 
-    // if ()
-    const itemDataContainer = document.getElementById("item-data-container");
-    itemDataContainer.innerHTML = "";
+    if (po_order_id) {
+      const po_orders = await PODataController.get_po_details(po_order_id);
+      const { data, nested } = po_orders[0];
+      const { items, files } = nested;
+      const itemDataContainer = document.getElementById("item-data-container");
+      itemDataContainer.innerHTML = "";
 
-    const tableElement = document.createElement("table");
-    tableElement.classList.add(
-      "table",
-      "table-bordered",
-      "table-striped",
-      "table-hover"
-    );
+      const tableElement = document.createElement("table");
+      tableElement.classList.add(
+        "table",
+        "table-bordered",
+        "table-striped",
+        "table-hover"
+      );
 
-    const tableHeader = document.createElement("thead");
-    const tableHeaderRow = document.createElement("tr");
-    tableHeaderRow.classList.add("row");
-    tableHeaderRow.innerHTML = `
-             <th class="col-4">Order ID</th>
-             <th class="col-4">Product SKU</th>
-             <th class="col-1">Quantity</th>
-             <th class="col-2">Price</th>
-             <th class="col-1"></th>`;
-    tableHeader.appendChild(tableHeaderRow);
-    tableElement.appendChild(tableHeader);
+      const tableHeader = document.createElement("thead");
+      const tableHeaderRow = document.createElement("tr");
+      tableHeaderRow.classList.add("row");
+      tableHeaderRow.innerHTML = `
+               <th class="col-4">Order ID</th>
+               <th class="col-4">Product SKU</th>
+               <th class="col-1">Quantity</th>
+               <th class="col-2">Price</th>
+               <th class="col-1"></th>`;
+      tableHeader.appendChild(tableHeaderRow);
+      tableElement.appendChild(tableHeader);
 
-    const tableBody = document.createElement("tbody");
-    tableBody.id = "item-list-body";
-    selectedItems.forEach((selectedItem, index) => {
-      const { order_id, items } = selectedItem;
+      const tableBody = document.createElement("tbody");
+      tableBody.id = "item-list-body";
       items.forEach((item) => {
+        console.log(item);
+        const { order_id } = item;
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row");
 
         const orderIdSpan = document.createElement("span");
         orderIdSpan.classList.add("order-id");
-        orderIdSpan.textContent = order_id;
+        orderIdSpan.textContent = order_id ? order_id : "";
         tableRow.appendChild(createTableCell(orderIdSpan, 4));
 
         const skuInput = createInput(
@@ -275,7 +333,7 @@ const generateItemListTable = async () => {
         const quantityInput = createInput(
           "number",
           "quantity-purchased",
-          item.quantity_purchased,
+          item.quantity,
           false
         );
         quantityInput.addEventListener("change", () => updateTotal(tableRow));
@@ -300,10 +358,13 @@ const generateItemListTable = async () => {
 
         tableBody.appendChild(tableRow);
       });
-    });
 
-    tableElement.appendChild(tableBody);
-    itemDataContainer.appendChild(tableElement);
+      tableElement.appendChild(tableBody);
+      itemDataContainer.appendChild(tableElement);
+      await updateFactoryDetails(data);
+      await updateFilesList(files);
+    } else {
+    }
   } catch (error) {
     console.error("Error generating item list table:", error);
   } finally {

@@ -20,7 +20,7 @@ function toggleSpinner(loading) {
 const generateSection1 = async () => {
   if (factory_id) {
     const result = await PODataController.get_factory_details(factory_id);
-    const factory = result.data.status[0];
+    const factory = result[0];
     const { name, location, contact_person, contact_number, email_address } =
       factory;
 

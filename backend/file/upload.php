@@ -1,6 +1,6 @@
 <?php
 if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
-    $uploadDir = isset($_GET['uploadDir']) ? $_GET['uploadDir'] : '../files/'; // Default upload directory
+    $uploadDir = isset($_GET['uploadDir']) ? $_GET['uploadDir'] : '../../files/'; // Default upload directory
     $filename = $_FILES['file']['name'];
     $tmpFilePath = $_FILES['file']['tmp_name'];
 
@@ -15,10 +15,9 @@ if ($_FILES['file']['error'] === UPLOAD_ERR_OK) {
         echo json_encode($response);
     } else {
         // Error moving file to destination
-        echo json_encode(['error' => 'Error moving file to destination.' . $tmpFilePath . $targetFilePath]);
+        echo json_encode(['error' => 'Error moving file to destination.' . $tmpFilePath . "->" . $targetFilePath . " = " . file_exists($targetFilePath)]);
     }
 } else {
     // File upload failed
     echo json_encode(['error' => 'File upload failed with error code: ' . $_FILES['file']['error']]);
 }
-?>

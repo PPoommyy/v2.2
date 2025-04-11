@@ -4,36 +4,6 @@ import { Pagination } from "../../components/Pagination.js";
 import { Cell } from "../../components/Cell.js";
 import { PODataController } from "../../components/PODataController.js";
 
-/* const get_factory_list = async (limit, page) => {
-  try {
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-const get_factory_skus = async (factory_id, page) => {
-  try {
-    const url = `../../backend/get/factory/get_factory_skus.php?factory_id=${factory_id}&page=${page}`;
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error) {
-    Alert.showErrorMessage();
-  }
-};
-
-const get_pre_po_order = async (factory_id) => {
-  try {
-    let url = `../../backend/get/get_pre_po_orders.php?factory_id=${factory_id}`;
-
-    const response = await axios.get(url);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-}; */
-
 function toggleSpinner(loading) {
   const spinner = document.getElementById("loading-spinner");
   if (loading) {
@@ -157,7 +127,10 @@ const loadFactorySkus = async (factoryId) => {
       firstItemCheckbox.type = "checkbox";
       firstItemCheckbox.name = "itemCheckbox";
       firstItemCheckbox.value = items[0].orders_skus_id;
+      firstItemCheckbox.dataset.sku_settings_id = items[0].sku_settings_id;
+      firstItemCheckbox.dataset.orders_skus_id = items[0].orders_skus_id;
       firstItemCheckbox.dataset.order_product_sku = items[0].order_product_sku;
+      firstItemCheckbox.dataset.item_price = items[0].item_price;
       firstItemCheckbox.dataset.quantity_purchased =
         items[0].quantity_purchased;
       firstItemCheckbox.dataset.orderId = order_id;
@@ -225,13 +198,16 @@ const loadFactorySkus = async (factoryId) => {
 
       items.slice(1).forEach((item) => {
         const itemRow = document.createElement("tr");
-
+        console.log(item);
         const itemCheckbox = document.createElement("input");
         itemCheckbox.type = "checkbox";
         itemCheckbox.name = "itemCheckbox";
         itemCheckbox.value = item.orders_skus_id;
+        itemCheckbox.dataset.sku_settings_id = item.sku_settings_id;
+        itemCheckbox.dataset.orders_skus_id = item.orders_skus_id;
         itemCheckbox.dataset.order_product_sku = item.order_product_sku;
         itemCheckbox.dataset.quantity_purchased = item.quantity_purchased;
+        itemCheckbox.dataset.item_price = item.item_price;
         itemCheckbox.dataset.orderId = order_id;
 
         itemCheckbox.addEventListener("change", function () {
@@ -301,24 +277,28 @@ const loadFactorySkus = async (factoryId) => {
 
 function updateCheckBoxList(item, order_id, checked) {
   const createPoOrderButton = document.getElementById("createPoOrder");
-  const sku_settings_id = item.value;
+  const sku_settings_id = item.dataset.sku_settings_id;
+  const orders_skus_id = item.dataset.orders_skus_id;
   const order_product_sku = item.dataset.order_product_sku;
   const quantity_purchased = item.dataset.quantity_purchased;
+  const item_price = item.dataset.item_price;
   if (checked) {
     if (!checkboxStates[order_id]) {
       checkboxStates[order_id] = [];
     }
-    if (!checkboxStates[order_id].includes(sku_settings_id)) {
+    if (!checkboxStates[order_id].includes(orders_skus_id)) {
       checkboxStates[order_id].push({
+        orders_skus_id: orders_skus_id,
         sku_settings_id: sku_settings_id,
         order_product_sku: order_product_sku,
         quantity_purchased: quantity_purchased,
+        item_price: item_price,
       });
     }
   } else {
     if (checkboxStates[order_id]) {
       checkboxStates[order_id] = checkboxStates[order_id].filter(
-        (id) => id !== sku_settings_id
+        (id) => id !== orders_skus_id
       );
       if (checkboxStates[order_id].length === 0) {
         delete checkboxStates[order_id];
@@ -334,10 +314,11 @@ function updateCheckBoxList(item, order_id, checked) {
 }
 
 const createPoOrderButton = document.getElementById("createPoOrder");
-createPoOrderButton.addEventListener("click", function () {
+createPoOrderButton.addEventListener("click", async () => {
   const selectedFactory =
     document.getElementById("select-factory").dataset.factoryId;
 
+  const poDraft = await PODataController.get_factory_draft(selectedFactory);
   if (!selectedFactory) {
     Alert.showErrorMessage("กรุณาเลือกโรงงานก่อนสร้าง PO Order");
     return;
@@ -357,7 +338,9 @@ createPoOrderButton.addEventListener("click", function () {
   }
 
   const encodedData = encodeURIComponent(JSON.stringify(selectedItems));
-  const queryString = `pre_po_details.php?factory_id=${selectedFactory}&data=${encodedData}`;
+  const queryString = `pre_po_details.php?factory_id=${selectedFactory}&data=${encodedData}${
+    poDraft.length > 0 ? `&po_order_id=${poDraft[0].data.po_order_id}` : ""
+  }`;
   window.location.href = queryString;
 });
 

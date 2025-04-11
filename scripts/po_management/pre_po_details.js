@@ -1,37 +1,11 @@
 import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
-
-const factoryId = new URLSearchParams(window.location.search).get("factory_id");
-
-const get_factory_details = async (factoryId) => {
-  try {
-    const response = await DataController.selectByKey(
-      "factories",
-      "id",
-      parseInt(factoryId)
-    );
-    return response;
-  } catch (error) {
-    throw error;
-  }
-};
+import { PODataController } from "../../components/PODataController.js";
 
 const get_factory_sku_search = async (searchTerm, factory_id) => {
   try {
     const response = await axios.get(
       `../../backend/get/factory/get_factory_sku_search.php?factory_id=${factory_id}&searchTerm=${searchTerm}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-const get_po_order_details = async (po_order_id) => {
-  try {
-    const response = await axios.get(
-      `../../backend/get/get_po_order_details.php?po_order_id=${po_order_id}`
     );
     return response.data;
   } catch (error) {
@@ -73,17 +47,22 @@ function toggleSpinner(loading) {
   }
 }
 
-const loadFactoryDetails = async (factoryId) => {
+const loadFactoryDetails = async (factoryDetails, poOrderDetails) => {
   try {
     toggleSpinner(true);
-    const result = await get_factory_details(factoryId);
-    const factoryDetails = result.status[0];
+    const { name, contact_number, email_address } = factoryDetails;
     const factoryName = document.getElementById("factory-name");
     const factoryNumber = document.getElementById("factory-number");
     const factoryEmail = document.getElementById("factory-email");
-    factoryName.value = factoryDetails.name;
-    factoryNumber.value = factoryDetails.contact_number;
-    factoryEmail.value = factoryDetails.email_address;
+    factoryName.value = name;
+    factoryNumber.value = contact_number;
+    factoryEmail.value = email_address;
+    if (poOrderDetails) {
+      const orderNoteInput = document.getElementById("order-note-input");
+      orderNoteInput.value = poOrderDetails.notes;
+      const fileInput = document.getElementById("file-input");
+      fileInput.value = poOrderDetails.file_pathname;
+    }
   } catch (error) {
     console.error(error);
   } finally {
@@ -210,7 +189,7 @@ const updateSkuDropdown = (skuOptions, skuInput, skuDropdown) => {
   });
 };
 
-const generateItemListTable = async () => {
+const generateItemListTable = async (poOrders) => {
   try {
     toggleSpinner(true);
 
@@ -240,53 +219,111 @@ const generateItemListTable = async () => {
     const tableHeaderRow = document.createElement("tr");
     tableHeaderRow.classList.add("row");
     tableHeaderRow.innerHTML = `
-             <th class="col-4">Order ID</th>
-             <th class="col-4">Product SKU</th>
-             <th class="col-1">Quantity</th>
-             <th class="col-2">Price</th>
+             <th class="col-2">Order SKU ID</th>
+             <th class="col-3">Product SKU</th>
+             <th class="col-2">Unit Price</th>
+             <th class="col-2">Quantity</th>
+             <th class="col-2">Total</th>
              <th class="col-1"></th>`;
     tableHeader.appendChild(tableHeaderRow);
     tableElement.appendChild(tableHeader);
 
     const tableBody = document.createElement("tbody");
     tableBody.id = "item-list-body";
-    selectedItems.forEach((selectedItem, index) => {
-      const { order_id, items } = selectedItem;
+    if (poOrders) {
+      console.log("poOrders", poOrders);
+      const { data, nested } = poOrders;
+      const { items } = nested;
       items.forEach((item) => {
+        // console.log(item);
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row");
 
         const orderIdSpan = document.createElement("span");
         orderIdSpan.classList.add("order-id");
-        orderIdSpan.textContent = order_id;
-        tableRow.appendChild(createTableCell(orderIdSpan, 4));
+        orderIdSpan.textContent = item.orders_skus_id
+          ? item.orders_skus_id
+          : null;
+        orderIdSpan.dataset.orders_skus_id = item.orders_skus_id;
+        orderIdSpan.dataset.po_order_item_id = item.po_order_item_id;
+        orderIdSpan.dataset.sku_settings_id = item.sku_settings_id;
+        orderIdSpan.dataset.quantity = item.quantity_purchased;
+        orderIdSpan.dataset.item_price = item.item_price ? item.item_price : 0;
+        tableRow.appendChild(createTableCell(orderIdSpan, 2));
 
-        const skuInput = createInput(
-          "text",
-          "order-product-sku",
-          item.order_product_sku,
-          false
-        );
-        const skuDiv = createSkuDiv(skuInput);
-        tableRow.appendChild(createTableCell(skuDiv, 4));
+        const skuSpan = document.createElement("span");
+        skuSpan.classList.add("order-product-sku");
+        skuSpan.textContent = item.order_product_sku;
+        tableRow.appendChild(createTableCell(skuSpan, 3));
 
-        const quantityInput = createInput(
+        const itemPriceSpan = document.createElement("span");
+        itemPriceSpan.classList.add("item-price");
+        itemPriceSpan.textContent = item.item_price;
+        tableRow.appendChild(createTableCell(itemPriceSpan, 2));
+
+        const quantitySpan = document.createElement("span");
+        quantitySpan.classList.add("quantity-purchased");
+        quantitySpan.textContent = item.quantity;
+        tableRow.appendChild(createTableCell(quantitySpan, 2));
+
+        const totalInput = createInput(
           "number",
-          "quantity-purchased",
-          item.quantity_purchased,
-          false
+          "total",
+          parseFloat(item.total).toFixed(2),
+          true
         );
-        quantityInput.addEventListener("change", () => updateTotal(tableRow));
-        tableRow.appendChild(createTableCell(quantityInput, 1));
+        tableRow.appendChild(createTableCell(totalInput, 2));
 
-        const itemPriceInput = createInput(
+        const removeButton = document.createElement("button");
+        removeButton.classList.add("btn", "btn-danger", "btn-sm");
+        removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+        removeButton.addEventListener("click", () => {
+          tableRow.remove();
+        });
+        tableRow.appendChild(createTableCell(removeButton, 1));
+
+        tableBody.appendChild(tableRow);
+      });
+    }
+    selectedItems.forEach((selectedItem, index) => {
+      // console.log(selectedItem);
+      const { order_id, items } = selectedItem;
+      items.forEach((item) => {
+        // console.log(item);
+        const tableRow = document.createElement("tr");
+        tableRow.classList.add("item", "row", "new-item");
+
+        const orderIdSpan = document.createElement("span");
+        orderIdSpan.classList.add("order-id");
+        orderIdSpan.textContent = item.orders_skus_id;
+        orderIdSpan.dataset.orders_skus_id = item.orders_skus_id;
+        orderIdSpan.dataset.sku_settings_id = item.sku_settings_id;
+        orderIdSpan.dataset.quantity = item.quantity_purchased;
+        orderIdSpan.dataset.item_price = item.item_price ? item.item_price : 0;
+        tableRow.appendChild(createTableCell(orderIdSpan, 2));
+
+        const skuSpan = document.createElement("span");
+        skuSpan.classList.add("order-product-sku");
+        skuSpan.textContent = item.order_product_sku;
+        tableRow.appendChild(createTableCell(skuSpan, 3));
+
+        const itemPriceSpan = document.createElement("span");
+        itemPriceSpan.classList.add("item-price");
+        itemPriceSpan.textContent = item.item_price;
+        tableRow.appendChild(createTableCell(itemPriceSpan, 2));
+
+        const quantitySpan = document.createElement("span");
+        quantitySpan.classList.add("quantity-purchased");
+        quantitySpan.textContent = item.quantity_purchased;
+        tableRow.appendChild(createTableCell(quantitySpan, 2));
+
+        const totalInput = createInput(
           "number",
-          "item-price",
-          item.item_price,
-          false
+          "total",
+          parseFloat(item.item_price * item.quantity_purchased).toFixed(2),
+          true
         );
-        itemPriceInput.addEventListener("change", () => updateTotal(tableRow));
-        tableRow.appendChild(createTableCell(itemPriceInput, 2));
+        tableRow.appendChild(createTableCell(totalInput, 2));
 
         const removeButton = document.createElement("button");
         removeButton.classList.add("btn", "btn-danger", "btn-sm");
@@ -322,7 +359,7 @@ const generateUniqueOrderId = async () => {
     do {
       newOrderId = uniqid();
 
-      const poOrderDetails = await get_po_order_details(newOrderId);
+      const poOrderDetails = await PODataController.get_po_details(newOrderId);
 
       if (
         !poOrderDetails ||
@@ -446,7 +483,7 @@ const sendEmail = async (pdfFile, newPOOrder) => {
     pngFormData.append("file", pngFile, pngFileName);
     const uploadResponse = await DataController.upload(
       pngFormData,
-      "../files/"
+      "../../files/"
     );
     console.log("uploadResponse", uploadResponse);
     if (!uploadResponse?.fileName) {
@@ -499,6 +536,7 @@ const sendEmail = async (pdfFile, newPOOrder) => {
 
 async function createPOAsPDF(newPOOrder, itemsList) {
   try {
+    console.log("Creating PDF", newPOOrder, itemsList);
     const { PDFDocument, rgb } = PDFLib;
     const fontkit = window.fontkit;
 
@@ -509,10 +547,10 @@ async function createPOAsPDF(newPOOrder, itemsList) {
     const { width, height } = page.getSize();
 
     // โหลด font ที่รองรับภาษาไทย
-    const fontBytes = await fetch("../assets/webfonts/tahoma.ttf").then((res) =>
-      res.arrayBuffer()
+    const fontBytes = await fetch("../../assets/webfonts/tahoma.ttf").then(
+      (res) => res.arrayBuffer()
     );
-    const fontBytesBold = await fetch("../assets/webfonts/tahoma.ttf").then(
+    const fontBytesBold = await fetch("../../assets/webfonts/tahoma.ttf").then(
       (res) => res.arrayBuffer()
     );
 
@@ -720,15 +758,21 @@ async function createPOAsPDF(newPOOrder, itemsList) {
 
     const formData = new FormData();
     formData.append("file", pdfFile, `PO-${newPOOrder.po_order_id}.pdf`);
-    const uploadResponse = await DataController.upload(formData, "../files/");
+    console.log(`PO-${newPOOrder.po_order_id}.pdf`);
+    const uploadResponse = await DataController.upload(
+      formData,
+      "../../files/"
+    );
 
+    console.log(uploadResponse);
     if (uploadResponse?.fileName) {
       const fileData = {
         po_order_id: newPOOrder.po_order_id,
         file_name: uploadResponse.fileName,
         file_pathname: uploadResponse.filePath,
       };
-      await DataController.insert("po_orders_files", fileData);
+      const result = await DataController.insert("po_orders_files", fileData);
+      console.log(result);
       return pdfFile;
     }
     return false;
@@ -738,249 +782,446 @@ async function createPOAsPDF(newPOOrder, itemsList) {
   }
 }
 
-const addProductButton = document.getElementById("add-product");
-const createDraftButton = document.getElementById("create-draft");
-const sendEmailButton = document.getElementById("send-email");
-
-addProductButton.addEventListener("click", function (event) {
-  event.preventDefault();
-  const tbody = document.getElementById("item-list-body");
-  const tableRow = document.createElement("tr");
-  tableRow.classList.add("item", "row");
-
-  const orderIdSpan = document.createElement("span");
-  orderIdSpan.classList.add("order-id");
-  orderIdSpan.textContent = null;
-  tableRow.appendChild(createTableCell(orderIdSpan, 4));
-
-  const skuInput = createInput("text", "order-product-sku", "", false);
-  const skuDiv = createSkuDiv(skuInput);
-  tableRow.appendChild(createTableCell(skuDiv, 4));
-
-  const quantityInput = createInput("number", "quantity-purchased", 1, false);
-  quantityInput.addEventListener("change", () => updateTotal(tableRow));
-  tableRow.appendChild(createTableCell(quantityInput, 1));
-
-  const itemPriceInput = createInput("number", "item-price", 1, false);
-  itemPriceInput.addEventListener("change", () => updateTotal(tableRow));
-  tableRow.appendChild(createTableCell(itemPriceInput, 2));
-
-  const removeButton = document.createElement("button");
-  removeButton.classList.add("btn", "btn-danger", "btn-sm");
-  removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
-  removeButton.addEventListener("click", () => {
-    tableRow.remove();
-  });
-  tableRow.appendChild(createTableCell(removeButton, 1));
-  tbody.appendChild(tableRow);
-});
-
-createDraftButton.addEventListener("click", async () => {
-  try {
-    const tbody = document.getElementById("item-list-body");
-    const orderNoteInput = document.getElementById("order-note-input").value;
-    const fileInput = document.getElementById("file-input");
-
-    const po_order_id = await generateUniqueOrderId();
-
-    const currentDate = new Date().toISOString().split("T")[0];
-    const odate = currentDate.split("-").join("/");
-    const idate = new Date(odate);
-    const idateYear = String(idate.getFullYear()).slice(-2);
-    const idateMonth = (idate.getMonth() + 1).toString().padStart(2, "0");
-    const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
-    const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
-
-    const formData = new FormData();
-    const file = fileInput.files[0];
-    if (file) {
-      const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
-      formData.append("file", file, filename);
-      const response = await DataController.upload(formData, "../files/");
-
-      const to_insert_file = {
-        po_order_id: factoryId,
-        file_name: response.fileName,
-        file_pathname: response.filePath,
-      };
-
-      const res = await DataController.insert("po_order_files", to_insert_file);
-    }
-
-    const newPOOrder = {
-      po_order_id: po_order_id,
-      timesort: newTimeSort,
-      factory_id: factoryId,
-      po_order_status_id: 5,
-      notes: orderNoteInput,
-    };
-
-    const items = tbody.querySelectorAll(".item");
-    const itemsList = [];
-    for (const item of items) {
-      const orderID = item.querySelector("span.order-id").innerHTML;
-      const skuInput = item.querySelector("input.order-product-sku");
-      const quantityInput = item.querySelector("input.quantity-purchased");
-
-      let id = parseInt(skuInput.getAttribute("order_product_id"));
-
-      const sku = skuInput.value;
-      const quantity = parseInt(quantityInput.value);
-      if (sku) {
-        if (!id) {
-          const result = await get_sku_by_name(sku);
-          if (result.status === 200) {
-            id = parseInt(result.data[0].id);
-          } else {
-            Alert.showErrorMessage(
-              `Couldn't find Product "${sku}" in database`
-            );
-            return;
-          }
-        }
-
-        const newItem = {
-          po_order_id: po_order_id,
-          order_id: orderID,
-          sku_settings_id: id,
-          quantity: quantity,
-          item_price: 0,
-          po_order_items_status_id: 5,
-        };
-        itemsList.push(newItem);
-      }
-    }
-    if (itemsList.length == 0) {
-      Alert.showErrorMessage("PO Order item is empty!");
-      return;
-    }
-    const result1 = await DataController.insert("po_orders", newPOOrder);
-    itemsList.forEach(async (item) => {
-      const result2 = await DataController.insert("po_orders_items", item);
-    });
-    if (result1.status) {
-      await createPOAsPDF(newPOOrder, itemsList);
-      Alert.showSuccessMessage("PO Order Inserted Successfully");
-      /* setTimeout(() => {
-                window.location.href = `po_order_list.php`;
-            }, 2000); */
-    } else {
-      Alert.showErrorMessage("PO Order Inserted Failed!");
-    }
-  } catch (error) {
-    console.error("Error:", error);
+document.addEventListener("DOMContentLoaded", async () => {
+  const factoryId = new URLSearchParams(window.location.search).get(
+    "factory_id"
+  );
+  // get po_order_id from URL or default to null
+  const poOrderId = new URLSearchParams(window.location.search).get(
+    "po_order_id"
+  );
+  console.log("Factory ID:", factoryId);
+  console.log("PO Order ID:", poOrderId);
+  const factory_details = await PODataController.get_factory_details(factoryId);
+  const poDraft = await PODataController.get_factory_draft(factoryId);
+  console.log("poDraft:", poDraft);
+  if (poOrderId) {
+    loadFactoryDetails(factory_details[0], poDraft[0]);
+    generateItemListTable(poDraft[0]);
+  } else {
+    loadFactoryDetails(factoryId, null);
+    generateItemListTable(null);
   }
-});
 
-sendEmailButton.addEventListener("click", async () => {
-  try {
+  const handleAddddProduct = async (event) => {
+    event.preventDefault();
     const tbody = document.getElementById("item-list-body");
-    const orderNoteInput = document.getElementById("order-note-input").value;
-    const fileInput = document.getElementById("file-input");
-    const po_order_id = await generateUniqueOrderId();
-    const currentDate = new Date().toISOString().split("T")[0];
-    const odate = currentDate.split("-").join("/");
-    const idate = new Date(odate);
-    const idateYear = String(idate.getFullYear()).slice(-2);
-    const idateMonth = (idate.getMonth() + 1).toString().padStart(2, "0");
-    const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
-    const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
+    const tableRow = document.createElement("tr");
+    tableRow.classList.add("item", "row", "new-item");
 
-    const formData = new FormData();
-    const file = fileInput.files[0];
-    if (file) {
-      const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
-      formData.append("file", file, filename);
-      const response = await DataController.upload(formData, "../files/");
+    const orderIdSpan = document.createElement("span");
+    orderIdSpan.classList.add("order-id");
+    orderIdSpan.textContent = null;
+    tableRow.appendChild(createTableCell(orderIdSpan, 2));
 
-      const to_insert_file = {
-        po_order_id: factoryId,
-        file_name: response.fileName,
-        file_pathname: response.filePath,
+    const skuInput = createInput("text", "order-product-sku", "", false);
+    const skuDiv = createSkuDiv(skuInput);
+    tableRow.appendChild(createTableCell(skuDiv, 3));
+
+    const itemPriceInput = createInput("number", "item-price", 1, false);
+    itemPriceInput.addEventListener("change", () => updateTotal(tableRow));
+    tableRow.appendChild(createTableCell(itemPriceInput, 2));
+
+    const quantityInput = createInput("number", "quantity-purchased", 1, false);
+    quantityInput.addEventListener("change", () => updateTotal(tableRow));
+    tableRow.appendChild(createTableCell(quantityInput, 2));
+
+    const removeButton = document.createElement("button");
+    removeButton.classList.add("btn", "btn-danger", "btn-sm");
+    removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+    removeButton.addEventListener("click", () => {
+      tableRow.remove();
+    });
+    tableRow.appendChild(createTableCell(removeButton, 1));
+    tbody.appendChild(tableRow);
+  };
+
+  const handleCreateDraft = async (event) => {
+    try {
+      const tbody = document.getElementById("item-list-body");
+      const orderNoteInput = document.getElementById("order-note-input").value;
+      const fileInput = document.getElementById("file-input");
+
+      const po_order_id = await generateUniqueOrderId();
+
+      const currentDate = new Date().toISOString().split("T")[0];
+      const odate = currentDate.split("-").join("/");
+      const idate = new Date(odate);
+      const idateYear = String(idate.getFullYear()).slice(-2);
+      const idateMonth = (idate.getMonth() + 1).toString().padStart(2, "0");
+      const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
+      const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
+
+      const formData = new FormData();
+      const file = fileInput.files[0];
+      if (file) {
+        const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
+        formData.append("file", file, filename);
+        const response = await DataController.upload(formData, "../files/");
+
+        const to_insert_file = {
+          po_order_id: factoryId,
+          file_name: response.fileName,
+          file_pathname: response.filePath,
+        };
+
+        const res = await DataController.insert(
+          "po_order_files",
+          to_insert_file
+        );
+      }
+
+      const newPOOrder = {
+        po_order_id: po_order_id,
+        timesort: newTimeSort,
+        factory_id: factoryId,
+        po_order_status_id: 5,
+        notes: orderNoteInput,
       };
 
-      const res = await DataController.insert("po_order_files", to_insert_file);
-    }
-
-    const newPOOrder = {
-      po_order_id: po_order_id,
-      timesort: newTimeSort,
-      factory_id: factoryId,
-      po_order_status_id: 1,
-      notes: orderNoteInput,
-    };
-
-    const items = tbody.querySelectorAll(".item");
-    const itemsList = [];
-    for (const item of items) {
-      const orderID = item.querySelector("span.order-id").innerHTML;
-      const skuInput = item.querySelector("input.order-product-sku");
-      const quantityInput = item.querySelector("input.quantity-purchased");
-      const itemPrice = parseFloat(
-        item.querySelector("input.item-price").value
-      );
-      let id = parseInt(skuInput.getAttribute("order_product_id"));
-
-      const sku = skuInput.value;
-      const quantity = parseInt(quantityInput.value);
-      if (sku) {
-        if (!id) {
-          const result = await get_sku_by_name(sku);
-          if (result.status === 200) {
-            id = parseInt(result.data[0].id);
-          } else {
-            Alert.showErrorMessage(
-              `Couldn't find Product "${sku}" in database`
-            );
-            return;
+      const items = tbody.querySelectorAll(".item");
+      const itemsList = [];
+      for (const item of items) {
+        console.log(item);
+        let orders_skus_id = null;
+        let item_price = 0;
+        let quantity = 0;
+        let id = null;
+        const orderIdSpan = item.querySelector("span.order-id");
+        console.log("Order ID: ", orderIdSpan);
+        if (orderIdSpan) {
+          orders_skus_id = orderIdSpan.dataset.orders_skus_id;
+          id = orderIdSpan.dataset.sku_settings_id;
+          quantity = orderIdSpan.dataset.quantity;
+          item_price = orderIdSpan.dataset.item_price;
+        } else {
+          const skuInput = item.querySelector("input.order-product-sku");
+          const quantityInput = item.querySelector("input.quantity-purchased");
+          const sku = skuInput.value;
+          quantity = parseInt(quantityInput.value);
+          id = parseInt(skuInput.getAttribute("order_product_id"));
+          if (sku) {
+            if (!id) {
+              const result = await get_sku_by_name(sku);
+              if (result.status === 200) {
+                id = parseInt(result.data[0].id);
+              } else {
+                Alert.showErrorMessage(
+                  `Couldn't find Product "${sku}" in database`
+                );
+                return;
+              }
+            }
           }
         }
-
         const newItem = {
           po_order_id: po_order_id,
-          order_id: orderID,
-          sku_settings_id: id,
-          quantity: quantity,
-          item_price: itemPrice,
-          po_order_items_status_id: 1,
+          orders_skus_id: parseInt(orders_skus_id),
+          sku_settings_id: parseInt(id),
+          quantity: parseInt(quantity),
+          item_price: parseInt(item_price) ? parseInt(item_price) : 0,
+          po_order_item_status_id: 5,
         };
+        console.log(newItem);
         itemsList.push(newItem);
       }
-    }
-    if (itemsList.length == 0) {
-      Alert.showErrorMessage("PO Order item is empty!");
-      return;
-    }
-    const result1 = await DataController.insert("po_orders", newPOOrder);
-    for (const item of itemsList) {
-      await DataController.insert("po_orders_items", item);
-    }
-
-    if (result1.status) {
-      Alert.showSuccessMessage("PO Order Inserted Successfully");
-
-      // Generate PDF
-      const pdfFile = await createPOAsPDF(newPOOrder, itemsList);
-      if (!pdfFile) {
-        Alert.showErrorMessage("Failed to generate PDF!");
+      console.log(itemsList);
+      if (itemsList.length == 0) {
+        Alert.showErrorMessage("PO Order item is empty!");
         return;
       }
-      const sendEmailResult = await sendEmail(pdfFile, newPOOrder);
-      if (sendEmailResult) {
-        Alert.showSuccessMessage("Email sent successfully!");
+      const result1 = await DataController.insert("po_orders", newPOOrder);
+      console.log(result1);
+      itemsList.forEach(async (item) => {
+        const result2 = await DataController.insert("po_orders_items", item);
+        if (result2) {
+          const updateOrdetItemStatus = await DataController.updateByKey(
+            "orders_skus",
+            "orders_skus_id",
+            item.orders_skus_id,
+            "product_status_id",
+            8
+          );
+          console.log(updateOrdetItemStatus);
+        }
+        console.log(result2);
+      });
+      if (result1.status) {
+        await createPOAsPDF(newPOOrder, itemsList);
+        Alert.showSuccessMessage("PO Order Inserted Successfully");
+        /* setTimeout(() => {
+                window.location.href = `po_order_list.php`;
+            }, 2000); */
       } else {
-        Alert.showErrorMessage("Failed to send email!");
+        Alert.showErrorMessage("PO Order Inserted Failed!");
       }
-    } else {
-      Alert.showErrorMessage("PO Order Insertion Failed!");
+    } catch (error) {
+      console.error("Error:", error);
     }
-  } catch (error) {
-    console.error("Error:", error);
-    Alert.showErrorMessage("An error occurred while processing your request");
-  }
-});
+  };
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadFactoryDetails(factoryId);
-  generateItemListTable();
+  const handleUpdateDraft = async (event) => {
+    try {
+      const { data, nested } = poDraft[0];
+      const { items } = nested;
+      const tbody = document.getElementById("item-list-body");
+      const orderNoteInput = document.getElementById("order-note-input").value;
+      const fileInput = document.getElementById("file-input");
+
+      const po_order_id = await generateUniqueOrderId();
+
+      const currentDate = new Date().toISOString().split("T")[0];
+      const odate = currentDate.split("-").join("/");
+      const idate = new Date(odate);
+      const idateYear = String(idate.getFullYear()).slice(-2);
+      const idateMonth = (idate.getMonth() + 1).toString().padStart(2, "0");
+      const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
+      const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
+
+      const formData = new FormData();
+      const file = fileInput.files[0];
+      if (file) {
+        const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
+        formData.append("file", file, filename);
+        const response = await DataController.upload(formData, "../files/");
+
+        const to_insert_file = {
+          po_order_id: factoryId,
+          file_name: response.fileName,
+          file_pathname: response.filePath,
+        };
+
+        const res = await DataController.insert(
+          "po_order_files",
+          to_insert_file
+        );
+      }
+
+      const itemsRows = tbody.querySelectorAll(".item");
+      const itemsList = [];
+      const to_insert_items = [];
+      const to_delete_items = items.map((item) => item.po_order_item_id);
+      console.log("to_delete_items", to_delete_items);
+      for (const itemRow of itemsRows) {
+        console.log(itemRow);
+        let orders_skus_id = null;
+        let item_price = 0;
+        let quantity = 0;
+        let id = null;
+        const orderIdSpan = itemRow.querySelector("span.order-id");
+        console.log("Order ID: ", orderIdSpan);
+        const po_order_item_id = orderIdSpan.dataset.po_order_item_id;
+        if (orderIdSpan) {
+          orders_skus_id = orderIdSpan.dataset.orders_skus_id;
+          id = orderIdSpan.dataset.sku_settings_id;
+          quantity = orderIdSpan.dataset.quantity;
+          item_price = orderIdSpan.dataset.item_price;
+        } else {
+          const skuInput = itemRow.querySelector("input.order-product-sku");
+          const quantityInput = itemRow.querySelector(
+            "input.quantity-purchased"
+          );
+          const sku = skuInput.value;
+          quantity = parseInt(quantityInput.value);
+          id = parseInt(skuInput.getAttribute("order_product_id"));
+          if (sku) {
+            if (!id) {
+              const result = await get_sku_by_name(sku);
+              if (result.status === 200) {
+                id = parseInt(result.data[0].id);
+              } else {
+                Alert.showErrorMessage(
+                  `Couldn't find Product "${sku}" in database`
+                );
+                return;
+              }
+            }
+          }
+        }
+        const newItem = {
+          po_order_id: po_order_id,
+          orders_skus_id: parseInt(orders_skus_id),
+          sku_settings_id: parseInt(id),
+          quantity: parseInt(quantity),
+          item_price: parseInt(item_price) ? parseInt(item_price) : 0,
+          po_order_item_status_id: 5,
+          ...(po_order_item_id && {
+            po_order_item_id: parseInt(po_order_item_id),
+          }),
+        };
+        console.log(newItem);
+        itemsList.push(newItem);
+      }
+      console.log(itemsList);
+
+      for (const itemInList of itemsList) {
+        const index = to_delete_items.indexOf(itemInList.po_order_item_id);
+        if (index !== -1) {
+          console.log("Item found in to_delete_items:", itemInList);
+          to_delete_items.splice(index, 1);
+        } else {
+          to_insert_items.push(itemInList);
+        }
+      }
+
+      console.log("to_insert_items", to_insert_items);
+      console.log("to_delete_items", to_delete_items);
+      if (itemsList.length == 0) {
+        Alert.showErrorMessage("PO Order item is empty!");
+        return;
+      }
+      // const result1 = await DataController.insert("po_orders", newPOOrder);
+      // console.log(result1);
+      // itemsList.forEach(async (item) => {
+      //   const result2 = await DataController.insert("po_orders_items", item);
+      //   if (result2) {
+      //     const updateOrdetItemStatus = await DataController.updateByKey(
+      //       "orders_skus",
+      //       "orders_skus_id",
+      //       item.orders_skus_id,
+      //       "product_status_id",
+      //       8
+      //     );
+      //     console.log(updateOrdetItemStatus);
+      //   }
+      //   console.log(result2);
+      // });
+      // if (result1.status) {
+      //   // await createPOAsPDF(newPOOrder, itemsList);
+      //   Alert.showSuccessMessage("PO Order Inserted Successfully");
+      //   /* setTimeout(() => {
+      //           window.location.href = `po_order_list.php`;
+      //       }, 2000); */
+      // } else {
+      //   Alert.showErrorMessage("PO Order Inserted Failed!");
+      // }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleSendEmail = async (event) => {
+    try {
+      const tbody = document.getElementById("item-list-body");
+      const orderNoteInput = document.getElementById("order-note-input").value;
+      const fileInput = document.getElementById("file-input");
+      const po_order_id = await generateUniqueOrderId();
+      const currentDate = new Date().toISOString().split("T")[0];
+      const odate = currentDate.split("-").join("/");
+      const idate = new Date(odate);
+      const idateYear = String(idate.getFullYear()).slice(-2);
+      const idateMonth = (idate.getMonth() + 1).toString().padStart(2, "0");
+      const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
+      const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
+
+      const formData = new FormData();
+      const file = fileInput.files[0];
+      if (file) {
+        const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
+        formData.append("file", file, filename);
+        const response = await DataController.upload(formData, "../files/");
+
+        const to_insert_file = {
+          po_order_id: factoryId,
+          file_name: response.fileName,
+          file_pathname: response.filePath,
+        };
+
+        const res = await DataController.insert(
+          "po_order_files",
+          to_insert_file
+        );
+      }
+
+      const newPOOrder = {
+        po_order_id: po_order_id,
+        timesort: newTimeSort,
+        factory_id: factoryId,
+        po_order_status_id: 1,
+        notes: orderNoteInput,
+      };
+
+      const items = tbody.querySelectorAll(".item");
+      const itemsList = [];
+      for (const item of items) {
+        const orderID = item.querySelector("span.order-id").innerHTML;
+        const skuInput = item.querySelector("input.order-product-sku");
+        const quantityInput = item.querySelector("input.quantity-purchased");
+        const itemPrice = parseFloat(
+          item.querySelector("input.item-price").value
+        );
+        let id = parseInt(skuInput.getAttribute("order_product_id"));
+
+        const sku = skuInput.value;
+        const quantity = parseInt(quantityInput.value);
+        if (sku) {
+          if (!id) {
+            const result = await get_sku_by_name(sku);
+            if (result.status === 200) {
+              id = parseInt(result.data[0].id);
+            } else {
+              Alert.showErrorMessage(
+                `Couldn't find Product "${sku}" in database`
+              );
+              return;
+            }
+          }
+
+          const newItem = {
+            po_order_id: po_order_id,
+            order_id: orderID,
+            sku_settings_id: id,
+            quantity: quantity,
+            item_price: itemPrice,
+            po_order_item_status_id: 1,
+          };
+          itemsList.push(newItem);
+        }
+      }
+      if (itemsList.length == 0) {
+        Alert.showErrorMessage("PO Order item is empty!");
+        return;
+      }
+      const result1 = await DataController.insert("po_orders", newPOOrder);
+      for (const item of itemsList) {
+        await DataController.insert("po_orders_items", item);
+      }
+
+      if (result1.status) {
+        Alert.showSuccessMessage("PO Order Inserted Successfully");
+
+        // Generate PDF
+        const pdfFile = await createPOAsPDF(newPOOrder, itemsList);
+        console.log(pdfFile);
+        if (!pdfFile) {
+          Alert.showErrorMessage("Failed to generate PDF!");
+          return;
+        }
+        const sendEmailResult = await sendEmail(pdfFile, newPOOrder);
+        if (sendEmailResult) {
+          Alert.showSuccessMessage("Email sent successfully!");
+        } else {
+          Alert.showErrorMessage("Failed to send email!");
+        }
+      } else {
+        Alert.showErrorMessage("PO Order Insertion Failed!");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Alert.showErrorMessage("An error occurred while processing your request");
+    }
+  };
+  if (poOrderId) {
+    const updateDraftButton = document.getElementById("update-draft");
+    updateDraftButton.style.display = "block";
+    updateDraftButton.addEventListener("click", handleUpdateDraft);
+  } else {
+    const createDraftButton = document.getElementById("create-draft");
+    createDraftButton.style.display = "block";
+    createDraftButton.addEventListener("click", handleCreateDraft);
+  }
+  const addProductButton = document.getElementById("add-product");
+  const sendEmailButton = document.getElementById("send-email");
+  addProductButton.addEventListener("click", handleAddddProduct);
+  sendEmailButton.addEventListener("click", handleSendEmail);
 });
