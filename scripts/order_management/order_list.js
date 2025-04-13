@@ -912,7 +912,7 @@ const handleThpost = async (e) => {
               ? "success"
               : "failed";
             await Swal.update({ html: createResultsHTML(results) });
-
+            console.log("generateBarcodeResult", generateBarcodeResult);
             if (generateBarcodeResult.fileUrl) {
               // const createTracking = await AftershipAPIController.createTracking(filteredOrder, aftershipApiHost, generateBarcodeResult.listItemBarcode[0].barcode);
               // result.createTracking = createTracking.status ? 'success' : 'failed';
@@ -936,6 +936,7 @@ const handleThpost = async (e) => {
                 generateBarcodeResult.fileUrl,
                 filteredOrder.details.order_id
               );
+              console.log("uploadResponse", uploadResponse);
               result.uploadResponse = uploadResponse.status
                 ? "success"
                 : "failed";

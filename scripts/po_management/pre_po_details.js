@@ -89,7 +89,7 @@ const createTableCell = (element, colspan) => {
   return cell;
 };
 
-const createSkuDiv = (skuInput) => {
+const createSkuDiv = (skuInput, factoryId) => {
   const skuDiv = document.createElement("div");
   skuDiv.classList.add("dropdown");
   const skuDropdown = document.createElement("ul");
@@ -815,7 +815,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     tableRow.appendChild(createTableCell(orderIdSpan, 2));
 
     const skuInput = createInput("text", "order-product-sku", "", false);
-    const skuDiv = createSkuDiv(skuInput);
+    const skuDiv = createSkuDiv(skuInput, factoryId);
     tableRow.appendChild(createTableCell(skuDiv, 3));
 
     const itemPriceInput = createInput("number", "item-price", 1, false);
@@ -947,7 +947,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.log(result2);
       });
       if (result1.status) {
-        await createPOAsPDF(newPOOrder, itemsList);
+        await  (newPOOrder, itemsList);
         Alert.showSuccessMessage("PO Order Inserted Successfully");
         /* setTimeout(() => {
                 window.location.href = `po_order_list.php`;
@@ -1070,6 +1070,64 @@ document.addEventListener("DOMContentLoaded", async () => {
         Alert.showErrorMessage("PO Order item is empty!");
         return;
       }
+      const swalQueue = Alert.createQueue();
+
+      if (to_insert_items && to_insert_items.length > 0) {
+        for (const to_insert_item of to_insert_items) {
+          const res = await DataController.insert(
+            "po_orders_items",
+            to_insert_item
+          );
+          if (res.status) {
+            const confirmed = await swalQueue.fire({
+              title: `Item ${to_insert_item.po_order_item_id} inserted successfully!`,
+              icon: "success",
+              timer: 1000,
+              showCancelButton: false,
+              showConfirmButton: true,
+              confirmButtonText: "Next &rarr;",
+            });
+          } else {
+            const confirmed = await swalQueue.fire({
+              title: `Item ${to_insert_item.po_order_item_id} inserted failed!`,
+              icon: "error",
+              timer: 1000,
+              showCancelButton: false,
+              showConfirmButton: true,
+              confirmButtonText: "Next &rarr;",
+            });
+          }
+        }
+      }
+
+      if (to_delete_items && to_delete_items.length > 0) {
+        for (const to_delete_item of to_delete_items) {
+          const res = await DataController._delete(
+            "po_orders_items",
+            "po_order_item_id",
+            to_delete_item
+          );
+          if (res.status) {
+            const confirmed = await swalQueue.fire({
+              title: `Item ${to_delete_item} deleted successfully!`,
+              icon: "success",
+              timer: 1000,
+              showCancelButton: false,
+              showConfirmButton: true,
+              confirmButtonText: "Next &rarr;",
+            });
+          } else {
+            const confirmed = await swalQueue.fire({
+              title: `Item ${to_delete_item} deleted failed!`,
+              icon: "error",
+              timer: 1000,
+              showCancelButton: false,
+              showConfirmButton: true,
+              confirmButtonText: "Next &rarr;",
+            });
+          }
+        }
+      }
       // const result1 = await DataController.insert("po_orders", newPOOrder);
       // console.log(result1);
       // itemsList.forEach(async (item) => {
@@ -1102,10 +1160,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const handleSendEmail = async (event) => {
     try {
+      const { data, nested } = poDraft[0];
+      const { items } = nested;
       const tbody = document.getElementById("item-list-body");
       const orderNoteInput = document.getElementById("order-note-input").value;
       const fileInput = document.getElementById("file-input");
+
       const po_order_id = await generateUniqueOrderId();
+
       const currentDate = new Date().toISOString().split("T")[0];
       const odate = currentDate.split("-").join("/");
       const idate = new Date(odate);
@@ -1133,55 +1195,80 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
-      const newPOOrder = {
-        po_order_id: po_order_id,
-        timesort: newTimeSort,
-        factory_id: factoryId,
-        po_order_status_id: 1,
-        notes: orderNoteInput,
-      };
-
-      const items = tbody.querySelectorAll(".item");
+      const itemsRows = tbody.querySelectorAll(".item");
       const itemsList = [];
-      for (const item of items) {
-        const orderID = item.querySelector("span.order-id").innerHTML;
-        const skuInput = item.querySelector("input.order-product-sku");
-        const quantityInput = item.querySelector("input.quantity-purchased");
-        const itemPrice = parseFloat(
-          item.querySelector("input.item-price").value
-        );
-        let id = parseInt(skuInput.getAttribute("order_product_id"));
-
-        const sku = skuInput.value;
-        const quantity = parseInt(quantityInput.value);
-        if (sku) {
-          if (!id) {
-            const result = await get_sku_by_name(sku);
-            if (result.status === 200) {
-              id = parseInt(result.data[0].id);
-            } else {
-              Alert.showErrorMessage(
-                `Couldn't find Product "${sku}" in database`
-              );
-              return;
+      const to_insert_items = [];
+      const to_delete_items = items.map((item) => item.po_order_item_id);
+      console.log("to_delete_items", to_delete_items);
+      for (const itemRow of itemsRows) {
+        console.log(itemRow);
+        let orders_skus_id = null;
+        let item_price = 0;
+        let quantity = 0;
+        let id = null;
+        const orderIdSpan = itemRow.querySelector("span.order-id");
+        console.log("Order ID: ", orderIdSpan);
+        const po_order_item_id = orderIdSpan.dataset.po_order_item_id;
+        if (orderIdSpan) {
+          orders_skus_id = orderIdSpan.dataset.orders_skus_id;
+          id = orderIdSpan.dataset.sku_settings_id;
+          quantity = orderIdSpan.dataset.quantity;
+          item_price = orderIdSpan.dataset.item_price;
+        } else {
+          const skuInput = itemRow.querySelector("input.order-product-sku");
+          const quantityInput = itemRow.querySelector(
+            "input.quantity-purchased"
+          );
+          const sku = skuInput.value;
+          quantity = parseInt(quantityInput.value);
+          id = parseInt(skuInput.getAttribute("order_product_id"));
+          if (sku) {
+            if (!id) {
+              const result = await get_sku_by_name(sku);
+              if (result.status === 200) {
+                id = parseInt(result.data[0].id);
+              } else {
+                Alert.showErrorMessage(
+                  `Couldn't find Product "${sku}" in database`
+                );
+                return;
+              }
             }
           }
+        }
+        const newItem = {
+          po_order_id: po_order_id,
+          orders_skus_id: parseInt(orders_skus_id),
+          sku_settings_id: parseInt(id),
+          quantity: parseInt(quantity),
+          item_price: parseInt(item_price) ? parseInt(item_price) : 0,
+          po_order_item_status_id: 5,
+          ...(po_order_item_id && {
+            po_order_item_id: parseInt(po_order_item_id),
+          }),
+        };
+        console.log(newItem);
+        itemsList.push(newItem);
+      }
+      console.log(itemsList);
 
-          const newItem = {
-            po_order_id: po_order_id,
-            order_id: orderID,
-            sku_settings_id: id,
-            quantity: quantity,
-            item_price: itemPrice,
-            po_order_item_status_id: 1,
-          };
-          itemsList.push(newItem);
+      for (const itemInList of itemsList) {
+        const index = to_delete_items.indexOf(itemInList.po_order_item_id);
+        if (index !== -1) {
+          console.log("Item found in to_delete_items:", itemInList);
+          to_delete_items.splice(index, 1);
+        } else {
+          to_insert_items.push(itemInList);
         }
       }
+
+      console.log("to_insert_items", to_insert_items);
+      console.log("to_delete_items", to_delete_items);
       if (itemsList.length == 0) {
         Alert.showErrorMessage("PO Order item is empty!");
         return;
       }
+
       const result1 = await DataController.insert("po_orders", newPOOrder);
       for (const item of itemsList) {
         await DataController.insert("po_orders_items", item);

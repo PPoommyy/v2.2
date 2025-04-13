@@ -5,7 +5,7 @@ try {
     header('Cache-Control: post-check=0, pre-check=0', false);
     header('Pragma: no-cache');
 
-    $target_db = new PDO("mysql:host=localhost;dbname=komsant_om;charset=utf8", 'root', '');
+    $target_db = new PDO("mysql:host=localhost;dbname=komsant_om;charset=utf8", 'komsant_om', 'spkfwngib');
     $target_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     function generateUniqueOrderId($target_db)
@@ -13,8 +13,8 @@ try {
         try {
             do {
                 $newOrderId = uniqid();
-                $stmt = $target_db->prepare("SELECT 1 FROM orders WHERE order_id = ? LIMIT 1");
-                $stmt->execute([$newOrderId]);
+                $stmt = $target_db->prepare("SELECT 1 FROM test_orders WHERE order_id = ? LIMIT 1");
+                $stmt->execute(array($newOrderId));
                 $orderExists = $stmt->fetchColumn() !== false;
             } while ($orderExists);
             return $newOrderId;
@@ -26,8 +26,8 @@ try {
     function generateNewTimeSort($date)
     {
         global $target_db;
-        $stmt = $target_db->prepare("SELECT timesort FROM orders WHERE timesort LIKE ? ORDER BY timesort DESC LIMIT 1");
-        $stmt->execute([substr($date, 0, 4) . '%']);
+        $stmt = $target_db->prepare("SELECT timesort FROM test_orders WHERE timesort LIKE ? ORDER BY timesort DESC LIMIT 1");
+        $stmt->execute(array(substr($date, 0, 4) . '%'));
         $lastTimeSort = $stmt->fetchColumn();
         $year = substr($date, 0, 2);
         $month = substr($date, 2, 2);
@@ -40,71 +40,75 @@ try {
 
     function formatAddress($orderData)
     {
-        return [
-            'ship_address_1' => $orderData['shipping_address_1'] ?? null,
-            'ship_address_2' => $orderData['shipping_address_2'] ?? null,
+        return array(
+            'ship_address_1' => isset($orderData['shipping_address_1']) ? $orderData['shipping_address_1'] : null,
+            'ship_address_2' => isset($orderData['shipping_address_2']) ? $orderData['shipping_address_2'] : null,
             'ship_address_3' => null,
-            'ship_city' => $orderData['shipping_city'] ?? null,
-            'ship_state' => $orderData['shipping_zone'] ?? null,
-            'ship_postal_code' => $orderData['shipping_postcode'] ?? null,
-            'ship_country' => $orderData['shipping_country'] ? (strlen($orderData['shipping_country']) > 2 ? getCountryCode($orderData['shipping_country']) : $orderData['shipping_country']) : null,
+            'ship_city' => isset($orderData['shipping_city']) ? $orderData['shipping_city'] : null,
+            'ship_state' => isset($orderData['shipping_zone']) ? $orderData['shipping_zone'] : null,
+            'ship_postal_code' => isset($orderData['shipping_postcode']) ? $orderData['shipping_postcode'] : null,
+            'ship_country' => isset($orderData['shipping_country'])
+                ? (strlen($orderData['shipping_country']) > 2
+                    ? getCountryCode($orderData['shipping_country'])
+                    : $orderData['shipping_country'])
+                : null,
             'raw_address' => sprintf(
                 "%s %s\n%s\n%s%s\n%s %s\nT. %s\n%s",
-                $orderData['shipping_firstname'],
-                $orderData['shipping_lastname'],
-                $orderData['shipping_address_1'],
+                isset($orderData['shipping_firstname']) ? $orderData['shipping_firstname'] : '',
+                isset($orderData['shipping_lastname']) ? $orderData['shipping_lastname'] : '',
+                isset($orderData['shipping_address_1']) ? $orderData['shipping_address_1'] : '',
                 !empty($orderData['shipping_address_2']) ? $orderData['shipping_address_2'] . ' · ' : '',
-                $orderData['shipping_city'],
-                $orderData['shipping_zone'],
-                $orderData['shipping_country'],
-                $orderData['telephone'],
-                $orderData['email']
+                isset($orderData['shipping_city']) ? $orderData['shipping_city'] : '',
+                isset($orderData['shipping_zone']) ? $orderData['shipping_zone'] : '',
+                isset($orderData['shipping_country']) ? $orderData['shipping_country'] : '',
+                isset($orderData['telephone']) ? $orderData['telephone'] : '',
+                isset($orderData['email']) ? $orderData['email'] : ''
             )
-        ];
+        );
     }
 
     function getCountryCode($countryName)
     {
-        $countryCodes = ['Thailand' => 'TH', 'United States' => 'US', 'United Kingdom' => 'GB'];
-        return $countryCodes[$countryName] ?? substr($countryName, 0, 2);
+        $countryCodes = array('Thailand' => 'TH', 'United States' => 'US', 'United Kingdom' => 'GB');
+        return isset($countryCodes[$countryName]) ? $countryCodes[$countryName] : substr($countryName, 0, 2);
     }
 
     $websiteStmt = $target_db->query("SELECT * FROM website_database");
     $websites = $websiteStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $summary = [];
+    $summary = array();
 
     foreach ($websites as $site) {
         try {
             $source_db = new PDO(
-                "mysql:host={$site['db_host']};dbname={$site['db_name']};charset=utf8",
+                "mysql:host=" . $site['db_host'] . ";dbname=" . $site['db_name'] . ";charset=utf8",
                 $site['db_user'],
                 $site['db_password']
             );
             $source_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            $stmt = $target_db->prepare("SHOW COLUMNS FROM orders LIKE 'source_order_id'");
+            $stmt = $target_db->prepare("SHOW COLUMNS FROM test_orders LIKE 'source_order_id'");
             $stmt->execute();
             if ($stmt->rowCount() === 0) {
-                $target_db->exec("ALTER TABLE orders ADD COLUMN source_order_id varchar(255) DEFAULT NULL");
+                $target_db->exec("ALTER TABLE test_orders ADD COLUMN source_order_id varchar(255) DEFAULT NULL");
             }
 
-            $existingStmt = $target_db->prepare("SELECT source_order_id FROM orders WHERE website_id = ? AND source_order_id IS NOT NULL");
-            $existingStmt->execute([$site['website_id']]);
-            $existingSourceOrderIds = [];
+            $existingStmt = $target_db->prepare("SELECT source_order_id FROM test_orders WHERE website_id = ? AND source_order_id IS NOT NULL");
+            $existingStmt->execute(array($site['website_id']));
+            $existingSourceOrderIds = array();
             while ($row = $existingStmt->fetch(PDO::FETCH_ASSOC)) {
                 $existingSourceOrderIds[$row['source_order_id']] = true;
             }
 
             $thirtyDaysAgo = date('Y-m-d H:i:s', strtotime('-' . intval($site['retreive_period']) . ' days'));
-            $ordersStmt = $source_db->prepare("SELECT * FROM oc_order WHERE date_added >= ? ORDER BY date_added DESC");
-            $ordersStmt->execute([$thirtyDaysAgo]);
-            $orders = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
+            $ordersStmt = $source_db->prepare("SELECT * FROM oc_order WHERE date_added >= ? AND order_status_id IN (1,2,3)  ORDER BY date_added DESC");
+            $ordersStmt->execute(array($thirtyDaysAgo));
+            $test_orders = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
 
             $processed = 0;
             $skipped = 0;
-            foreach ($orders as $order) {
-                if ($existingSourceOrderIds[$order['order_id']] ?? false) {
+            foreach ($test_orders as $order) {
+                if (isset($existingSourceOrderIds[$order['order_id']])) {
                     $skipped++;
                     continue;
                 }
@@ -116,16 +120,16 @@ try {
                 $addressData = formatAddress($order);
 
                 $currencyStmt = $target_db->prepare("SELECT id FROM currencies WHERE name = ?");
-                $currencyStmt->execute([$order['currency_code']]);
+                $currencyStmt->execute(array($order['currency_code']));
                 $currency = $currencyStmt->fetch(PDO::FETCH_ASSOC);
-                $currencyId = $currency['id'] ?? 1;
+                $currencyId = isset($currency['id']) ? $currency['id'] : 1;
 
-                $paymentMethodId = strpos($order['payment_code'], 'bluesnap') !== false ? 17 : 1;
+                $paymentMethodId = (strpos($order['payment_code'], 'bluesnap') !== false) ? 17 : 1;
                 $buyerName = trim($order['firstname'] . ' ' . $order['lastname']);
                 $recipientName = trim($order['shipping_firstname'] . ' ' . $order['shipping_lastname']);
                 $currentDateTime = date('Y-m-d H:i:s');
 
-                $orderInsert = $target_db->prepare("INSERT INTO orders (
+                $orderInsert = $target_db->prepare("INSERT INTO test_orders (
                     order_id, source_order_id, payments_date, buyer_email, buyer_name, 
                     buyer_phone_number, recipient_name, ship_phone_number, ship_promotion_discount, 
                     shipping_fee, ship_address_1, ship_address_2, ship_address_3, ship_city, 
@@ -134,7 +138,7 @@ try {
                     currency_id, payment_method_id, raw_address, order_note
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-                $orderInsert->execute([
+                $orderInsert->execute(array(
                     $targetOrderId,
                     $order['order_id'],
                     $order['date_added'],
@@ -163,26 +167,26 @@ try {
                     $paymentMethodId,
                     $addressData['raw_address'],
                     null
-                ]);
+                ));
 
                 $itemStmt = $source_db->prepare("SELECT op.*, p.model AS product_model FROM oc_order_product op LEFT JOIN oc_product p ON op.product_id = p.product_id WHERE op.order_id = ?");
-                $itemStmt->execute([$order['order_id']]);
+                $itemStmt->execute(array($order['order_id']));
                 $items = $itemStmt->fetchAll(PDO::FETCH_ASSOC);
 
                 foreach ($items as $item) {
-                    $productModel = $item['product_model'] ?: $item['model'];
+                    $productModel = !empty($item['product_model']) ? $item['product_model'] : $item['model'];
                     $skuStmt = $target_db->prepare("SELECT id FROM sku_settings WHERE order_product_sku = ?");
-                    $skuStmt->execute([$productModel]);
+                    $skuStmt->execute(array($productModel));
                     $sku = $skuStmt->fetch(PDO::FETCH_ASSOC);
 
                     if ($sku) {
                         $uniqueId = $targetOrderId . ',' . $sku['id'];
-                        $orderSkuInsert = $target_db->prepare("INSERT INTO orders_skus (
+                        $orderSkuInsert = $target_db->prepare("INSERT INTO test_orders_skus (
                             unique_id, order_id, order_item_id, sku_settings_id, 
                             item_price, shipping_price, total, quantity_purchased, 
                             is_amazon, date_created, product_status_id
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                        $orderSkuInsert->execute([
+                        $orderSkuInsert->execute(array(
                             $uniqueId,
                             $targetOrderId,
                             $sku['id'],
@@ -194,20 +198,20 @@ try {
                             1,
                             $currentDateTime,
                             1
-                        ]);
+                        ));
                     }
                 }
                 $processed++;
                 $existingSourceOrderIds[$order['order_id']] = true;
             }
 
-            $summary[] = ['website_id' => $site['website_id'], 'processed' => $processed, 'skipped' => $skipped];
+            $summary[] = array('website_id' => $site['website_id'], 'processed' => $processed, 'skipped' => $skipped);
         } catch (PDOException $e) {
-            $summary[] = ['website_id' => $site['website_id'], 'error' => $e->getMessage()];
+            $summary[] = array('website_id' => $site['website_id'], 'error' => $e->getMessage());
         }
     }
 
-    echo json_encode(['success' => true, 'results' => $summary]);
+    echo json_encode(array('success' => true, 'results' => $summary));
 } catch (Exception $e) {
-    echo json_encode(['error' => true, 'message' => $e->getMessage()]);
+    echo json_encode(array('error' => true, 'message' => $e->getMessage()));
 }

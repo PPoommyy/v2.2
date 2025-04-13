@@ -314,7 +314,7 @@ const handleUpdateRequestStatus = async (
       }
     }
   }
-  generateTable("requests", 100, 0);
+  // generateTable("requests", 100, 0);
 };
 
 function updateCheckBoxList(key, checkboxStates) {
@@ -417,7 +417,7 @@ const generateTable = async (table, limit, page) => {
       "Phone Number",
       "Tracking Number",
       "Order Number",
-      "Order Date",
+      // "Order Date",
       "Request Date",
       "Request Reason",
       "Request Type",
@@ -433,7 +433,7 @@ const generateTable = async (table, limit, page) => {
         phone_number,
         tracking_number,
         order_number,
-        order_date,
+        // order_date,
         request_date,
         request_reason,
         request_type,
@@ -490,7 +490,7 @@ const generateTable = async (table, limit, page) => {
       tableRow.appendChild(Cell.createSpanCell(phone_number, false, false));
       tableRow.appendChild(Cell.createSpanCell(tracking_number, false, false));
       tableRow.appendChild(Cell.createSpanCell(order_number, false, false));
-      tableRow.appendChild(Cell.createSpanCell(order_date, false, false));
+      // tableRow.appendChild(Cell.createSpanCell(order_date, false, false));
       tableRow.appendChild(Cell.createSpanCell(request_date, false, false));
       tableRow.appendChild(Cell.createSpanCell(request_reason, false, false));
       tableRow.appendChild(
