@@ -894,9 +894,9 @@ const handleThpost = async (e) => {
             const result = {
               timesort: filteredOrder.details.timesort,
               generateBarcodeResult: "pending",
+              createTracking: "pending",
               updateTracking: "pending",
               uploadResponse: "pending",
-              // createTracking: 'pending'
             };
             results.push(result);
             await Swal.update({ html: createResultsHTML(results) });
@@ -914,14 +914,21 @@ const handleThpost = async (e) => {
             await Swal.update({ html: createResultsHTML(results) });
             console.log("generateBarcodeResult", generateBarcodeResult);
             if (generateBarcodeResult.fileUrl) {
-              // const createTracking = await AftershipAPIController.createTracking(filteredOrder, aftershipApiHost, generateBarcodeResult.listItemBarcode[0].barcode);
-              // result.createTracking = createTracking.status ? 'success' : 'failed';
-              // await Swal.update({ html: createResultsHTML(results) });
+              const createTracking =
+                await AftershipAPIController.createTracking(
+                  filteredOrder,
+                  aftershipApiHost,
+                  generateBarcodeResult.listItemBarcode[0].barcode
+                );
+              result.createTracking = createTracking.status
+                ? "success"
+                : "failed";
+              await Swal.update({ html: createResultsHTML(results) });
               const insertData = {
                 order_id: filteredOrder.details.order_id,
                 tracking_number:
                   generateBarcodeResult.listItemBarcode[0].barcode,
-                tracking_id: /* createTracking.data.id */ "",
+                tracking_id: createTracking.data?.id,
               };
               const updateTracking = await DataController.insert(
                 "tracking",
