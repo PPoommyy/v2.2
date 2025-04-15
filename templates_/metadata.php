@@ -16,7 +16,9 @@
 	<script src="../../assets/js/bootstrap5-toggle.ecmas.min.js"></script>
 	<script src="../../assets/js/bootstrap.bundle.min.js"></script>
 	<script src="../../assets/js/axios.min.js"></script>
-	<script src="../../assets/js/pdf-lib.min.js"></script>
+	<!-- <script src="../../assets/js/pdf-lib.min.js"></script> -->
+	<script src="../../assets/js/pdfmake.min.js"></script>
+	<script src="../../assets/js/vfs_fonts.js"></script>
 	<script src="../../assets/js/html2canvas.min.js"></script>
 	<script src="../../assets/js/chart.min.js"></script>
 	<script src="../../assets/js/exceljs4.4.0.min.js"></script>

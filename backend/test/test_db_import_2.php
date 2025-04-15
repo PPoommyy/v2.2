@@ -159,7 +159,7 @@ try {
                     $currentDateTime,
                     $currentDateTime,
                     $newTimeSort,
-                    1,
+                    $order['order_status_id'] > 1 ? $order['order_status_id'] - 1 : 6,
                     1,
                     'Processing',
                     $site['website_id'],

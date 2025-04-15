@@ -7,7 +7,8 @@ $api_secret = 'nERhn1Ye7I7coovI1NTNL9MuKKnmF8';
 // UUID ของ Template อีเมล
 $template_uuid = '24092314-2820-8d99-a046-be37ae7e2dd2';
 
-function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl) {
+function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl)
+{
     global $api_url, $api_key, $api_secret, $template_uuid;
 
     // ตรวจสอบว่า URL เป็น absolute URL แล้ว
@@ -34,7 +35,8 @@ function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl) {
     return sendRequest($api_url, $emailParams);
 }
 
-function sendRequest($url, $params) {
+function sendRequest($url, $params)
+{
     global $api_key, $api_secret;
 
     $ch = curl_init();
@@ -92,4 +94,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
 }
-?>

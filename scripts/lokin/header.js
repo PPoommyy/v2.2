@@ -2,11 +2,7 @@ const menus = {
   dashboard: {
     icon: "fa-chart-line",
     label: "Dashboard",
-    submenus: [
-      { name: "dashboard_orders", label: "Orders", show: true },
-      { name: "dashboard_po", label: "PO", show: true },
-      { name: "dashboard_stock", label: "Stock", show: true },
-    ],
+    show: true,
   },
   orders: {
     icon: "fa-list-ul",

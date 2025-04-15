@@ -509,7 +509,7 @@ function get_data($conn, $table, $columns, $filter = '', $filterParams = [], $or
     }
 }
 
-function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND')
+function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND', $group_by = null)
 {
     try {
         $columnList = implode(", ", $key);
@@ -526,18 +526,26 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
         }
 
         $whereClauses = [];
+        $havingClauses = [];
         $params = [];
+
         if (!empty($where)) {
             foreach ($where as $index => $condition) {
                 if (count($condition) < 3) continue;
+
                 $column = $condition[0];
                 $operator = strtoupper($condition[1]);
                 $paramKey = ":param$index";
 
+                // Check if this is a HAVING condition
+                $isHaving = isset($condition[3]) && strtoupper($condition[3]) === 'HAVING';
+
+                $clauseToAdd = "";
+
                 if ($operator === 'BETWEEN' && is_array($condition[2]) && count($condition[2]) == 2) {
                     $paramKey1 = ":param" . $index . "_1";
                     $paramKey2 = ":param" . $index . "_2";
-                    $whereClauses[] = "$column BETWEEN $paramKey1 AND $paramKey2";
+                    $clauseToAdd = "$column BETWEEN $paramKey1 AND $paramKey2";
                     $params[$paramKey1] = $condition[2][0];
                     $params[$paramKey2] = $condition[2][1];
                 } elseif ($operator === 'IN' && is_array($condition[2])) {
@@ -547,14 +555,31 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
                         $inParams[] = $inKey;
                         $params[$inKey] = $val;
                     }
-                    $whereClauses[] = "$column IN (" . implode(",", $inParams) . ")";
+                    $clauseToAdd = "$column IN (" . implode(",", $inParams) . ")";
                 } else {
-                    $whereClauses[] = "$column $operator $paramKey";
+                    $clauseToAdd = "$column $operator $paramKey";
                     $params[$paramKey] = $condition[2];
                 }
+
+                // Add to the appropriate array based on whether it's a HAVING condition
+                if ($isHaving) {
+                    $havingClauses[] = $clauseToAdd;
+                } else {
+                    $whereClauses[] = $clauseToAdd;
+                }
             }
+
             if (!empty($whereClauses)) {
                 $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
+            }
+        }
+
+        if ($group_by) {
+            $query .= " GROUP BY $group_by";
+
+            // Add HAVING clause after GROUP BY if there are any HAVING conditions
+            if (!empty($havingClauses)) {
+                $query .= " HAVING " . implode(" $logical_operator ", $havingClauses);
             }
         }
 
@@ -566,6 +591,7 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
             $query .= " LIMIT :limit";
             $params[':limit'] = (int) $limit;
         }
+
         if ($offset) {
             $query .= " OFFSET :offset";
             $params[':offset'] = (int) $offset;
@@ -587,6 +613,7 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
         return json_encode(["error" => $e->getMessage(), "query" => $query]);
     }
 }
+
 
 function select_count($conn, $table, $order_by)
 {

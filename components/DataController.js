@@ -87,13 +87,17 @@ const select = async (
   page,
   join = [[]],
   where = [[]],
-  logical_operator
+  logical_operator,
+  order_by_type = "ASC",
+  group_by
 ) => {
   try {
     const response = await axios.post(
       `../../backend/select/select.php?table=${table}&order_by=${order_by}${
-        limit ? "&limit" + limit : ""
-      }${page ? "&page" + page : ""}`,
+        limit ? "&limit=" + limit : ""
+      }${page ? "&page=" + page : ""}${
+        order_by_type ? "&order_by_type=" + order_by_type : ""
+      }${group_by ? "&group_by=" + group_by : ""}`,
       {
         column,
         join,
@@ -160,6 +164,34 @@ const selectByKey = async (table, key, value) => {
   }
 };
 
+const _count = async (
+  table,
+  column,
+  order_by,
+  limit,
+  page,
+  join = [[]],
+  where = [[]],
+  logical_operator
+) => {
+  try {
+    const response = await axios.post(
+      `../../backend/select/select.php?table=${table}&order_by=${order_by}${
+        limit ? "&limit" + limit : ""
+      }${page ? "&page" + page : ""}`,
+      {
+        column,
+        join,
+        where,
+        logical_operator,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const DataController = {
   insert,
   update,
@@ -170,4 +202,5 @@ export const DataController = {
   updateByKey,
   upload,
   download,
+  _count,
 };
