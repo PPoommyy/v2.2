@@ -739,17 +739,39 @@ function update($conn, $table, $key, $value, $toUpdate)
 function delete($conn, $table, $key, $value)
 {
     try {
-        $query = "
-            DELETE FROM $table WHERE $key = :value
-            ";
+        $keys = is_array($key) ? $key : [$key];
+        $values = is_array($value) ? $value : [$value];
+
+        if (count($keys) !== count($values)) {
+            throw new Exception('The number of keys and values must match.');
+        }
+
+        $whereClauses = [];
+        $params = [];
+
+        foreach ($keys as $index => $k) {
+            $param = ':param' . $index;
+            $whereClauses[] = "$k = $param";
+            $params[$param] = $values[$index];
+        }
+
+        $whereSQL = implode(' AND ', $whereClauses);
+        $query = "DELETE FROM $table WHERE $whereSQL";
+
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':value', $value);
+        foreach ($params as $param => $val) {
+            $stmt->bindValue($param, $val);
+        }
+
         $stmt->execute();
         return true;
     } catch (PDOException $e) {
         return false;
+    } catch (Exception $ex) {
+        return false;
     }
 }
+
 
 function check_username($conn, $username)
 {

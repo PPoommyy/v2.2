@@ -352,10 +352,8 @@ updatePermissionButton.addEventListener("click", async () => {
     for (const del of to_delete) {
       await DataController._delete(
         "role_permissions",
-        "role_id",
-        del.role_id,
-        "permission_id",
-        del.permission_id
+        ["role_id", "permission_id"],
+        [del.role_id, del.permission_id]
       );
     }
   }

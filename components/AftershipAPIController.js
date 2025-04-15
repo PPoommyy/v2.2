@@ -9,7 +9,11 @@ const createTracking = async (order, apiHost, tracking_number) => {
     slug: "thailand-post",
     tracking_number: tracking_number,
     title: `Order ${details.timesort}`,
-    emails: ["poorinat.p@gmail.com"],
+    emails: [
+      "poorinat.p@gmail.com",
+      "s6404062630554@email.kmutnb.ac.th",
+      "s6404062630333@email.kmutnb.ac.th",
+    ],
     order_id: `ID ${details.order_id}`,
     order_number: details.timesort,
     order_id_path: `http://www.aftership.com/order_id=${details.order_id}`,

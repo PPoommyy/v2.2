@@ -41,7 +41,8 @@ async function update(table, key, value, toUpdate) {
 async function _delete(table, key, value) {
   try {
     const url = `../../backend/delete/delete.php?table=${table}`;
-    const response = await axios.post(url, { key, value });
+    const response = await axios.post(url, { key: key, value: value });
+    console.log("Delete response:", response.data);
     return response.data;
   } catch (error) {
     Alert.showErrorMessage();
