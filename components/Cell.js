@@ -50,11 +50,12 @@ const createSpanCell = (value, colSpan, rowSpan, classList = null) => {
   return cell;
 };
 
-const createInputCell = (key, placeholder) => {
+const createInputCell = (key, placeholder, type) => {
   const cell = document.createElement("td");
   const input = document.createElement("input");
   input.setAttribute("for", key);
-  input.type = "text";
+  if (type) input.type = type;
+  else input.type = "text";
   input.classList.add("form-control");
   input.placeholder = placeholder ? placeholder : "Enter text...";
   cell.appendChild(input);

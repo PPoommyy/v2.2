@@ -82,9 +82,9 @@ async function generateTable(limit, page) {
     const tableHeader = document.createElement("thead");
     const tableHeaderRow = document.createElement("tr");
     tableHeaderRow.innerHTML = `
-        <th></th>
         <th>Username</th>
         <th>Email</th>
+        <th>Password</th>
         <th>Fullname</th>
         <th>Role Name</th>
         <th>Is Active?</th>`;
@@ -96,12 +96,6 @@ async function generateTable(limit, page) {
       const { user_id, username, email, full_name, is_active, role_name } =
         user;
       const tableRow = document.createElement("tr");
-      const linkDetails = document.createElement("a");
-      linkDetails.href = `user_details.php?user_id=${user_id}`;
-      linkDetails.innerText = "View Detail";
-      tableRow.appendChild(
-        Cell.createElementCell(linkDetails, false, false, false)
-      );
       tableRow.appendChild(
         Cell.createInputOnModalCell("Username", user_id, "username", username)
       );
@@ -192,17 +186,18 @@ async function resetPassword(userId) {
 const addButton = document.getElementById("add-button");
 const saveButton = document.getElementById("save-button");
 
-addButton.addEventListener("click", function (event) {
+addButton.addEventListener("click", async function (event) {
   event.preventDefault();
+  const roles = await get_role();
   const tbody = document.getElementById("user-data-tbody");
   const tableRow = document.createElement("tr");
   tableRow.classList.add("new-row");
-  tableRow.appendChild(Cell.createSpanCell("", false, false));
   tableRow.appendChild(Cell.createInputCell("username"));
   tableRow.appendChild(Cell.createInputCell("email"));
-  tableRow.appendChild(Cell.createInputCell("password"));
+  tableRow.appendChild(Cell.createInputCell("password_hash"));
   tableRow.appendChild(Cell.createInputCell("full_name"));
-  tableRow.appendChild(Cell.createSpanCell(1, false, false));
+  tableRow.appendChild(Cell.createInputCell("role_id", 1, "number"));
+  tableRow.appendChild(Cell.createInputCell("is_active", 1, "number"));
   const removeButton = document.createElement("button");
   removeButton.classList.add("btn", "btn-danger");
   removeButton.innerHTML = '<i class="fa fa-xmark"></i>';
@@ -262,7 +257,9 @@ saveButton.addEventListener("click", async () => {
       }
 
       try {
+        console.log(insertedData);
         const result = await DataController.insert("users", insertedData);
+        console.log(result);
         results.push(result);
         const confirmed = await swalQueue.fire({
           title: `Row ${index + 1} inserted successfully!`,
