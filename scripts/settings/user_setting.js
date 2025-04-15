@@ -102,7 +102,26 @@ async function generateTable(limit, page) {
       tableRow.appendChild(
         Cell.createInputOnModalCell("Email", user_id, "email", email)
       );
+      const deleteButtonCell = Cell.createDeleteButtonCell();
+      const deleteButton = deleteButtonCell.firstChild;
+      deleteButton.addEventListener("click", async () => {
+        const confirmAlert = await Alert.showConfirmModal(
+          "Are you sure you want to delete the rows?"
+        );
 
+        if (!confirmAlert.isConfirmed) {
+          return;
+        }
+
+        const result = await DataController._delete("users", "id", user_id);
+        if (result && result.status) {
+          Alert.showSuccessMessage("Delete successful");
+        } else {
+          Alert.showErrorMessage("Delete failed");
+        }
+        Cell.closeEditModal();
+        generateTable(100, 1);
+      });
       const resetButton = document.createElement("button");
       resetButton.classList.add("btn", "btn-warning", "btn-sm");
       resetButton.innerText = "Reset Password";
@@ -128,6 +147,7 @@ async function generateTable(limit, page) {
         )
       );
       tableRow.appendChild(Cell.createSwitchInputCell(is_active));
+      tableRow.appendChild(deleteButtonCell);
       tableBody.appendChild(tableRow);
     });
     tableElement.appendChild(tableBody);
