@@ -8,12 +8,7 @@
         <div class="row">
             <div class="col-md-3"></div>
             <div class="col-md-6">
-                <p class="h1 mb-3">Currencies</p>
-                <div class="alert alert-warning mb-3">
-                    <p class="mb-3">
-                        Enabling currencies on dropdowns means that they can be visible whenever editing or creating a new Order. This is to get rid of a long list of currencies in selecting values of currency codes in the Order Details page. Toggle "Enabled" to do so, or "Disabled" to hide a specific currency.
-                    </p>
-                </div>
+                <p class="h1 mb-3">Currency Settings</p>
                 <div class="row">
                     <div class="col mb-3 d-flex justify-content-end">
                         <div id="pagination1">

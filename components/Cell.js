@@ -62,6 +62,22 @@ const createInputCell = (key, placeholder, type) => {
   return cell;
 };
 
+const createSelectInputCell = (options, key) => {
+  const cell = document.createElement("td");
+  const select = document.createElement("select");
+  select.classList.add("form-select");
+  select.setAttribute("for", key);
+  select.setAttribute("name", key);
+  options.forEach((option) => {
+    const optionElement = document.createElement("option");
+    optionElement.value = option.id;
+    optionElement.text = option.name;
+    select.appendChild(optionElement);
+  });
+  cell.appendChild(select);
+  return cell;
+};
+
 const createSelectCell = (options, key) => {
   const cell = document.createElement("td");
   const select = document.createElement("select");
@@ -209,6 +225,7 @@ export const Cell = {
   createEditButtonCell,
   createSwitchInputCell,
   createInputOnModalCell,
+  createSelectInputCell,
   createSelectOnModalCell,
   createElementCell,
 };

@@ -12,8 +12,8 @@ function get_websites_details($conn)
                 p.id as payment_method_id,
                 p.name as payment_method
             FROM websites w
-            LEFT JOIN currencies c ON w.currency = c.id
-            LEFT JOIN payment_methods p ON w.payment_method = p.id
+            LEFT JOIN currencies c ON w.currency_id = c.id
+            LEFT JOIN payment_methods p ON w.payment_method_id = p.id
             WHERE w.group_id = 2
             ORDER BY w.name ASC;
             ";
@@ -268,8 +268,8 @@ function get_website_by_group($conn, $group_id)
                 w.shipping_fee,
                 p.name as payment_method_name
             FROM websites w
-            LEFT JOIN currencies c ON w.currency = c.id
-            LEFT JOIN payment_methods p ON w.payment_method = p.id
+            LEFT JOIN currencies c ON w.currency_id = c.id
+            LEFT JOIN payment_methods p ON w.payment_method_id = p.id
             WHERE w.group_id = :group_id
             ORDER BY w.name ASC;
             ";

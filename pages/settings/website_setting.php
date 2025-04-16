@@ -33,7 +33,7 @@
                 </div>
             </div>
         </div>
-        <div id="website-group-list" class="container"></div>
+        <div id="website-list" class="container"></div>
     </div>
     <?php include("../../templates_/footer.php"); ?>
     <script type="module" src="../../scripts/settings/website_setting.js"></script>
