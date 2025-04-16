@@ -2,7 +2,7 @@
 
 // Specify the path to your Excel file
 $file_name = $_GET['fileName'];
-$file_path = '../reports/' . $file_name;
+$file_path = '../../reports/' . $file_name;
 
 // Check if the file exists
 if (file_exists($file_path)) {
@@ -19,5 +19,3 @@ if (file_exists($file_path)) {
     http_response_code(404);
     echo 'File not found.';
 }
-
-?>

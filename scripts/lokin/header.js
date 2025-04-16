@@ -173,8 +173,8 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   const currentPage = "../../" + relativePath;
 
-  console.log(currentPage);
-  console.log(allowedPages);
+  /* console.log(currentPage);
+  console.log(allowedPages); */
   if (!allowedPages.includes(currentPage)) {
     window.location.href = allowedPages[0] || "../../pages/lokin/lokin.php";
   }

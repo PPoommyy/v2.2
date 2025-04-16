@@ -22,7 +22,7 @@ function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl)
     $emailParams = [
         'template_uuid' => $template_uuid,
         'mail_from' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
-        'mail_to' => ['email' => $email],
+        'mail_to' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
         'payload' => [
             'OPTION_1' => 'http://localhost/test/work/v2.2/pages/po_management/pre_po.php',
             'OPTION_2' => 'http://localhost/test/work/v2.2/pages/po_management/pre_po.php',
