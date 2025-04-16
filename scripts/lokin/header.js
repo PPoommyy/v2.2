@@ -21,7 +21,6 @@ const menus = {
       { name: "po_order_list", label: "PO Order List", show: true },
       { name: "po_order_add", label: "Add PO Order", show: true },
       { name: "po_order_details", label: "PO Order Details", show: false },
-      { name: "factory_details", label: "Factory Details", show: false },
     ],
   },
   stock: {
@@ -55,6 +54,7 @@ const menus = {
         show: true,
       },
       { name: "factory_setting", label: "Factory Settings", show: true },
+      { name: "factory_details", label: "Factory Details", show: false },
       { name: "website_setting", label: "Website Settings", show: true },
       { name: "currency_setting", label: "Currency Settings", show: true },
       { name: "invoice_setting", label: "Invoice Settings", show: true },

@@ -679,33 +679,6 @@ function insert($conn, $table, $data)
 function update($conn, $table, $key, $value, $toUpdate)
 {
     try {
-        /* $updateColumns = array_map(function ($column) {
-                return $column . ' = :' . $column;
-            }, array_keys($order));
-    
-            $updateClause = implode(', ', $updateColumns);
-    
-            $query = "
-                UPDATE $table
-                SET $updateClause
-                WHERE $key = :value
-            ";
-    
-            $stmt = $conn->prepare($query);
-    
-            foreach ($order as $column => $columnValue) {
-                if (is_int($columnValue)) {
-                    $stmt->bindValue(':' . $column, $columnValue, PDO::PARAM_INT);
-                } else {
-                    $stmt->bindValue(':' . $column, $columnValue, PDO::PARAM_STR);
-                }
-            }
-    
-            $stmt->bindValue(':value', $value);
-            $stmt->execute();
-            return true; */
-
-        // create function to update data in table
         $updateColumns = array_map(function ($column) {
             return $column . ' = :' . $column;
         }, array_keys($toUpdate));

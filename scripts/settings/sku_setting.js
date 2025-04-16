@@ -8,7 +8,7 @@ const get_sku_list = async (limit, page) => {
   try {
     const url = `../../backend/get/sku/get_sku_list.php?${
       limit ? "limit=" + limit : ""
-    }${page ? "page=" + page : ""}`;
+    }${page ? "&page=" + page : ""}`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
@@ -21,7 +21,6 @@ const get_options = async (option) => {
   try {
     const column = ["*"];
     const response = await DataController.select(option, column, "id", 100, 0);
-    console.log(response);
     return response.status;
   } catch (error) {
     Alert.showErrorMessage();
@@ -37,9 +36,6 @@ async function generateTable(limit, page) {
     const warehouses = await get_options("warehouses");
     const warehouseSkus = await get_options("warehouse_skus");
     const skuBrands = await get_options("sku_brands");
-    console.log(warehouses);
-    console.log(skuBrands);
-    console.log(warehouseSkus);
     const totalCount = result.count;
     const totalPages = Math.ceil(totalCount / limit);
 
@@ -68,6 +64,30 @@ async function generateTable(limit, page) {
     tableBody.id = "sku-data-tbody";
     skus.forEach((sku, index) => {
       const tableRow = document.createElement("tr");
+      const deleteButtonCell = Cell.createDeleteButtonCell();
+      const deleteButton = deleteButtonCell.firstChild;
+      deleteButton.addEventListener("click", async () => {
+        const confirmAlert = await Alert.showConfirmModal(
+          "Are you sure you want to delete the rows?"
+        );
+
+        if (!confirmAlert.isConfirmed) {
+          return;
+        }
+
+        const result = await DataController._delete(
+          "sku_settings",
+          "id",
+          sku.id
+        );
+        if (result && result.status) {
+          Alert.showSuccessMessage("Delete successful");
+        } else {
+          Alert.showErrorMessage("Delete failed");
+        }
+        Cell.closeEditModal();
+        generateTable(100, 1);
+      });
       tableRow.appendChild(
         Cell.createInputOnModalCell(
           "Order Product SKU",
@@ -111,7 +131,7 @@ async function generateTable(limit, page) {
           sku.sku_brand_name
         )
       );
-
+      tableRow.appendChild(deleteButtonCell);
       tableBody.appendChild(tableRow);
     });
 

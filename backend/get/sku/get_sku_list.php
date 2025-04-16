@@ -14,7 +14,9 @@ try {
     $count = json_decode(get_sku_count($conn), true);
     $response = [
         'count' => $count[0]['count'],
-        'skus' => $skus
+        'skus' => $skus,
+        'limit' => $limit,
+        'page' => $page,
     ];
 
     $jsonData = json_encode($response);

@@ -1,4 +1,4 @@
-async function insert(table, insertedData) {
+const insert = async (table, insertedData) => {
   try {
     const response = await axios.post(
       `../../backend/insert/insert.php`,
@@ -16,9 +16,9 @@ async function insert(table, insertedData) {
   } catch (error) {
     throw error;
   }
-}
+};
 
-async function updateByKey(table, conKey, conValue, key, value) {
+const updateByKey = async (table, conKey, conValue, key, value) => {
   try {
     const url = `../../backend/update/update_by_key.php?table=${table}&condition_key=${conKey}&condition_value=${conValue}`;
     const response = await axios.post(url, { key, value });
@@ -26,9 +26,9 @@ async function updateByKey(table, conKey, conValue, key, value) {
   } catch (error) {
     Alert.showErrorMessage();
   }
-}
+};
 
-async function update(table, key, value, toUpdate) {
+const update = async (table, key, value, toUpdate) => {
   try {
     const url = `../../backend/update/update.php?table=${table}`;
     const response = await axios.post(url, { key, value, toUpdate });
@@ -36,9 +36,9 @@ async function update(table, key, value, toUpdate) {
   } catch (error) {
     Alert.showErrorMessage();
   }
-}
+};
 
-async function _delete(table, key, value) {
+const _delete = async (table, key, value) => {
   try {
     const url = `../../backend/delete/delete.php?table=${table}`;
     const response = await axios.post(url, { key: key, value: value });
@@ -47,9 +47,9 @@ async function _delete(table, key, value) {
   } catch (error) {
     Alert.showErrorMessage();
   }
-}
+};
 
-async function upload(formData, uploadDir) {
+const upload = async (formData, uploadDir) => {
   try {
     const url = `../../backend/file/upload.php${
       uploadDir ? "?uploadDir=" + uploadDir : ""
@@ -63,9 +63,9 @@ async function upload(formData, uploadDir) {
   } catch (error) {
     Alert.showErrorMessage();
   }
-}
+};
 
-async function download(pathname) {
+const download = async (pathname) => {
   try {
     const url = `../../backend/file/download.php${
       pathname ? "?pathname=" + encodeURIComponent(pathname) : ""
@@ -78,7 +78,7 @@ async function download(pathname) {
     console.error("Download error:", error);
     throw error;
   }
-}
+};
 
 const select = async (
   table,
