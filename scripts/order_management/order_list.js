@@ -6,9 +6,11 @@ import { Cell } from "../../components/Cell.js";
 import { Modal } from "../../components/Modal.js";
 import { ThaiPostAPIController } from "../../components/ThaiPostAPIController.js";
 import { AftershipAPIController } from "../../components/AftershipAPIController.js";
+import { UserController } from "../../components/UserController.js";
 
 let checkboxStates = [];
 let orders = {};
+
 const thaiPostApiHost = "https://dpinterapi.thailandpost.com";
 const aftershipApiHost = "https://api.aftership.com";
 const limitDropdown = document.getElementById("limitDropdown");
@@ -56,8 +58,6 @@ filterButton.addEventListener("click", function () {
 });
 
 const modal = document.getElementById("editModal");
-
-generateTable(200, 1);
 
 async function get_order_count(filters) {
   try {
@@ -134,8 +134,7 @@ async function generateTable(limit, page) {
          <th>Channel</th>
          <th>All Total</th>
          <th>Currency</th>
-         <th>Order Status</th>
-         <th>Fulfillment Status</th>`;
+         <th>Order Status</th>`;
     tableHeader.appendChild(tableHeaderRow);
     tableElement.appendChild(tableHeader);
 
@@ -372,9 +371,6 @@ async function generateTable(limit, page) {
           order_status
         )
       );
-      tableRow.appendChild(
-        Cell.createSpanCell(fulfillment_status, false, items.length)
-      );
       tableBody.appendChild(tableRow);
       items.slice(1).forEach((item) => {
         const itemRow = document.createElement("tr");
@@ -422,9 +418,6 @@ async function generateDropdown(data) {
     const orderStatusDropdown = document.getElementById(
       "order-status-dropdown"
     );
-    const fulfillmentStatusDropdown = document.getElementById(
-      "fulfillment-status-dropdown"
-    );
     const paymentDropdown = document.getElementById("payment-dropdown");
     const selectedWebsite = document.getElementById("selected-website");
     const selectedOrderStatus = document.getElementById(
@@ -439,7 +432,6 @@ async function generateDropdown(data) {
 
     websiteDropdown.innerHTML = "";
     orderStatusDropdown.innerHTML = "";
-    fulfillmentStatusDropdown.innerHTML = "";
     paymentDropdown.innerHTML = "";
     appendDropdownList(
       selectedWebsite,
@@ -452,12 +444,6 @@ async function generateDropdown(data) {
       orderStatusDropdown,
       "All",
       "order-filter"
-    );
-    appendDropdownList(
-      selectedFulfillmentStatus,
-      fulfillmentStatusDropdown,
-      "All",
-      "fulfillment-filter"
     );
     appendDropdownList(
       selectedPayment,
@@ -479,14 +465,6 @@ async function generateDropdown(data) {
         orderStatusDropdown,
         orderStatusName,
         "order-filter"
-      );
-    });
-    data.fulfillment_status.forEach((fulfillmentStatusName) => {
-      appendDropdownList(
-        selectedFulfillmentStatus,
-        fulfillmentStatusDropdown,
-        fulfillmentStatusName,
-        "fulfillment-filter"
       );
     });
     data.payment_methods.forEach((paymentMethodName) => {
@@ -723,10 +701,6 @@ function getFilterValues() {
         .getAttribute("data-value"),
       include: document.getElementById("order-filter").checked,
     },
-    fulfillment_status: {
-      value: document.getElementById("selected-fulfillment-status").textContent,
-      include: document.getElementById("fulfillment-filter").checked,
-    },
     payment_method: {
       value: document.getElementById("selected-payment").textContent,
       include: document.getElementById("payment-filter").checked,
@@ -738,60 +712,46 @@ function getFilterValues() {
 
 function updateCheckBoxList(key) {
   const index = checkboxStates.indexOf(key);
-  // const downloadOrdersButton = document.getElementById('downloadOrders');
-  // const newDownloadOrdersButton = document.getElementById('newDownloadOrders');
+  /* 
+downloadOrders
+createInvoices
+itemSummaries
+downloadBarcodes
+deleteOrders
+ */
+  const downloadOrdersButton = document.getElementById("downloadOrders");
   const createInvoiceButton = document.getElementById("createInvoices");
   const itemSummaryButton = document.getElementById("itemSummaries");
-  // const dhlPreAlertButton = document.getElementById('dhlPreAlerts');
-  // const dpostButton = document.getElementById('dpost');
   const thpostButton = document.getElementById("thpost");
-  // const aftershipCSVButton = document.getElementById('aftershipCSV');
-  const downloadBarcodes = document.getElementById("downloadBarcodes");
-  const deleteOrders = document.getElementById("deleteOrders");
+  const downloadBarcodeButton = document.getElementById("downloadBarcodes");
+  const deleteOrdersButton = document.getElementById("deleteOrders");
 
   if (index === -1) {
     checkboxStates.push(key);
   } else {
     checkboxStates.splice(index, 1);
   }
-  checkboxStates.sort(function (a, b) {
-    return a - b;
-  });
+
+  checkboxStates.sort((a, b) => a - b);
+
   if (checkboxStates.length > 0) {
-    // downloadOrdersButton.removeAttribute('disabled');
-    // newDownloadOrdersButton.removeAttribute('disabled');
-    createInvoiceButton.removeAttribute("disabled");
-    itemSummaryButton.removeAttribute("disabled");
-    // dhlPreAlertButton.removeAttribute('disabled');
-    // dpostButton.removeAttribute('disabled');
-    thpostButton.removeAttribute("disabled");
-    // aftershipCSVButton.removeAttribute('disabled');
-    downloadBarcodes.removeAttribute("disabled");
-    deleteOrders.removeAttribute("disabled");
+    if (downloadOrdersButton) downloadOrdersButton.removeAttribute("disabled");
+    if (createInvoiceButton) createInvoiceButton.removeAttribute("disabled");
+    if (itemSummaryButton) itemSummaryButton.removeAttribute("disabled");
+    if (thpostButton) thpostButton.removeAttribute("disabled");
+    if (downloadBarcodeButton)
+      downloadBarcodeButton.removeAttribute("disabled");
+    if (deleteOrdersButton) deleteOrdersButton.removeAttribute("disabled");
   } else {
-    // downloadOrdersButton.setAttribute('disabled', '');
-    // newDownloadOrdersButton.setAttribute('disabled', '');
-    createInvoiceButton.setAttribute("disabled", "");
-    itemSummaryButton.setAttribute("disabled", "");
-    // dhlPreAlertButton.setAttribute('disabled', '');
-    // dpostButton.setAttribute('disabled', '');
-    thpostButton.setAttribute("disabled", "");
-    // aftershipCSVButton.setAttribute('disabled', '');
-    downloadBarcodes.setAttribute("disabled", "");
-    deleteOrders.setAttribute("disabled", "");
+    if (downloadOrdersButton) downloadOrdersButton.setAttribute("disabled", "");
+    if (createInvoiceButton) createInvoiceButton.setAttribute("disabled", "");
+    if (itemSummaryButton) itemSummaryButton.setAttribute("disabled", "");
+    if (thpostButton) thpostButton.setAttribute("disabled", "");
+    if (downloadBarcodeButton)
+      downloadBarcodeButton.setAttribute("disabled", "");
+    if (deleteOrdersButton) deleteOrdersButton.setAttribute("disabled", "");
   }
 }
-
-// const downloadOrdersButton = document.getElementById('downloadOrders');
-const newDownloadOrdersButton = document.getElementById("newDownloadOrders");
-const createInvoiceButton = document.getElementById("createInvoices");
-const itemSummaryButton = document.getElementById("itemSummaries");
-// const dhlPreAlertButton = document.getElementById('dhlPreAlerts');
-const dpost = document.getElementById("dpost");
-const thpost = document.getElementById("thpost");
-const aftershipCSV = document.getElementById("aftershipCSV");
-const downloadBarcodes = document.getElementById("downloadBarcodes");
-const deleteOrders = document.getElementById("deleteOrders");
 
 const handleDownloadOrders = (e) => {
   e.preventDefault();
@@ -912,7 +872,6 @@ const handleThpost = async (e) => {
               ? "success"
               : "failed";
             await Swal.update({ html: createResultsHTML(results) });
-            console.log("generateBarcodeResult", generateBarcodeResult);
             if (generateBarcodeResult.fileUrl) {
               const createTracking =
                 await AftershipAPIController.createTracking(
@@ -943,7 +902,6 @@ const handleThpost = async (e) => {
                 generateBarcodeResult.fileUrl,
                 filteredOrder.details.order_id
               );
-              console.log("uploadResponse", uploadResponse);
               result.uploadResponse = uploadResponse.status
                 ? "success"
                 : "failed";
@@ -1102,22 +1060,38 @@ const removeAllEventListeners = () => {
   const eventListeners = eventListenersMap.get("buttons");
   if (eventListeners) {
     eventListeners.forEach(({ element, type, listener }) => {
-      element.removeEventListener(type, listener);
+      if (element) {
+        element.removeEventListener(type, listener);
+      }
     });
   }
   eventListenersMap.set("buttons", []);
 };
 
 const addAllEventListeners = () => {
+  const downloadOrders = document.getElementById("downloadOrders");
+  // const newDownloadOrdersButton = document.getElementById("newDownloadOrders");
+  const createInvoice = document.getElementById("createInvoices");
+  const itemSummary = document.getElementById("itemSummaries");
+  // const dhlPreAlertButton = document.getElementById('dhlPreAlerts');
+  // const dpost = document.getElementById("dpost");
+  const thpost = document.getElementById("thpost");
+  // const aftershipCSV = document.getElementById("aftershipCSV");
+  const downloadBarcodes = document.getElementById("downloadBarcodes");
+  const deleteOrders = document.getElementById("deleteOrders");
   const eventListeners = [
-    // { element: downloadOrdersButton, type: 'click', listener: handleDownloadOrders },
+    {
+      element: downloadOrders,
+      type: "click",
+      listener: handleDownloadOrders,
+    },
     // { element: newDownloadOrdersButton, type: 'click', listener: handleNewDownloadOrders },
     {
-      element: createInvoiceButton,
+      element: createInvoice,
       type: "click",
       listener: handleCreateInvoice,
     },
-    { element: itemSummaryButton, type: "click", listener: handleItemSummary },
+    { element: itemSummary, type: "click", listener: handleItemSummary },
     // { element: dhlPreAlertButton, type: 'click', listener: handleDhlPreAlert },
     // { element: dpost, type: 'click', listener: handleDpost },
     { element: thpost, type: "click", listener: handleThpost },
@@ -1129,13 +1103,41 @@ const addAllEventListeners = () => {
     },
     { element: deleteOrders, type: "click", listener: handleDeleteOrders },
   ];
+  const activeListeners = [];
 
   eventListeners.forEach(({ element, type, listener }) => {
-    element.addEventListener(type, listener, false);
+    if (element) {
+      element.addEventListener(type, listener, false);
+      activeListeners.push({ element, type, listener });
+    }
   });
 
-  eventListenersMap.set("buttons", eventListeners);
+  eventListenersMap.set("buttons", activeListeners);
 };
+
+const checkButtonPermission = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user) {
+    fetch("../../backend/lokin/check_permission_buttons.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ permissions: user[0].permissions }),
+    })
+      .then((res) => res.text())
+      .then((html) => {
+        document.getElementById("permission-buttons-container").innerHTML =
+          html;
+        removeAllEventListeners();
+        addAllEventListeners();
+        generateTable(200, 1);
+      });
+  }
+};
+
+checkButtonPermission();
 
 async function checkFileExists(fileUrl) {
   try {
@@ -1172,9 +1174,6 @@ async function filterOrdersWithBarcodes(orders) {
 
   return filteredOrders;
 }
-
-removeAllEventListeners();
-addAllEventListeners();
 
 const updateSwalContent = (swalInstance, results) => {
   if (swalInstance) {

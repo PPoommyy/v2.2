@@ -42,7 +42,6 @@ const _delete = async (table, key, value) => {
   try {
     const url = `../../backend/delete/delete.php?table=${table}`;
     const response = await axios.post(url, { key: key, value: value });
-    console.log("Delete response:", response.data);
     return response.data;
   } catch (error) {
     Alert.showErrorMessage();

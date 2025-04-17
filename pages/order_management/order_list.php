@@ -4,6 +4,17 @@
 
 <body>
     <?php include('../../templates_/header.php'); ?>
+    <?php
+    function hasPermission($permissionName)
+    {
+        if (!isset($_SESSION['user']['permissions'])) return false;
+
+        foreach ($_SESSION['user']['permissions'] as $perm) {
+            if ($perm['name'] === $permissionName) return true;
+        }
+        return false;
+    }
+    ?>
     <input type="hidden" id="filePathInput" value="../reports/download_orders_2.xlsx">
     <div class="container">
         <div class="mb-3"></div>
@@ -59,19 +70,6 @@
                 <div class="col-1">
                     <div>
                         <input type="checkbox" id="order-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
-                    </div>
-                </div>
-            </div>
-            <div class="row mb-4">
-                <div class="col-sm-12 col-md-3 col-lg-3">Fulfillment Status</div>
-                <div class="col-sm-12 col-md-8 col-lg-8 btn-group">
-                    <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-fulfillment-status" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">All</button>
-                    <ul id="fulfillment-status-dropdown" class="dropdown-menu" aria-labelledby="defaultDropdown">
-                    </ul>
-                </div>
-                <div class="col-1">
-                    <div>
-                        <input type="checkbox" id="fulfillment-filter" name="filter_include" data-toggle="tooltip" data-placement="top" title="Include This" />
                     </div>
                 </div>
             </div>
@@ -156,36 +154,38 @@
         <div id="order-data-container" class="overflow-scroll"></div>
         <div class="mb-3 row">
             <div class="col-sm-12 col-md-7">
-                <button id="downloadOrders" class="btn btn-warning btn-sm" disabled>
+                <!-- <button id="downloadOrders" class="btn btn-warning btn-sm" disabled>
                     <span class="fa-solid fa-arrow-circle-down"></span> Download Orders
                 </button>
-                <!-- <button id="newDownloadOrders" class="btn btn-warning btn-sm" disabled>
+                <button id="newDownloadOrders" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> New! Download Orders
-				</button> -->
+				</button>
                 <button id="createInvoices" class="btn btn-warning btn-sm" disabled>
                     <span class="fa-solid fa-arrow-circle-down"></span> Create Invoice
                 </button>
                 <button id="itemSummaries" class="btn btn-warning btn-sm" disabled>
                     <span class="fa-solid fa-arrow-circle-down"></span> Item Summary
                 </button>
-                <!-- <button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
+                <button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> DHL Pre-alert
 				</button>
 				<button id="dpost" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> DPOST
-				</button> -->
+				</button>
                 <button id="thpost" class="btn btn-warning btn-sm" disabled>
                     <span class="fa-solid fa-arrow-circle-down"></span> THPOST
                 </button>
-                <!-- <button id="aftershipCSV" class="btn btn-warning btn-sm" disabled>
+                <button id="aftershipCSV" class="btn btn-warning btn-sm" disabled>
 					<span class="fa-solid fa-arrow-circle-down"></span> Aftership CSV
-				</button> -->
+				</button>
                 <button id="downloadBarcodes" class="btn btn-warning btn-sm" disabled>
                     <span class="fa-solid fa-arrow-circle-down"></span> Download Barcodes
                 </button>
                 <button id="deleteOrders" class="btn btn-danger btn-sm" disabled>
                     <span class="fa-solid fa-trash"></span> Delete
-                </button>
+                </button> -->
+                <div id="permission-buttons-container" class="col-sm-12 col-md-7 d-flex flex-wrap align-items-start"></div>
+
             </div>
             <div class="col-sm-12 col-md-5" id="pagination2">
                 <ul class="pagination justify-content-end"></ul>
