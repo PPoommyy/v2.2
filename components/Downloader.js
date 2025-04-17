@@ -1766,7 +1766,7 @@ const generateSKUDataCSV = async (toggleSpinner) => {
     toggleSpinner(true);
     const skuData = await get_sku_data();
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("UserData");
+    const worksheet = workbook.addWorksheet("SKUData");
 
     worksheet.columns = [
       { header: "sku_id", key: "sku_id", width: 20 },

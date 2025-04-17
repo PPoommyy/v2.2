@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <?php include('../../templates_/metadata.php'); ?>
-<?php 
-    $order_id = isset($_GET['order_id']) ? $_GET['order_id'] : null;
+<?php
+$order_id = isset($_GET['order_id']) ? $_GET['order_id'] : null;
+$request_id = isset($_GET['request_id']) ? $_GET['request_id'] : null;
 ?>
+
 <body>
-    <?php include('../../templates_/header.php');?>
+    <?php include('../../templates_/header.php'); ?>
     <input id="orderId" type="hidden" value="<?php echo $order_id ?>">
+    <input id="requestId" type="hidden" value="<?php echo $request_id ?>">
     <div class="container">
         <p class="mb-4">
             <strong class="h1">
                 <?= $order_id ? 'Order Details' : 'Add New Order'; ?>
             </strong>
-                <?= $order_id ? '<small class="text-secondary">(' . $order_id . ')</small>' : ''?>
+            <?= $order_id ? '<small class="text-secondary">(' . $order_id . ')</small>' : '' ?>
         </p>
         <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-5 container">
@@ -48,7 +51,7 @@
                 <div class="row mb-4">
                     <div class="col-3 text-end">Payment Method</div>
                     <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-payment" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false"  for="select-payment">
+                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-payment" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="select-payment">
                             Select Payment
                         </button>
                         <ul id="payment-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
@@ -58,7 +61,7 @@
                 <div class="row mb-4">
                     <div class="col-3 text-end">Order Status</div>
                     <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-order-status" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false"  for="selected-order-status">
+                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-order-status" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="selected-order-status">
                             Select Order Status
                         </button>
                         <ul id="order-status-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
@@ -68,7 +71,7 @@
                 <div class="row mb-4">
                     <div class="col-3 text-end">Order Type</div>
                     <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-order-type" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false"  for="selected-order-type">
+                        <button class="btn btn-secondary dropdown-toggle overflow-hidden" type="button" id="selected-order-type" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="selected-order-type">
                             Select Order Type
                         </button>
                         <ul id="order-type-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
@@ -77,19 +80,19 @@
                 </div>
                 <div class="row mb-4">
                     <div class="col-3 text-end">Ship Address</div>
-                    <div class="col-9">  
+                    <div class="col-9">
                         <textarea id="ship-address-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter address (e.g.)... Ms. Amy Trudeau 69 Wilson Park Rd ON Canada M6K 3B6 Tel No. 6478814456"></textarea>
                     </div>
                 </div>
                 <div class="row mb-4">
                     <div class="col-3 text-end">Override Address</div>
-                    <div class="col-9">  
+                    <div class="col-9">
                         <textarea id="override-address-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter address (e.g.)... Ms. Amy Trudeau 69 Wilson Park Rd ON Canada M6K 3B6 Tel No. 6478814456"></textarea>
                     </div>
                 </div>
                 <div class="row mb-4">
                     <div class="col-3 text-end">Order Note</div>
-                    <div class="col-9">  
+                    <div class="col-9">
                         <textarea id="order-note-input" class="form-control" rows="6" aria-label="With textarea" placeholder="Enter order note."></textarea>
                     </div>
                 </div>
@@ -105,14 +108,14 @@
             </div>
             <div class="col-sm-12 col-md-12 col-lg-7 row">
                 <div class="container" id="select-product-container">
-                <p>Select Products: <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add Product</button></p>
+                    <p>Select Products: <button id="add-product" class="btn btn-warning"><i class="fa fa-plus"></i> Add Product</button></p>
                 </div>
                 <div class="col-sm-12 col-md-12 col-lg-12" id="item-data-container"></div>
                 <div class="col-sm-12 col-md-6 col-lg-6">
                     <div class="row mb-3">
                         <div class="col-sm-12 col-md-6 col-lg-6">
                             <label class="me-3">Deposit?</label>
-                            <input type="checkbox" id="hasDeposit" data-toggle="tooltip" data-placement="top" title="Include This"/>
+                            <input type="checkbox" id="hasDeposit" data-toggle="tooltip" data-placement="top" title="Include This" />
                         </div>
                         <div class="col-sm-12 col-md-6 col-lg-6">
                             <input type="number" id="deposit" class="form-control" disabled>
@@ -121,7 +124,7 @@
                 </div>
                 <div class="col-sm-12 col-md-6 col-lg-6">
                     <div class="row mb-3">
-                        <label class="col-sm-12 col-md-6 col-lg-6" >Subtotal</label>
+                        <label class="col-sm-12 col-md-6 col-lg-6">Subtotal</label>
                         <div class="col-sm-12 col-md-6 col-lg-6">
                             <input type="number" id="subtotal" class="form-control" disabled>
                         </div>
@@ -149,11 +152,11 @@
                     <div class="row mb-3">
                         <div class="col-6"></div>
                         <?php
-                            if ($order_id) {
-                                echo '<button id="save-order" class="btn btn-warning"><i class="fa fa-save"></i> Save</button>';
-                            } else {
-                                echo '<button id="insert-order" class="btn btn-warning"><i class="fa fa-save"></i> Insert</button>';
-                            }
+                        if ($order_id) {
+                            echo '<button id="save-order" class="btn btn-warning"><i class="fa fa-save"></i> Save</button>';
+                        } else {
+                            echo '<button id="insert-order" class="btn btn-warning"><i class="fa fa-save"></i> Insert</button>';
+                        }
                         ?>
                     </div>
                 </div>
@@ -162,7 +165,8 @@
         <p class="h2">Recently Added/Updated Orders</p>
         <div id="order-data-container" class="overflow-scroll"></div>
     </div>
-    <?php include('../../templates_/footer.php');?>
+    <?php include('../../templates_/footer.php'); ?>
     <script type='module' src="../../scripts/order_management/order_details.js"></script>
 </body>
+
 </html>

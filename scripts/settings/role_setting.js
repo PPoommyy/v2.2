@@ -135,9 +135,8 @@ async function generateTable(limit, page) {
         );
         permissionListContainer.innerHTML = "";
 
-        // ใช้ Grid Layout ที่ responsive และเป็นระเบียบ
         const gridContainer = document.createElement("div");
-        gridContainer.classList.add("row", "g-3"); // ใช้ row และ gap 3
+        gridContainer.classList.add("row", "g-3");
 
         allPermissions.status.forEach((permission) => {
           const {

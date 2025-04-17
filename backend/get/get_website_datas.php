@@ -13,8 +13,8 @@ try {
         'websites' => $websites,
         'currencies' => $currencies,
         'payment_methods' => $payment_methods,
-        'order_status' => $order_status,
-        'order_types' => $order_types
+        'order_status' => $order_status['result'],
+        'order_types' => $order_types['result']
     );
 
     $jsonData = json_encode($arrayObject);

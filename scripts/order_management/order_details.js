@@ -3,6 +3,7 @@ import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 
 const order_id = document.getElementById("orderId").value;
+const request_id = document.getElementById("requestId").value;
 const addProduct = document.getElementById("add-product");
 
 addProduct.addEventListener("click", function (event) {
@@ -294,13 +295,31 @@ if (insertOrderButton) {
         return;
       }
       const result = await insert_order(newOrder, itemsList);
-      console.log(result);
       if (result && result.res1 && result.res2) {
         Alert.showSuccessMessage("Order Inserted Successfully");
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
+        if (request_id) {
+          const result2 = await DataController.updateByKey(
+            "requests",
+            "id",
+            request_id,
+            "note",
+            `returned with order ${newOrder.timesort}`
+          );
+          const result3 = await DataController.updateByKey(
+            "requests",
+            "id",
+            request_id,
+            "request_status_id",
+            4
+          );
+          setTimeout(() => {
+            window.location.href = "../../pages/return_management/return.php";
+          }, 2000);
+        } else {
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
       } else if (result.res1) {
         Alert.showErrorMessage(
           "Order Inserted Failed! Failed to insert order item!"
@@ -1044,6 +1063,106 @@ const get_last_timesort = async (yearAndMonth) => {
   }
 };
 
+const get_order_data_from_request = async (request_id) => {
+  try {
+    const column1 = [
+      "o.order_id",
+      "o.payments_date",
+      "o.buyer_name",
+      "o.ship_phone_number",
+      "o.ship_promotion_discount",
+      "o.shipping_fee",
+      "o.deposit",
+      "o.ship_address_1",
+      "o.ship_address_2",
+      "o.ship_address_3",
+      "o.ship_city",
+      "o.ship_state",
+      "o.ship_postal_code",
+      "o.ship_country",
+      "o.timesort",
+      "o.raw_address",
+      "o.override_address",
+      "o.order_note",
+      "os.orders_skus_id",
+      "w.name as website_name",
+      "w.id as website_id",
+      "c.name as currency_code",
+      "c.id as currency_id",
+      "pm.name as payment_methods",
+      "pm.id as payment_method_id",
+      "ost.name as order_status",
+      "ost.id as order_status_id",
+      "ot.name as order_type",
+      "ot.id as order_type_id",
+      "r.id as request_id",
+    ];
+    const join1 = [
+      ["orders_skus os", "o.order_id", "os.order_id"],
+      ["currencies c", "o.currency_id", "c.id"],
+      ["websites w", "o.website_id", "w.id"],
+      ["payment_methods pm", "o.payment_method_id", "pm.id"],
+      ["order_status ost", "o.order_status_id", "ost.id"],
+      ["order_types ot", "o.order_type_id", "ot.id"],
+      ["requests r", "r.order_number", "o.timesort"],
+    ];
+    const where1 = [["r.id", "=", request_id]];
+
+    const nestedKey = "order_id";
+
+    const nestedTables = [
+      {
+        table: "orders_skus os",
+        columns: [
+          "os.orders_skus_id",
+          "os.unique_id",
+          "os.order_item_id",
+          "os.sku_settings_id",
+          "os.item_price",
+          "os.quantity_purchased",
+          "os.shipping_price",
+          "os.total",
+          "ss.order_product_sku",
+          "ss.report_product_name",
+          "ws.name AS sku",
+          "sb.name AS brand",
+        ],
+        order_by: "os.orders_skus_id",
+        joins: [
+          ["sku_settings ss", "os.sku_settings_id", "ss.id"],
+          ["warehouse_skus ws", "ss.warehouse_sku_id", "ws.id"],
+          ["sku_brands sb", "ss.sku_brand_id", "sb.id"],
+        ],
+        response_key: "items",
+      },
+      {
+        table: "order_files of",
+        columns: ["of.id", "of.order_id", "file_name", "file_pathname"],
+        order_by: "of.id",
+        response_key: "files",
+      },
+    ];
+    const response = await DataController.selectNested(
+      "orders o",
+      column1,
+      "o.timesort",
+      "DESC",
+      null,
+      null,
+      join1,
+      where1,
+      null,
+      nestedKey,
+      nestedTables,
+      "o.order_id"
+    );
+    return response.status;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 const insert_order = async (order, items) => {
   try {
     const response = await axios.post(
@@ -1109,10 +1228,9 @@ const update_order_item = async (key, value, toUpdate) => {
   }
 };
 
-const generateItemsListTable = async (order_id) => {
+const generateItemsListTable = async (order_id, request_id) => {
   try {
     let orders = [];
-
     const itemDataContainer = document.getElementById("item-data-container");
     itemDataContainer.innerHTML = "";
 
@@ -1140,10 +1258,21 @@ const generateItemsListTable = async (order_id) => {
 
     const tableBody = document.createElement("tbody");
     tableBody.id = "item-list-body";
-    if (order_id) {
-      const result = await get_order_details(order_id);
-      orders = result.data1;
-      const { items, details } = orders;
+    if (order_id || request_id) {
+      let items = [];
+      let details = {};
+      if (order_id) {
+        const result = await get_order_details(order_id);
+        orders = result.data1;
+        items = orders.items;
+        details = orders.details;
+      } else if (request_id) {
+        const result = await get_order_data_from_request(request_id);
+        orders = result[0];
+        items = orders.nested.items;
+        details = orders.data;
+      }
+
       currencyText.innerHTML = details.currency_code;
       items.forEach((item, index) => {
         const tableRow = document.createElement("tr");
@@ -1299,13 +1428,23 @@ const generateTable = async (limit, page) => {
   }
 };
 
-const generateDropdown = async (order_id) => {
+const generateDropdown = async (order_id, request_id) => {
   try {
-    let data;
-    if (order_id) {
-      const result = await get_order_details(order_id);
-      const data1 = result.data1;
-      data = result.data2;
+    const website_result = await get_website_datas();
+    const data = website_result;
+    if (order_id || request_id) {
+      let result = [];
+      let data1 = {};
+      let files = [];
+      if (order_id) {
+        result = await get_order_details(order_id);
+        data1 = result.data1;
+        files = data1.files;
+      } else if (request_id) {
+        result = await get_order_data_from_request(request_id);
+        data1 = result[0].data;
+        files = result[0].nested.files;
+      }
 
       const {
         raw_address,
@@ -1323,9 +1462,8 @@ const generateDropdown = async (order_id) => {
         payment_method_id,
         order_status_id,
         order_type_id,
-      } = data1.details;
+      } = order_id ? data1.details : request_id ? data1 : {};
 
-      const files = data1.files;
       const shipAddressInput = document.getElementById("ship-address-input");
       shipAddressInput.value = raw_address;
 
@@ -1720,6 +1858,10 @@ const appendDropdownList = (button, dropdown, data, description) => {
 if (order_id) {
   generateItemsListTable(order_id);
   generateDropdown(order_id);
+  generateTable(10, 1);
+} else if (request_id) {
+  generateItemsListTable(null, request_id);
+  generateDropdown(null, request_id);
   generateTable(10, 1);
 } else {
   generateTable(10, 1);

@@ -532,14 +532,10 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
         if (!empty($where)) {
             foreach ($where as $index => $condition) {
                 if (count($condition) < 3) continue;
-
                 $column = $condition[0];
                 $operator = strtoupper($condition[1]);
                 $paramKey = ":param$index";
-
-                // Check if this is a HAVING condition
                 $isHaving = isset($condition[3]) && strtoupper($condition[3]) === 'HAVING';
-
                 $clauseToAdd = "";
 
                 if ($operator === 'BETWEEN' && is_array($condition[2]) && count($condition[2]) == 2) {
@@ -561,14 +557,12 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
                     $params[$paramKey] = $condition[2];
                 }
 
-                // Add to the appropriate array based on whether it's a HAVING condition
                 if ($isHaving) {
                     $havingClauses[] = $clauseToAdd;
                 } else {
                     $whereClauses[] = $clauseToAdd;
                 }
             }
-
             if (!empty($whereClauses)) {
                 $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
             }
@@ -576,16 +570,12 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
 
         if ($group_by) {
             $query .= " GROUP BY $group_by";
-
-            // Add HAVING clause after GROUP BY if there are any HAVING conditions
             if (!empty($havingClauses)) {
                 $query .= " HAVING " . implode(" $logical_operator ", $havingClauses);
             }
         }
 
-        if ($order_by) {
-            $query .= " ORDER BY $order_by $order_by_type";
-        }
+        if ($order_by) $query .= " ORDER BY $order_by $order_by_type";
 
         if ($limit) {
             $query .= " LIMIT :limit";

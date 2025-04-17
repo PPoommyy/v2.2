@@ -104,7 +104,6 @@ async function generateTable(limit, page) {
     const filterValues = getFilterValues();
     const result = await get_order_list(limit, page, filterValues);
     orders = result.data1;
-    console.log(orders);
     const data = result.data2;
     generateDropdown(data);
     const totalCount = await get_order_count(filterValues);
@@ -149,7 +148,6 @@ async function generateTable(limit, page) {
         website_name,
         currency_code,
         order_status,
-        fulfillment_status,
         order_note,
       } = details;
       const checkboxInput = document.createElement("input");

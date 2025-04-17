@@ -13,11 +13,12 @@ $column_1 = $requestData['column1'];
 $join_1 = $requestData['join1'] ?? [[]];
 $where_1 = $requestData['where1'] ?? [[]];
 $logical_operator_1 = $requestData['logical_operator1'] ?? "AND";
+$group_by_1 = $requestData['group_by_1'] ?? null;
 $nested_key = $requestData['nestedKey'] ?? null;
 $nested_tables = $requestData['nestedTables'] ?? []; // รับ nested tables เป็น array
 
 try {
-    $responseData = select($conn, $table_1, $column_1, $order_by_1, $order_by_type_1, $limit_1, $page_1, $join_1, $where_1, $logical_operator_1);
+    $responseData = select($conn, $table_1, $column_1, $order_by_1, $order_by_type_1, $limit_1, $page_1, $join_1, $where_1, $logical_operator_1, $group_by_1);
     $data_1 = json_decode($responseData, true);
 
     $response = array_map(function ($data) use ($conn, $nested_key, $nested_tables) {

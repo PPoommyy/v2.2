@@ -122,7 +122,8 @@ const selectNested = async (
   where1 = [[]],
   logical_operator1,
   nestedKey,
-  nestedTables // Array ของ nested table
+  nestedTables,
+  group_by_1 = null
 ) => {
   try {
     const response = await axios.post(
@@ -135,7 +136,8 @@ const selectNested = async (
         where1,
         logical_operator1,
         nestedKey,
-        nestedTables, // ส่ง array ของ nested tables
+        nestedTables,
+        group_by_1,
       }
     );
     return response.data;
@@ -166,7 +168,6 @@ const selectByKey = async (table, key, value) => {
 
 const _count = async (
   table,
-  column,
   order_by,
   limit,
   page,
@@ -180,7 +181,7 @@ const _count = async (
         limit ? "&limit" + limit : ""
       }${page ? "&page" + page : ""}`,
       {
-        column,
+        column: ["count(*) as count"],
         join,
         where,
         logical_operator,

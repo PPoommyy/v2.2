@@ -314,7 +314,7 @@ const handleUpdateRequestStatus = async (
       }
     }
   }
-  // generateTable("requests", 100, 0);
+  generateTable("requests", 100, 0);
 };
 
 function updateCheckBoxList(key, checkboxStates) {
@@ -433,11 +433,11 @@ const generateTable = async (table, limit, page) => {
         phone_number,
         tracking_number,
         order_number,
-        // order_date,
         request_date,
         request_reason,
         request_type,
         request_status,
+        request_status_id,
         note,
       } = data;
       const tableRow = document.createElement("tr");
@@ -450,6 +450,30 @@ const generateTable = async (table, limit, page) => {
       const idText = document.createElement("p");
       idText.innerHTML = request_id;
       idDiv.appendChild(idText);
+      const buttonGroup = document.createElement("div");
+      buttonGroup.classList.add("btn-group");
+
+      if (request_status_id === 2) {
+        const createOrderBtn = document.createElement("button");
+        createOrderBtn.classList.add(
+          "btn",
+          "btn-outline-success",
+          "btn-sm",
+          "fa-solid",
+          "fa-plus"
+        );
+        createOrderBtn.type = "button";
+        createOrderBtn.setAttribute("title", "Add Returned Order");
+
+        new bootstrap.Tooltip(createOrderBtn);
+
+        createOrderBtn.addEventListener("click", () => {
+          window.location.href = `../order_management/order_details.php?request_id=${request_id}`;
+        });
+
+        buttonGroup.appendChild(createOrderBtn);
+      }
+
       if (note) {
         const notesIcon = document.createElement("button");
         notesIcon.classList.add(
@@ -462,9 +486,8 @@ const generateTable = async (table, limit, page) => {
         notesIcon.type = "button";
         notesIcon.setAttribute("data-bs-toggle", "popover");
         notesIcon.setAttribute("data-bs-content", note);
-        idDiv.appendChild(notesIcon);
 
-        var popover = new bootstrap.Popover(notesIcon, {
+        new bootstrap.Popover(notesIcon, {
           container: "body",
           placement: "right",
           trigger: "hover focus",
@@ -474,6 +497,12 @@ const generateTable = async (table, limit, page) => {
         notesIcon.addEventListener("click", () => {
           copyTextToClipboard(note);
         });
+
+        buttonGroup.appendChild(notesIcon);
+      }
+
+      if (buttonGroup.children.length > 0) {
+        idDiv.appendChild(buttonGroup);
       }
 
       tableRow.appendChild(
@@ -551,7 +580,9 @@ updateButton.addEventListener("click", async () => {
     if (result.status) {
       Cell.closeEditModal();
       Alert.showSuccessMessage("Update successful");
-      generateTable("requests", 100, 0);
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } else {
       Alert.showErrorMessage("Update failed");
     }
@@ -728,10 +759,10 @@ function copyTextToClipboard(text) {
 document.addEventListener("DOMContentLoaded", async () => {
   document.querySelectorAll(".input-group-text").forEach((label) => {
     label.addEventListener("click", function () {
-      let inputId = this.getAttribute("for"); // ดึง id ของ input ที่เชื่อมโยง
+      let inputId = this.getAttribute("for");
       let inputField = document.getElementById(inputId);
       if (inputField) {
-        inputField.showPicker(); // ใช้ showPicker() สำหรับ input type="date"
+        inputField.showPicker();
       }
     });
   });

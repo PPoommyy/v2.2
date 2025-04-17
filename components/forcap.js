@@ -1,71 +1,49 @@
-const upload = async (formData, uploadDir) => {
+const generateSKUDataCSV = async (toggleSpinner) => {
   try {
-    const url = `../../backend/file/upload.php${
-      uploadDir ? "?uploadDir=" + uploadDir : ""
-    }`;
-    const response = await axios.post(url, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    toggleSpinner(true);
+    const skuData = await get_sku_data();
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("SKUData");
+
+    worksheet.columns = [
+      { header: "sku_id", key: "sku_id", width: 20 },
+      { header: "order_product_sku", key: "order_product_sku", width: 20 },
+      { header: "report_product_name", key: "report_product_name", width: 20 },
+      { header: "warehouse_name", key: "warehouse_name", width: 20 },
+      { header: "warehouse_sku_name", key: "warehouse_sku_name", width: 20 },
+      { header: "sku_brand_name", key: "sku_brand_name", width: 20 },
+    ];
+    skuData.forEach((sku) => {
+      worksheet.addRow(sku);
     });
-    return response.data;
-  } catch (error) {
-    Alert.showErrorMessage();
-  }
-};
 
-const download = async (pathname) => {
-  try {
-    const url = `../../backend/file/download.php${
-      pathname ? "?pathname=" + encodeURIComponent(pathname) : ""
-    }`;
-    const response = await axios.get(url, {
-      responseType: "blob",
+    const buffer = await workbook.csv.writeBuffer();
+    var blob = new Blob(["\uFEFF" + buffer], {
+      type: "text/csv; charset=utf-8",
     });
-    return response.data;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sku.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
   } catch (error) {
-    console.error("Download error:", error);
-    throw error;
+    console.error(error);
+    return false;
+  } finally {
+    toggleSpinner(false);
   }
 };
 
-const _count = async (
-  table,
-  column,
-  order_by,
-  limit,
-  page,
-  join = [[]],
-  where = [[]],
-  logical_operator
-) => {
-  try {
-    const response = await axios.post(
-      `../../backend/select/select.php?table=${table}&order_by=${order_by}${
-        limit ? "&limit" + limit : ""
-      }${page ? "&page" + page : ""}`,
-      {
-        column,
-        join,
-        where,
-        logical_operator,
-      }
-    );
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+export const Downloader = {
+  ...generateSKUDataCSV,
 };
 
-export const DataController = {
-  insert,
-  update,
-  select,
-  selectNested,
-  selectByKey,
-  _delete,
-  updateByKey,
-  upload,
-  download,
-  _count,
-};
+const exportCSVButton = document.getElementById("export-csv");
+
+exportCSVButton.addEventListener("click", async () => {
+  const downloadResult = await Downloader.generateSKUDataCSV(toggleSpinner);
+  if (downloadResult) Alert.showSuccessMessage("Download Success!");
+  else Alert.showErrorMessage("Download Failed!");
+});
