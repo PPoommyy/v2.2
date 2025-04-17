@@ -86,8 +86,7 @@ async function generateTable(limit, page) {
         <th>Email</th>
         <th>Password</th>
         <th>Fullname</th>
-        <th>Role Name</th>
-        <th>Is Active?</th>`;
+        <th>Role Name</th>`;
     tableHeader.appendChild(tableHeaderRow);
     tableElement.appendChild(tableHeader);
     const tableBody = document.createElement("tbody");
@@ -146,7 +145,6 @@ async function generateTable(limit, page) {
           role_name
         )
       );
-      tableRow.appendChild(Cell.createSwitchInputCell(is_active));
       tableRow.appendChild(deleteButtonCell);
       tableBody.appendChild(tableRow);
     });
@@ -217,7 +215,6 @@ addButton.addEventListener("click", async function (event) {
   tableRow.appendChild(Cell.createInputCell("password_hash"));
   tableRow.appendChild(Cell.createInputCell("full_name"));
   tableRow.appendChild(Cell.createInputCell("role_id", 1, "number"));
-  tableRow.appendChild(Cell.createInputCell("is_active", 1, "number"));
   const removeButton = document.createElement("button");
   removeButton.classList.add("btn", "btn-danger");
   removeButton.innerHTML = '<i class="fa fa-xmark"></i>';
@@ -275,11 +272,9 @@ saveButton.addEventListener("click", async () => {
         });
         break;
       }
-
+      insertedData["is_active"] = 1;
       try {
-        console.log(insertedData);
         const result = await DataController.insert("users", insertedData);
-        console.log(result);
         results.push(result);
         const confirmed = await swalQueue.fire({
           title: `Row ${index + 1} inserted successfully!`,
