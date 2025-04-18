@@ -2,6 +2,9 @@ import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 import { PODataController } from "../../components/PODataController.js";
 
+const host = "http://localhost/test/work/v2.2";
+// const host = "https://komsant/v2.2";
+
 const get_factory_sku_search = async (searchTerm, factory_id) => {
   try {
     const response = await axios.get(
@@ -88,7 +91,6 @@ const updateTotal = async (tableRow) => {
       `Add ${quantity_purchased} items?`
     );
     if (!confirmAlert.isConfirmed) {
-      // tableRow.querySelector('.quantity-purchased').value = 0;
       quantity_purchased = 0;
     }
   }
@@ -280,7 +282,6 @@ const generateItemListTable = async (poOrders) => {
       const { data, nested } = poOrders;
       const { items } = nested;
       items.forEach((item) => {
-        // console.log(item);
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row");
 
@@ -300,11 +301,6 @@ const generateItemListTable = async (poOrders) => {
         skuSpan.classList.add("order-product-sku");
         skuSpan.textContent = item.order_product_sku;
         tableRow.appendChild(createTableCell(skuSpan, 3));
-
-        /* const itemPriceSpan = document.createElement("span");
-        itemPriceSpan.classList.add("item-price");
-        itemPriceSpan.textContent = item.item_price;
-        tableRow.appendChild(createTableCell(itemPriceSpan, 2)); */
         const priceInput = createInput(
           "number",
           "item-price",
@@ -313,11 +309,6 @@ const generateItemListTable = async (poOrders) => {
         );
         priceInput.addEventListener("change", () => updateTotal(tableRow));
         tableRow.appendChild(createTableCell(priceInput, 2));
-
-        /* const quantitySpan = document.createElement("span");
-        quantitySpan.classList.add("quantity-purchased");
-        quantitySpan.textContent = item.quantity;
-        tableRow.appendChild(createTableCell(quantitySpan, 2)); */
         const quantityInput = createInput(
           "number",
           "quantity-purchased",
@@ -326,15 +317,6 @@ const generateItemListTable = async (poOrders) => {
         );
         quantityInput.addEventListener("change", () => updateTotal(tableRow));
         tableRow.appendChild(createTableCell(quantityInput, 2));
-
-        /* const totalInput = createInput(
-          "number",
-          "total",
-          parseFloat(item.total).toFixed(2),
-          true
-        );
-        tableRow.appendChild(createTableCell(totalInput, 2)); */
-
         const totalInput = createInput(
           "number",
           "total",
@@ -356,10 +338,8 @@ const generateItemListTable = async (poOrders) => {
       });
     }
     selectedItems.forEach((selectedItem, index) => {
-      // console.log(selectedItem);
       const { order_id, items } = selectedItem;
       items.forEach((item) => {
-        // console.log(item);
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row", "new-item", "table-success");
 
@@ -371,16 +351,10 @@ const generateItemListTable = async (poOrders) => {
         orderIdSpan.dataset.quantity = item.quantity_purchased;
         orderIdSpan.dataset.item_price = item.item_price ? item.item_price : 0;
         tableRow.appendChild(createTableCell(orderIdSpan, 2));
-
         const skuSpan = document.createElement("span");
         skuSpan.classList.add("order-product-sku");
         skuSpan.textContent = item.order_product_sku;
         tableRow.appendChild(createTableCell(skuSpan, 3));
-
-        /* const itemPriceSpan = document.createElement("span");
-        itemPriceSpan.classList.add("item-price");
-        itemPriceSpan.textContent = item.item_price;
-        tableRow.appendChild(createTableCell(itemPriceSpan, 2)); */
         const priceInput = createInput(
           "number",
           "item-price",
@@ -389,11 +363,6 @@ const generateItemListTable = async (poOrders) => {
         );
         priceInput.addEventListener("change", () => updateTotal(tableRow));
         tableRow.appendChild(createTableCell(priceInput, 2));
-
-        /* const quantitySpan = document.createElement("span");
-        quantitySpan.classList.add("quantity-purchased");
-        quantitySpan.textContent = item.quantity_purchased;
-        tableRow.appendChild(createTableCell(quantitySpan, 2)); */
         const quantityInput = createInput(
           "number",
           "quantity-purchased",
@@ -508,12 +477,10 @@ const dataURLToBlob = async (dataURL) => {
 };
 
 function generateEnhancedEmailContent(order, factory, items) {
-  // คำนวณยอดรวม
   const totalAmount = items.reduce((sum, item) => {
     return sum + parseFloat(item.quantity) * parseFloat(item.item_price);
   }, 0);
 
-  // จัดรูปแบบวันที่
   const today = new Date();
   const formattedDate = today.toLocaleDateString("th-TH", {
     year: "numeric",
@@ -521,7 +488,6 @@ function generateEnhancedEmailContent(order, factory, items) {
     day: "numeric",
   });
 
-  // สร้างตารางรายการสินค้าสำหรับอีเมล
   let itemsTable = "";
   if (items.length > 0) {
     itemsTable = `
@@ -607,42 +573,32 @@ function generateEnhancedEmailContent(order, factory, items) {
 
 const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
   try {
-    console.log("Sending email with PDF:", pdfFile.name);
-    console.log("Order details:", newPOOrder);
-
-    // กำหนดค่าเริ่มต้นสำหรับตัวเลือก
     // const { recipientEmail = "s6404062630554@email.kmutnb.ac.th" } = options;
-    const recipientEmail = "s6404062630554@email.kmutnb.ac.th";
-    // โหลด pdf.js library
+    const recipientEmail = "s6404062630511@email.kmutnb.ac.th";
     const pdfBytes = await pdfFile.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
     const page = await pdf.getPage(1);
 
-    // กำหนดขนาด canvas - เพิ่มความละเอียดสำหรับภาพ preview
-    const scale = 2.5; // เพิ่มความละเอียดจาก 2.0 เป็น 2.5
+    const scale = 2.5;
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
-    // เรนเดอร์หน้าแรกของ PDF ลงบน canvas ด้วยคุณภาพสูง
     await page.render({
       canvasContext: context,
       viewport,
-      intent: "print", // เพิ่มตัวเลือกนี้เพื่อคุณภาพการพิมพ์ที่ดีขึ้น
+      intent: "print",
     }).promise;
 
-    // แปลง canvas เป็น blob แบบมีคุณภาพสูง
     const pngBlob = await new Promise((resolve) => {
       canvas.toBlob(resolve, "image/png", 1.0); // คุณภาพสูงสุด
     });
 
-    // กำหนดชื่อไฟล์ให้ตรงกับ PDF แต่เปลี่ยนเป็น .png
     const pngFileName = pdfFile.name.replace(/\.pdf$/, ".png");
     const pngFile = new File([pngBlob], pngFileName, { type: "image/png" });
 
-    // อัปโหลด PNG ไปยังเซิร์ฟเวอร์
     const pngFormData = new FormData();
     pngFormData.append("file", pngFile, pngFileName);
     const uploadResponse = await DataController.upload(
@@ -654,21 +610,18 @@ const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
       throw new Error("Failed to upload PNG preview image.");
     }
 
-    // บันทึกข้อมูลไฟล์ PNG ลงฐานข้อมูล
     const pngFileData = {
       po_order_id: newPOOrder.po_order_id,
       file_name: uploadResponse.fileName,
       file_pathname: uploadResponse.filePath,
-      file_type: "preview", // เพิ่มประเภทไฟล์เพื่อระบุว่าเป็นภาพ preview
+      file_type: "preview",
     };
     await DataController.insert("po_orders_files", pngFileData);
 
-    // สร้าง absolute URL สำหรับทั้ง PDF และ PNG
     const baseUrl = window.location.origin + "/test/work/v2.2/files/";
     const pdfUrl = baseUrl + encodeURIComponent(pdfFile.name);
     const pngUrl = baseUrl + encodeURIComponent(uploadResponse.fileName);
 
-    // ดึงข้อมูลโรงงานสำหรับการสร้างเนื้อหาอีเมล
     const factory = await DataController.selectByKey(
       "factories",
       "id",
@@ -677,34 +630,35 @@ const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
 
     const factoryData = factory?.status?.[0] || {};
 
-    // ดึงรายการสินค้าใน PO
     const poItems = await DataController.selectByKey(
       "po_orders_items",
       "po_order_id",
       newPOOrder.po_order_id
     );
 
-    // Generate email content ที่มีข้อมูลมากขึ้น
     const emailContent = generateEnhancedEmailContent(
       newPOOrder,
       factoryData,
       poItems?.status || []
     );
 
-    // สร้าง FormData สำหรับส่งอีเมล
     const emailFormData = new FormData();
     emailFormData.append("title", emailContent.title);
-    emailFormData.append("body", emailContent.body);
-    emailFormData.append("buttons", JSON.stringify(emailContent.buttons));
     emailFormData.append("email", recipientEmail);
+    emailFormData.append(
+      "accept_url",
+      `${host}/pages/view_only/po_order_details.php?po_order_id=67de91c5z1eh0`
+    );
+    emailFormData.append(
+      "cancel_url",
+      `${host}pages/view_only/po_order_details.php?po_order_id=67de91c5z1eh0`
+    );
     emailFormData.append("pdf_url", pdfUrl);
     emailFormData.append("png_url", pngUrl);
 
-    // เพิ่ม metadata ที่จำเป็น
     emailFormData.append("po_number", newPOOrder.po_order_id);
     emailFormData.append("factory_name", factoryData.name || "");
 
-    // ส่งไปยัง send_email.php
     const response = await axios.post(
       "../../backend/api/thaibulksms/send_email.php",
       emailFormData,
@@ -715,7 +669,6 @@ const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
 
     console.log("Email sent successfully:", response.data);
 
-    // บันทึกประวัติการส่งอีเมล
     await DataController.insert("po_orders_email_log", {
       po_order_id: newPOOrder.po_order_id,
       recipient_email: recipientEmail,
@@ -939,7 +892,7 @@ async function createPOAsPDF(newPOOrder, itemsList) {
       NotoSansThai: {
         normal: "NotoSansThai-Regular.ttf",
         bold: "NotoSansThai-Bold.ttf",
-        italics: "NotoSansThai-Regular.ttf", // ถ้าไม่มีไฟล์ Italic ใช้ Regular ไปก่อน
+        italics: "NotoSansThai-Regular.ttf",
         bolditalics: "NotoSansThai-Bold.ttf",
       },
     };
@@ -986,15 +939,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const factoryId = new URLSearchParams(window.location.search).get(
     "factory_id"
   );
-  // get po_order_id from URL or default to null
   const poOrderId = new URLSearchParams(window.location.search).get(
     "po_order_id"
   );
-  console.log("Factory ID:", factoryId);
-  console.log("PO Order ID:", poOrderId);
   const factory_details = await PODataController.get_factory_details(factoryId);
   const poDraft = await PODataController.get_factory_draft(factoryId);
-  console.log("poDraft:", poDraft);
   if (poOrderId) {
     loadFactoryDetails(factory_details[0], poDraft[0]);
     generateItemListTable(poDraft[0]);
@@ -1059,27 +1008,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
       const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
 
-      const formData = new FormData();
-      const file = fileInput.files[0];
+      // ✅ Upload ไฟล์แนบ (ถ้ามี)
+      const file = fileInput?.files?.[0];
       if (file) {
         const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
+        const formData = new FormData();
         formData.append("file", file, filename);
         const response = await DataController.upload(formData, "../files/");
 
-        const to_insert_file = {
-          po_order_id: factoryId,
-          file_name: response.fileName,
-          file_pathname: response.filePath,
-        };
+        if (response && response.fileName) {
+          const to_insert_file = {
+            po_order_id: po_order_id,
+            file_name: response.fileName,
+            file_pathname: response.filePath,
+          };
 
-        const res = await DataController.insert(
-          "po_order_files",
-          to_insert_file
-        );
+          await DataController.insert("po_order_files", to_insert_file);
+        }
       }
 
       const newPOOrder = {
-        po_order_id: po_order_id,
+        po_order_id,
         timesort: newTimeSort,
         factory_id: factoryId,
         po_order_status_id: 5,
@@ -1088,14 +1037,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const items = tbody.querySelectorAll(".item");
       const itemsList = [];
+
       for (const item of items) {
-        console.log(item);
         let orders_skus_id = null;
+        let id = null;
         let item_price = 0;
         let quantity = 0;
-        let id = null;
+
         const orderIdSpan = item.querySelector("span.order-id");
-        console.log("Order ID: ", orderIdSpan);
         if (orderIdSpan) {
           orders_skus_id = orderIdSpan.dataset.orders_skus_id;
           id = orderIdSpan.dataset.sku_settings_id;
@@ -1104,66 +1053,63 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           const skuInput = item.querySelector("input.order-product-sku");
           const quantityInput = item.querySelector("input.quantity-purchased");
-          const sku = skuInput.value;
           quantity = parseInt(quantityInput.value);
           id = parseInt(skuInput.getAttribute("order_product_id"));
-          if (sku) {
-            if (!id) {
-              const result = await get_sku_by_name(sku);
-              if (result.status === 200) {
-                id = parseInt(result.data[0].id);
-              } else {
-                Alert.showErrorMessage(
-                  `Couldn't find Product "${sku}" in database`
-                );
-                return;
-              }
+          if (!id && skuInput.value) {
+            const result = await get_sku_by_name(skuInput.value);
+            if (result.status === 200) {
+              id = parseInt(result.data[0].id);
+            } else {
+              Alert.showErrorMessage(`ไม่พบสินค้า "${skuInput.value}"`);
+              return;
             }
           }
         }
+
         const newItem = {
-          po_order_id: po_order_id,
-          orders_skus_id: parseInt(orders_skus_id),
+          po_order_id,
+          orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
           sku_settings_id: parseInt(id),
           quantity: parseInt(quantity),
-          item_price: parseInt(item_price) ? parseInt(item_price) : 0,
-          product_status_id: 8,
+          item_price: parseFloat(item_price) || 0,
+          product_status_id: 8, // pending
         };
-        console.log(newItem);
+
         itemsList.push(newItem);
       }
-      console.log(itemsList);
-      if (itemsList.length == 0) {
-        Alert.showErrorMessage("PO Order item is empty!");
+
+      if (itemsList.length === 0) {
+        Alert.showErrorMessage("ยังไม่มีสินค้าในใบสั่งซื้อ");
         return;
       }
-      const result1 = await DataController.insert("po_orders", newPOOrder);
-      console.log(result1);
-      itemsList.forEach(async (item) => {
-        const result2 = await DataController.insert("po_orders_items", item);
-        if (result2) {
-          const updateOrdetItemStatus = await DataController.updateByKey(
-            "orders_skus",
-            "orders_skus_id",
-            item.orders_skus_id,
-            "product_status_id",
-            8
-          );
-          console.log(updateOrdetItemStatus);
+
+      const orderInsert = await DataController.insert("po_orders", newPOOrder);
+
+      if (orderInsert.status) {
+        for (const item of itemsList) {
+          await DataController.insert("po_orders_items", item);
+
+          if (item.orders_skus_id) {
+            await DataController.updateByKey(
+              "orders_skus",
+              "orders_skus_id",
+              item.orders_skus_id,
+              "product_status_id",
+              8
+            );
+          }
         }
-        console.log(result2);
-      });
-      if (result1.status) {
-        await (newPOOrder, itemsList);
-        Alert.showSuccessMessage("PO Order Inserted Successfully");
-        /* setTimeout(() => {
-                window.location.href = `po_order_list.php`;
-            }, 2000); */
+
+        Alert.showSuccessMessage("สร้าง Draft สำเร็จแล้ว");
+        setTimeout(() => {
+          window.location.href = `po_order_list.php`;
+        }, 2000);
       } else {
-        Alert.showErrorMessage("PO Order Inserted Failed!");
+        Alert.showErrorMessage("ไม่สามารถสร้าง Draft ได้");
       }
     } catch (error) {
       console.error("Error:", error);
+      Alert.showErrorMessage("เกิดข้อผิดพลาดในการสร้าง Draft");
     }
   };
 
@@ -1264,14 +1210,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       for (const itemInList of itemsList) {
         const index = to_delete_items.indexOf(itemInList.po_order_item_id);
         if (index !== -1) {
-          /* console.log("Item found in to_delete_items:", itemInList);
-          console.log("items index", items[index]);
-          console.log("old item price", items[index].item_price);
-          console.log("old quantity", items[index].quantity);
-          console.log("old total", items[index].total);
-          console.log("new item price", itemInList.item_price);
-          console.log("new quantity", itemInList.quantity);
-          console.log("new total", itemInList.total); */
           let to_update_items_object = {};
           to_update_items_object = updatedObject(
             to_update_items_object,
@@ -1432,9 +1370,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
       }
-      // setTimeout(() => {
-      //   window.location.href = `po_order_list.php`;
-      // }, 2000);
+      setTimeout(() => {
+        window.location.href = `po_order_list.php`;
+      }, 2000);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -1442,23 +1380,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const handleSendEmail = async (event) => {
     try {
-      // ป้องกันการส่งฟอร์มแบบปกติ
       event.preventDefault();
 
       let po_order_id, itemsList, newPOOrder;
 
-      // กรณีมี draft (poOrderId มีค่า) ให้ใช้ข้อมูลจาก draft
       if (poOrderId) {
         console.log("Using existing draft for PO:", poOrderId);
         po_order_id = poOrderId;
 
-        // ดึงข้อมูลปัจจุบันจากฟอร์ม
         const tbody = document.getElementById("item-list-body");
         const orderNoteInput =
           document.getElementById("order-note-input").value;
         const itemsRows = tbody.querySelectorAll(".item");
 
-        // สร้าง itemsList จากรายการในฟอร์ม
         itemsList = [];
         for (const itemRow of itemsRows) {
           let orders_skus_id = null;
@@ -1472,7 +1406,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (orderIdSpan) {
             orders_skus_id = orderIdSpan.dataset.orders_skus_id;
             id = orderIdSpan.dataset.sku_settings_id;
-            // หาชื่อ SKU จากฐานข้อมูล
             const skuData = await DataController.selectByKey(
               "sku_settings",
               "id",
@@ -1507,7 +1440,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           const totalInput = itemRow.querySelector("input.total");
           total = parseFloat(totalInput.value);
 
-          // ตรวจสอบข้อมูลก่อนเพิ่มลงในรายการ
           if (id && quantity > 0) {
             const newItem = {
               po_order_id: po_order_id,
@@ -1522,23 +1454,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
 
-        // อัปเดตสถานะใบสั่งซื้อให้เป็นสถานะ "ส่งแล้ว" (1)
-        console.log("Updating PO Order status to 'Sent' for ID:", po_order_id);
         newPOOrder = await PODataController.get_po_details(po_order_id);
-        console.log("newPOOrder:", newPOOrder);
         if (newPOOrder && newPOOrder.length > 0) {
           const { data, nested } = newPOOrder[0];
           const { items } = nested;
           itemsList = items;
           newPOOrder = data;
 
-          // อัปเดตสถานะใบสั่งซื้อเป็น "ส่งแล้ว"
-          /* await DataController.update("po_orders", "po_order_id", po_order_id, {
+          await DataController.update("po_orders", "po_order_id", po_order_id, {
             po_order_status_id: 1,
             notes: orderNoteInput,
-          }); */
+          });
 
-          // อัปเดตข้อมูลใบสั่งซื้อที่จะใช้ต่อไป
           newPOOrder.po_order_status_id = 1;
           newPOOrder.notes = orderNoteInput;
         } else {
@@ -1551,10 +1478,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           document.getElementById("order-note-input").value;
         const fileInput = document.getElementById("file-input");
 
-        // สร้าง ID ใบสั่งซื้อใหม่
         po_order_id = await generateUniqueOrderId();
 
-        // ข้อมูลวันที่และ timesort
         const currentDate = new Date().toISOString().split("T")[0];
         const odate = currentDate.split("-").join("/");
         const idate = new Date(odate);
@@ -1584,23 +1509,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
 
-        // สร้างข้อมูลใบสั่งซื้อใหม่
         newPOOrder = {
           po_order_id: po_order_id,
           timesort: newTimeSort,
           factory_id: factoryId,
-          po_order_status_id: 1, // สถานะ "ส่งแล้ว"
+          po_order_status_id: 1,
           notes: orderNoteInput,
         };
 
-        // เพิ่มใบสั่งซื้อใหม่ในฐานข้อมูล
         const result1 = await DataController.insert("po_orders", newPOOrder);
         if (!result1.status) {
           Alert.showErrorMessage("Failed to create new PO Order!");
           return;
         }
 
-        // รวบรวมข้อมูลรายการสินค้า
         itemsList = [];
         const items = tbody.querySelectorAll(".item");
         for (const item of items) {
@@ -1616,7 +1538,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             orders_skus_id = orderIdSpan.dataset.orders_skus_id;
             id = orderIdSpan.dataset.sku_settings_id;
 
-            // หาชื่อ SKU จากฐานข้อมูล
             const skuData = await DataController.selectByKey(
               "sku_settings",
               "id",
@@ -1651,29 +1572,24 @@ document.addEventListener("DOMContentLoaded", async () => {
             ? parseFloat(totalInput.value)
             : item_price * quantity;
 
-          // ตรวจสอบข้อมูลก่อนเพิ่มลงในรายการ
           if (id && quantity > 0) {
             const newItem = {
               po_order_id: po_order_id,
               orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
               sku_settings_id: parseInt(id),
-              sku_name: sku_name, // เพิ่มชื่อ SKU สำหรับแสดงใน PDF
+              sku_name: sku_name,
               quantity: parseInt(quantity),
               item_price: parseFloat(item_price),
               total: total,
               product_status_id: 8,
             };
-
-            // เพิ่มลงในรายการสำหรับ PDF
             itemsList.push(newItem);
 
-            // บันทึกลงฐานข้อมูล
             const result2 = await DataController.insert(
               "po_orders_items",
               newItem
             );
 
-            // อัปเดตสถานะสินค้าหากมี orders_skus_id
             if (result2 && newItem.orders_skus_id) {
               const updateOrderItemStatus = await DataController.updateByKey(
                 "orders_skus",
@@ -1688,13 +1604,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
 
-      // ตรวจสอบรายการสินค้า
       if (itemsList.length === 0) {
         Alert.showErrorMessage("PO Order item is empty!");
         return;
       }
 
-      // สร้างไฟล์ PDF
       const pdfFile = await createPOAsPDF(newPOOrder, itemsList);
       console.log("pdfFile: ", pdfFile);
       if (!pdfFile) {
@@ -1702,8 +1616,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      console.log("PDF file created:", pdfFile);
-      // ดึงข้อมูลโรงงานเพื่อหาอีเมล
       const factoryData = await DataController.selectByKey(
         "factories",
         "id",
@@ -1711,26 +1623,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       );
       let factoryEmail = "s6404062630511@email.kmutnb.ac.th"; // อีเมลเริ่มต้น
 
-      console.log("Factory Data:", factoryData);
       if (factoryData && factoryData.status && factoryData.status.length > 0) {
-        // หากมีอีเมลของโรงงานใน DB ให้ใช้อีเมลนั้น
         if (factoryData.status[0].email) {
           factoryEmail = factoryData.status[0].email;
         }
       }
 
-      // ส่งอีเมล
       const sendEmailResult = await sendEmail(pdfFile, newPOOrder, {
         recipientEmail: factoryEmail,
       });
 
-      console.log("Email sent result:", sendEmailResult);
       if (sendEmailResult) {
         Alert.showSuccessMessage("Email sent successfully!");
-        // อัปเดตสถานะเป็นส่งแล้ว
-        /* setTimeout(() => {
+        setTimeout(() => {
           window.location.href = `po_order_list.php`;
-        }, 2000); */
+        }, 2000);
       } else {
         Alert.showErrorMessage("Failed to send email!");
       }

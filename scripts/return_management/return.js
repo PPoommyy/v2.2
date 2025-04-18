@@ -222,45 +222,36 @@ const handleUpdateRequestStatus = async (
   status
 ) => {
   e.preventDefault();
+
   const confirmAlert = await Alert.showConfirmModal(
     "Are you sure you item accepted?"
   );
+  if (!confirmAlert.isConfirmed) return;
 
   const swalQueue = Alert.createQueue();
+  const selectedRequests = requests.filter((req) =>
+    checkboxStates.includes(req.request_id)
+  );
   const results = [];
 
-  if (!confirmAlert.isConfirmed) {
-    return;
-  }
-
-  const selectedRequests = [];
-
-  requests.forEach((request) => {
+  for (const request of selectedRequests) {
     const { request_id } = request;
-    if (checkboxStates.includes(request_id)) {
-      selectedRequests.push(request);
-    }
-  });
-
-  for (let index = 0; index < selectedRequests.length; index++) {
-    const request = selectedRequests[index];
-    const { request_id } = request;
-    const request_products = await get_request_products_by_request_id(
-      request_id
-    );
     try {
+      const request_products = await get_request_products_by_request_id(
+        request_id
+      );
+
       if (status === "accepted") {
-        request_products.status.forEach(async (item) => {
-          const { sku_settings_id, quantity_purchased } = item;
+        for (const item of request_products.status) {
           const to_insert = {
-            sku_settings_id: sku_settings_id,
-            quantity: quantity_purchased,
-            remaining_quantity: quantity_purchased,
+            sku_settings_id: item.sku_settings_id,
+            quantity: item.quantity_purchased,
+            remaining_quantity: item.quantity_purchased,
           };
-          const response = await DataController.insert("stock", to_insert);
-        });
+          await DataController.insert("stock", to_insert);
+        }
       } else if (status === "damaged") {
-        const result = await DataController.updateByKey(
+        await DataController.updateByKey(
           "requests",
           "id",
           request_id,
@@ -269,51 +260,41 @@ const handleUpdateRequestStatus = async (
         );
       }
 
-      const result1 = await DataController.updateByKey(
+      const updateResult = await DataController.updateByKey(
         "requests",
         "id",
         request_id,
         "request_status_id",
         2
       );
-      const requestResult = {
-        requests: result1.status,
-      };
-      results.push(requestResult);
-      if (result1.status) {
-        const confirmed = await swalQueue.fire({
-          title: `Request ${request_id} update stock successfully!`,
-          icon: "success",
-          timer: 1500,
-          showCancelButton: false,
-        });
-      } else {
-        const confirmed = await swalQueue.fire({
-          title: `Failed to update stock for request ${request_id}`,
-          icon: "error",
-          showCancelButton: false,
-          showConfirmButton: true,
-          confirmButtonText: "Next &rarr;",
-        });
+      results.push({ requests: updateResult.status });
 
-        if (!confirmed.isConfirmed) {
-          break;
-        }
-      }
+      const alertConfig = updateResult.status
+        ? {
+            title: `Request ${request_id} update stock successfully!`,
+            icon: "success",
+            timer: 1500,
+          }
+        : {
+            title: `Failed to update stock for request ${request_id}`,
+            icon: "error",
+            showConfirmButton: true,
+            confirmButtonText: "Next →",
+          };
+
+      const confirmed = await swalQueue.fire(alertConfig);
+      if (!updateResult.status && !confirmed.isConfirmed) break;
     } catch (error) {
       const confirmed = await swalQueue.fire({
         title: `Failed to update stock for request ${request_id}`,
         icon: "error",
-        showCancelButton: false,
         showConfirmButton: true,
-        confirmButtonText: "Next &rarr;",
+        confirmButtonText: "Next →",
       });
-
-      if (!confirmed.isConfirmed) {
-        break;
-      }
+      if (!confirmed.isConfirmed) break;
     }
   }
+
   generateTable("requests", 100, 0);
 };
 

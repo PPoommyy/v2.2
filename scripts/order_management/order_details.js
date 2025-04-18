@@ -4,6 +4,7 @@ import { DataController } from "../../components/DataController.js";
 
 const order_id = document.getElementById("orderId").value;
 const request_id = document.getElementById("requestId").value;
+let to_return_order_id = null;
 const addProduct = document.getElementById("add-product");
 
 addProduct.addEventListener("click", function (event) {
@@ -311,6 +312,13 @@ if (insertOrderButton) {
             request_id,
             "request_status_id",
             4
+          );
+          const result4 = await DataController.updateByKey(
+            "orders",
+            "order_id",
+            to_return_order_id,
+            "order_status_id",
+            7
           );
           setTimeout(() => {
             window.location.href = "../../pages/return_management/return.php";
@@ -1271,6 +1279,7 @@ const generateItemsListTable = async (order_id, request_id) => {
         orders = result[0];
         items = orders.nested.items;
         details = orders.data;
+        to_return_order_id = details.order_id;
       }
 
       currencyText.innerHTML = details.currency_code;

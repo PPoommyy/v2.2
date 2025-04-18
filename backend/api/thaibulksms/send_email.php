@@ -1,17 +1,14 @@
 <?php
-// ThaiBulkSMS API details
 $api_url = 'https://tbs-email-api-gateway.omb.to/email/v1/send_template';
 $api_key = 'EMJXnVd5--VcxW6ZfWSwUVdxULMVPq';
 $api_secret = 'nERhn1Ye7I7coovI1NTNL9MuKKnmF8';
 
-// UUID ของ Template อีเมล
 $template_uuid = '24092314-2820-8d99-a046-be37ae7e2dd2';
 
-function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl)
+function sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancel_url)
 {
     global $api_url, $api_key, $api_secret, $template_uuid;
 
-    // ตรวจสอบว่า URL เป็น absolute URL แล้ว
     if (!filter_var($pdfUrl, FILTER_VALIDATE_URL)) {
         throw new Exception("Invalid PDF URL: " . $pdfUrl);
     }
@@ -24,8 +21,8 @@ function sendEmail($email, $title, $body, $buttons, $pdfUrl, $pngUrl)
         'mail_from' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
         'mail_to' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
         'payload' => [
-            'OPTION_1' => 'http://localhost/test/work/v2.2/pages/po_management/pre_po.php',
-            'OPTION_2' => 'http://localhost/test/work/v2.2/pages/po_management/pre_po.php',
+            'OPTION_1' => $accept_url,
+            'OPTION_2' => $cancel_url,
             'OPTION_3' => $pdfUrl,
             'OPTION_4' => $pngUrl
         ],
@@ -67,11 +64,11 @@ function sendRequest($url, $params)
     return $decodedResponse;
 }
 
-// รับค่า POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ?? '';
+    $accept_url = $_POST['accept_url'] ?? '';
+    $cancle_url = $_POST['cancle_url'] ?? '';
     $email = $_POST['email'] ?? '';
-    $buttons = json_decode($_POST['buttons'] ?? '[]', true);
     $pdfUrl = $_POST['pdf_url'] ?? '';
     $pngUrl = $_POST['png_url'] ?? '';
 
@@ -80,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Email address is missing");
         }
 
-        $response = sendEmail($email, $title, '', $buttons, $pdfUrl, $pngUrl);
+        $response = sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancle_url);
 
         if ($response['message_id']) {
             echo json_encode(['success' => true, 'message' => 'Email sent successfully', 'request' => $pdfUrl . "\n" . $pngUrl]);

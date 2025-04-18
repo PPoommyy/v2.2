@@ -1,23 +1,93 @@
 <?php
-include('../config.php');
-include('../controllers/data_controller.php');
-?>
+$api_url = 'https://tbs-email-api-gateway.omb.to/email/v1/send_template';
+$api_key = 'EMJXnVd5--VcxW6ZfWSwUVdxULMVPq';
+$api_secret = 'nERhn1Ye7I7coovI1NTNL9MuKKnmF8';
 
-<?php
-$data = json_decode(file_get_contents('php://input'), true);
+$template_uuid = '24092314-2820-8d99-a046-be37ae7e2dd2';
 
-$insertedData = $data['insertedData'];
-$table = $data['table'];
-try {
-    $res = insert($conn, $table, $insertedData);
-    $response = [
-        'insertedData' => json_encode($insertedData),
-        'status' => $res
+function sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancel_url)
+{
+    global $api_url, $api_key, $api_secret, $template_uuid;
+
+    if (!filter_var($pdfUrl, FILTER_VALIDATE_URL)) {
+        throw new Exception("Invalid PDF URL: " . $pdfUrl);
+    }
+    if (!filter_var($pngUrl, FILTER_VALIDATE_URL)) {
+        throw new Exception("Invalid PNG URL: " . $pngUrl);
+    }
+
+    $emailParams = [
+        'template_uuid' => $template_uuid,
+        'mail_from' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
+        'mail_to' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
+        'payload' => [
+            'OPTION_1' => $accept_url,
+            'OPTION_2' => $cancel_url,
+            'OPTION_3' => $pdfUrl,
+            'OPTION_4' => $pngUrl
+        ],
+        'subject' => $title,
     ];
 
-    $jsonData = json_encode($response);
-    echo $jsonData;
-} catch (\Exception $e) {
-    echo $e->getMessage();
+    return sendRequest($api_url, $emailParams);
 }
-?>              
+
+function sendRequest($url, $params)
+{
+    global $api_key, $api_secret;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Basic ' . base64_encode($api_key . ':' . $api_secret)
+    ]);
+
+    $response = curl_exec($ch);
+
+    if ($response === false) {
+        throw new Exception("cURL Error: " . curl_error($ch));
+    }
+
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    $decodedResponse = json_decode($response, true);
+
+    if ($httpCode !== 201) {
+        throw new Exception("HTTP Error: " . $httpCode . ". Response: " . $response);
+    }
+
+    return $decodedResponse;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title = $_POST['title'] ?? '';
+    $accept_url = $_POST['accept_url'] ?? '';
+    $cancle_url = $_POST['cancle_url'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $pdfUrl = $_POST['pdf_url'] ?? '';
+    $pngUrl = $_POST['png_url'] ?? '';
+
+    try {
+        if (empty($email)) {
+            throw new Exception("Email address is missing");
+        }
+
+        $response = sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancle_url);
+
+        if ($response['message_id']) {
+            echo json_encode(['success' => true, 'message' => 'Email sent successfully', 'request' => $pdfUrl . "\n" . $pngUrl]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Email sending failed', 'response' => $response]);
+        }
+    } catch (Exception $e) {
+        error_log("Error: " . $e->getMessage());
+        echo json_encode(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()]);
+    }
+} else {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+}
