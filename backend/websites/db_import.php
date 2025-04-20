@@ -5,7 +5,7 @@ try {
     header('Cache-Control: post-check=0, pre-check=0', false);
     header('Pragma: no-cache');
 
-    $target_db = new PDO("mysql:host=localhost;dbname=komsant_om;charset=utf8", 'komsant_om', 'spkfwngib');
+    $target_db = new PDO("mysql:host=localhost;dbname=komsant_test;charset=utf8", 'komsant', 'ktest347#');
     $target_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     function generateUniqueOrderId($target_db)
@@ -13,7 +13,7 @@ try {
         try {
             do {
                 $newOrderId = uniqid();
-                $stmt = $target_db->prepare("SELECT 1 FROM test_orders WHERE order_id = ? LIMIT 1");
+                $stmt = $target_db->prepare("SELECT 1 FROM orders WHERE order_id = ? LIMIT 1");
                 $stmt->execute(array($newOrderId));
                 $orderExists = $stmt->fetchColumn() !== false;
             } while ($orderExists);
@@ -26,7 +26,7 @@ try {
     function generateNewTimeSort($date)
     {
         global $target_db;
-        $stmt = $target_db->prepare("SELECT timesort FROM test_orders WHERE timesort LIKE ? ORDER BY timesort DESC LIMIT 1");
+        $stmt = $target_db->prepare("SELECT timesort FROM orders WHERE timesort LIKE ? ORDER BY timesort DESC LIMIT 1");
         $stmt->execute(array(substr($date, 0, 4) . '%'));
         $lastTimeSort = $stmt->fetchColumn();
         $year = substr($date, 0, 2);
@@ -87,13 +87,13 @@ try {
             );
             $source_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-            $stmt = $target_db->prepare("SHOW COLUMNS FROM test_orders LIKE 'source_order_id'");
+            $stmt = $target_db->prepare("SHOW COLUMNS FROM orders LIKE 'source_order_id'");
             $stmt->execute();
             if ($stmt->rowCount() === 0) {
-                $target_db->exec("ALTER TABLE test_orders ADD COLUMN source_order_id varchar(255) DEFAULT NULL");
+                $target_db->exec("ALTER TABLE orders ADD COLUMN source_order_id varchar(255) DEFAULT NULL");
             }
 
-            $existingStmt = $target_db->prepare("SELECT source_order_id FROM test_orders WHERE website_id = ? AND source_order_id IS NOT NULL");
+            $existingStmt = $target_db->prepare("SELECT source_order_id FROM orders WHERE website_id = ? AND source_order_id IS NOT NULL");
             $existingStmt->execute(array($site['website_id']));
             $existingSourceOrderIds = array();
             while ($row = $existingStmt->fetch(PDO::FETCH_ASSOC)) {
@@ -103,11 +103,11 @@ try {
             $thirtyDaysAgo = date('Y-m-d H:i:s', strtotime('-' . intval($site['retreive_period']) . ' days'));
             $ordersStmt = $source_db->prepare("SELECT * FROM oc_order WHERE date_added >= ? AND order_status_id IN (1,2,3)  ORDER BY date_added DESC");
             $ordersStmt->execute(array($thirtyDaysAgo));
-            $test_orders = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
+            $orders = $ordersStmt->fetchAll(PDO::FETCH_ASSOC);
 
             $processed = 0;
             $skipped = 0;
-            foreach ($test_orders as $order) {
+            foreach ($orders as $order) {
                 if (isset($existingSourceOrderIds[$order['order_id']])) {
                     $skipped++;
                     continue;
@@ -129,7 +129,7 @@ try {
                 $recipientName = trim($order['shipping_firstname'] . ' ' . $order['shipping_lastname']);
                 $currentDateTime = date('Y-m-d H:i:s');
 
-                $orderInsert = $target_db->prepare("INSERT INTO test_orders (
+                $orderInsert = $target_db->prepare("INSERT INTO orders (
                     order_id, source_order_id, payments_date, buyer_email, buyer_name, 
                     buyer_phone_number, recipient_name, ship_phone_number, ship_promotion_discount, 
                     shipping_fee, ship_address_1, ship_address_2, ship_address_3, ship_city, 
@@ -181,7 +181,7 @@ try {
 
                     if ($sku) {
                         $uniqueId = $targetOrderId . ',' . $sku['id'];
-                        $orderSkuInsert = $target_db->prepare("INSERT INTO test_orders_skus (
+                        $orderSkuInsert = $target_db->prepare("INSERT INTO orders_skus (
                             unique_id, order_id, order_item_id, sku_settings_id, 
                             item_price, shipping_price, total, quantity_purchased, 
                             is_amazon, date_created, product_status_id

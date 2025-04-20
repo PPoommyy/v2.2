@@ -778,7 +778,6 @@ function get_user_data($conn)
 function count_by($conn, $table, $key, $value, $date)
 {
     try {
-        // 1. คำนวณวันที่ 12 เดือนล่าสุด
         $endDate = new DateTime();
         $startDate = (new DateTime())->modify('-11 months')->modify('first day of this month');
 
@@ -805,11 +804,10 @@ function count_by($conn, $table, $key, $value, $date)
         $groupedData = [];
         foreach ($result as $row) {
             $year = $row["year"];
-            $month = $row["month"] - 1; // index เดือนเริ่มที่ 0
-            $day = $row["day"] - 1; // index วันเริ่มที่ 0
+            $month = $row["month"] - 1;
+            $day = $row["day"] - 1;
             $count = $row["count"];
 
-            // ถ้ายังไม่มีปีนี้ใน array ให้สร้าง entry ใหม่
             if (!isset($groupedData[$year])) {
                 $groupedData[$year] = array_fill(0, 12, array_fill(0, 31, 0));
             }
@@ -817,7 +815,6 @@ function count_by($conn, $table, $key, $value, $date)
             $groupedData[$year][$month][$day] = $count;
         }
 
-        // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
         $formattedData = [];
         foreach ($groupedData as $year => $months) {
             $formattedData[] = [

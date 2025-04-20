@@ -22,8 +22,6 @@ function get_orders($conn, $limit, $offset, $filter, $filterParams)
           raw_address,
           override_address,
           order_note,
-          fulfillment_status,
-          os.orders_skus_id,
           w.name as website_name,
           w.id as website_id,
           c.name as currency_code,

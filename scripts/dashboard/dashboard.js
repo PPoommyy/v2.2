@@ -37,12 +37,14 @@ const getCountOrData = async (
           date.setDate(date.getDate() - 7);
           where = [["o.date_created", ">=", date.toISOString().slice(0, 10)]];
           groupBy = "w.name";
+          orderBy = "total_orders";
           orderByType = "DESC";
-        } else if (filterType === "last30days") {
+        } else if (filterType === "last90days") {
           const date = new Date();
           date.setDate(date.getDate() - 90);
           where = [["o.date_created", ">=", date.toISOString().slice(0, 10)]];
           groupBy = "w.name";
+          orderBy = "total_orders";
           orderByType = "DESC";
         } else if (filterType === "last12months") {
           const now = new Date();
@@ -78,8 +80,8 @@ const getCountOrData = async (
             ["LEFT JOIN", "sku_settings ss", "s.sku_settings_id", "ss.id"],
           ];
           columns = ["s.sku_settings_id", "ss.order_product_sku"];
-          groupBy = "s.sku_settings_id, ss.order_product_sku";
           having = [["SUM(s.remaining_quantity)", "<", 5]];
+          orderBy = "s.sku_settings_id";
           groupBy = "s.sku_settings_id";
         }
         break;
@@ -267,18 +269,13 @@ async function fetchKpiData() {
         if (data && Array.isArray(data)) {
           if (isLengthCount) {
             count = data.length;
-          } else if (
-            data.length > 0 &&
-            data[0] &&
-            typeof data[0].count !== "undefined"
-          ) {
+          } else if (data[0] && typeof data[0].count !== "undefined") {
             count = data[0].count;
           } else if (data.length === 0) {
             count = 0;
           }
         }
-        element.textContent =
-          typeof count === "number" && count >= 0 ? count : "N/A";
+        element.textContent = count >= 0 ? count : "N/A";
       } else {
         console.warn(`KPI Element not found: ${elementId}`);
       }
@@ -734,7 +731,7 @@ async function renderOrderSourceChart(
             title: {
               display: true,
               text: `Orders by Source (${
-                type === "last30days" ? "Last 30 Days" : "Last 7 Days"
+                type === "last90days" ? "Last 90 Days" : "Last 7 Days"
               })`,
               font: { size: 16, weight: "bold" },
             },
@@ -786,7 +783,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         localStorage.getItem("theme") || "light",
         "orderSourceChart2",
         "orderSourceChartContainer2",
-        "last30days"
+        "last90days"
       ),
     ]);
 
