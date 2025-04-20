@@ -778,6 +778,10 @@ function get_user_data($conn)
 function count_by($conn, $table, $key, $value, $date)
 {
     try {
+        // 1. คำนวณวันที่ 12 เดือนล่าสุด
+        $endDate = new DateTime();
+        $startDate = (new DateTime())->modify('-11 months')->modify('first day of this month');
+
         $query = "
             SELECT 
               YEAR($date) as year,
@@ -785,13 +789,15 @@ function count_by($conn, $table, $key, $value, $date)
               DAY($date) as day,
               COUNT(*) as count
             FROM $table
-            WHERE $key = :value
+            WHERE $key = :value AND $date BETWEEN :startDate AND :endDate
             GROUP BY year, month, day
             ORDER BY year, month, day;
-            ";
+        ";
 
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':value', $value);
+        $stmt->bindParam(':startDate', $startDate->format('Y-m-d'));
+        $stmt->bindParam(':endDate', $endDate->format('Y-m-d'));
         $stmt->execute();
 
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -808,19 +814,10 @@ function count_by($conn, $table, $key, $value, $date)
                 $groupedData[$year] = array_fill(0, 12, array_fill(0, 31, 0));
             }
 
-            // ใส่ค่าจำนวน order ลงใน index ของเดือนและวัน
             $groupedData[$year][$month][$day] = $count;
         }
 
         // แปลงข้อมูลให้อยู่ในรูปแบบที่ต้องการ
-        $formattedData = [];
-        foreach ($groupedData as $year => $months) {
-            $formattedData[] = [
-                "year" => $year,
-                "months" => $months
-            ];
-        }
-
         $formattedData = [];
         foreach ($groupedData as $year => $months) {
             $formattedData[] = [

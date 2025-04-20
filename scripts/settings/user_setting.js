@@ -283,7 +283,6 @@ saveButton.addEventListener("click", async () => {
         });
         break;
       }
-      insertedData["is_active"] = 1;
       try {
         const result = await DataController.insert("users", insertedData);
         console.log("result", result);

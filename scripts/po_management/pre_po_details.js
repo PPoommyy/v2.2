@@ -61,10 +61,30 @@ const loadFactoryDetails = async (factoryDetails, poOrderDetails) => {
     factoryNumber.value = contact_number;
     factoryEmail.value = email_address;
     if (poOrderDetails) {
+      console.log("poOrderDetails", poOrderDetails);
+      const { files } = poOrderDetails.nested;
       const orderNoteInput = document.getElementById("order-note-input");
       orderNoteInput.value = poOrderDetails.notes || "";
-      const fileInput = document.getElementById("file-input");
-      fileInput.value = poOrderDetails.file_pathname;
+      if (files.length > 0) {
+        const fileName = files[0].file_name;
+        const filePath = files[0].file_pathname;
+        const fileLink = document.getElementById("file-link");
+        fileLink.href = `${host}/files/${filePath}`;
+        fileLink.textContent = fileName;
+        fileLink.style.display = "block";
+        fileLink.target = "_blank";
+        fileLink.download = fileName;
+        fileLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          const fileUrl = `${host}/files/${filePath}`;
+          const link = document.createElement("a");
+          link.href = fileUrl;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      }
     }
   } catch (error) {
     console.error(error);
@@ -244,12 +264,14 @@ const generateItemListTable = async (poOrders) => {
     const factoryId = urlParams.get("factory_id");
     const encodedData = urlParams.get("data");
 
-    if (!factoryId || !encodedData) {
+    if (!factoryId) {
       console.error("Missing required parameters.");
       return;
     }
 
-    const selectedItems = JSON.parse(decodeURIComponent(encodedData));
+    const selectedItems = encodedData
+      ? JSON.parse(decodeURIComponent(encodedData))
+      : [];
 
     const itemDataContainer = document.getElementById("item-data-container");
     itemDataContainer.innerHTML = "";
@@ -280,6 +302,7 @@ const generateItemListTable = async (poOrders) => {
     if (poOrders) {
       const { data, nested } = poOrders;
       const { items } = nested;
+      console.log("items", items);
       items.forEach((item) => {
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row");
@@ -948,6 +971,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     generateItemListTable(null);
   }
 
+  console.log("poOrderId", poOrderId);
+  console.log("poDraft", poDraft);
   const handleAddddProduct = async (event) => {
     event.preventDefault();
     const tbody = document.getElementById("item-list-body");

@@ -8,7 +8,14 @@
         <div class="row">
             <div class="col-md-3"></div>
             <div class="col-md-6">
-                <p class="h1 mb-3">Currency Settings</p>
+                <p class="h1 mb-3">Currency Settings
+                    <button id="add-button" class="btn btn-warning">
+                        <i class="fa fa-plus"></i> Add New
+                    </button>
+                    <button id="save-button" class="btn btn-warning" disabled>
+                        <i class="fa fa-floppy-disk"></i> Save
+                    </button>
+                </p>
                 <div class="row">
                     <div class="col mb-3 d-flex justify-content-end">
                         <div id="pagination1">

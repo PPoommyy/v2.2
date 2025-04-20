@@ -1,18 +1,6 @@
 import { DataController } from "../../components/DataController.js";
 
-// Use SweetAlert (assuming it's globally available from footer.php)
 const Swal = window.Swal;
-
-// --- Centralized Data Fetching Function ---
-/**
- * Fetches data (counts or lists) using DataController.select
- * @param {string} table Table name (potentially with alias like 'orders o')
- * @param {string[]} [columns=['count(*) as count']] Columns to select
- * @param {string} [filterType=null] Predefined filter type (e.g., 'new', 'recent', 'draft', 'low')
- * @param {number} [limit=null] Limit results
- * @param {number} [page=null] Page number (requires limit)
- * @returns {Promise<Array|null>} Promise resolving to the data array or null on error
- */
 const getCountOrData = async (
   table,
   columns = ["count(*) as count"],
@@ -21,21 +9,19 @@ const getCountOrData = async (
   page = null
 ) => {
   try {
-    let where = []; // Default empty where clause
+    let where = [];
     let join = [];
-    let orderBy = "id"; // Default order
+    let orderBy = "id";
     let orderByType = "ASC";
     let groupBy = null;
-    let having = null; // Use for conditions on aggregated results
+    let having = null;
 
-    // --- Define conditions based on table and filterType ---
-    const tableNameOnly = table.split(" ")[0]; // Get base table name
+    const tableNameOnly = table.split(" ")[0];
 
     switch (tableNameOnly) {
       case "orders":
-        orderBy = "o.timesort"; // Use alias if table has one
+        orderBy = "o.timesort";
         join = [
-          // Always join status and websites for orders? Adjust if needed.
           ["LEFT JOIN", "order_status os", "os.id", "o.order_status_id"],
           ["LEFT JOIN", "websites w", "w.id", "o.website_id"],
         ];
@@ -45,94 +31,86 @@ const getCountOrData = async (
           where = [["o.date_created", ">=", date.toISOString().slice(0, 10)]];
           orderByType = "DESC";
         } else if (filterType === "recent") {
-          // No specific WHERE for recent, just ordering and limit
           orderByType = "DESC";
+        } else if (filterType === "last7days") {
+          const date = new Date();
+          date.setDate(date.getDate() - 7);
+          where = [["o.date_created", ">=", date.toISOString().slice(0, 10)]];
+          groupBy = "w.name";
+          orderByType = "DESC";
+        } else if (filterType === "last30days") {
+          const date = new Date();
+          date.setDate(date.getDate() - 90);
+          where = [["o.date_created", ">=", date.toISOString().slice(0, 10)]];
+          groupBy = "w.name";
+          orderByType = "DESC";
+        } else if (filterType === "last12months") {
+          const now = new Date();
+          const past = new Date();
+          past.setMonth(now.getMonth() - 11);
+          past.setDate(1);
+          where = [["o.payments_date", ">=", past.toISOString().slice(0, 10)]];
+          orderByType = "ASC";
         }
         break;
 
       case "po_orders":
-        orderBy = "po.po_order_id"; // Use alias if table has one
+        orderBy = "po.po_order_id";
         if (filterType === "draft") {
-          // Assuming status ID 5 means draft
           join = [["LEFT JOIN", "factories f", "f.id", "po.factory_id"]];
           where = [["po.po_order_status_id", "=", 5]];
-          // Consider ordering by creation date for pending drafts
-          // orderBy = "po.created_at";
-          // orderByType = "ASC";
         }
         break;
 
-      case "requests": // Assuming 'requests' is the table for returns/requests
-        orderBy = "r.request_date"; // Use alias
+      case "requests":
+        orderBy = "r.request_date";
         orderByType = "ASC";
         if (filterType === "pending") {
-          // Assuming status ID 1 means pending
           join = [["LEFT JOIN", "orders o", "o.timesort", "r.order_number"]];
           where = [["r.request_status_id", "=", 1]];
         }
         break;
 
       case "stock":
-        orderBy = "s.id"; // Use alias
+        orderBy = "s.id";
         if (filterType === "low") {
-          // This counts the *number of distinct SKUs* that are low stock
-          // Requires joining sku_settings
           join = [
             ["LEFT JOIN", "sku_settings ss", "s.sku_settings_id", "ss.id"],
           ];
-          columns = ["s.sku_settings_id", "ss.order_product_sku"]; // Select columns to group by
-          // --- IMPORTANT: Define what 'low' means ---
-          // Example: Aggregate quantity per SKU and check against a threshold (e.g., 5)
-          // We need to group first, then apply the condition on the aggregated sum
-          groupBy = "s.sku_settings_id, ss.order_product_sku"; // Group by SKU ID and name
-          // Apply condition on the aggregated sum using HAVING
-          having = [["SUM(s.remaining_quantity)", "<", 5]]; // *** VERIFY column `remaining_quantity` and threshold `5` ***
-          // Note: 'having' needs special handling in DataController.select or backend
-          // For now, we fetch the groups and count length in JS
-          // If DataController.select doesn't support HAVING directly, this query needs adjustment
-          // Maybe fetch all groups and filter in JS, or create a dedicated backend endpoint
-          // Let's adjust to fetch the groups and count in JS for now
-          columns = ["s.sku_settings_id"]; // Just need the ID to count distinct SKUs
+          columns = ["s.sku_settings_id", "ss.order_product_sku"];
+          groupBy = "s.sku_settings_id, ss.order_product_sku";
+          having = [["SUM(s.remaining_quantity)", "<", 5]];
           groupBy = "s.sku_settings_id";
-          // HAVING clause simulation: We fetch groups, JS will check count
-          // This might be inefficient if there are many SKUs.
-          // A dedicated backend endpoint is better for HAVING clauses.
-          // We will rely on the JS `lowStockRes.length` calculation for the count for now.
         }
         break;
 
       default:
-        // Default behavior if table doesn't match specific cases
         orderBy = "id";
         break;
     }
 
-    // --- Call DataController ---
     const response = await DataController.select(
-      table, // Table name (with alias if needed)
-      columns, // Columns to select
-      orderBy, // Order by column
-      limit, // Limit
-      page, // Page (requires limit)
-      join, // Joins
-      where, // Where conditions
-      "AND", // Logical operator for WHERE
-      orderByType, // Order direction
-      groupBy // Group By clause
-      // having         // Pass having if DataController supports it
+      table,
+      columns,
+      orderBy,
+      limit,
+      page,
+      join,
+      where,
+      "AND",
+      orderByType,
+      groupBy
     );
 
-    // --- Handle Response ---
-    // Assuming DataController.select returns { status: true/false, data: [...] }
     if (response && response.status) {
-      return response.status; // Return the data array
+      return response.status;
     } else {
       console.error(`DataController.select failed for ${table}:`, response);
-      return null; // Indicate failure
+      return null;
     }
   } catch (error) {
     console.error(`Error in getCountOrData for ${table}:`, error);
-    return null; // Return null on exception
+    return null;
   }
 };
 
@@ -164,7 +142,6 @@ async function fetchChartCountBy(options = {}) {
   }
 }
 
-// --- MOCK Permissions (!!! REPLACE with actual permission fetching !!!) ---
 const MOCK_USER_PERMISSIONS = [
   "view_customer_orders",
   "view_po_management",
@@ -172,21 +149,14 @@ const MOCK_USER_PERMISSIONS = [
   "view_stock_management",
   "view_order_reports",
   "view_system_settings",
-  // Add/remove permissions to test visibility
 ];
-// --- End MOCK Permissions ---
 
-// --- DOM Elements ---
 const globalSpinner = document.getElementById("loading-spinner");
 const themeToggle = document.getElementById("theme-toggle-button");
 const noPendingActionsDiv = document.getElementById("no-pending-actions");
 
-// --- Global Chart Instances ---
-// Keep placeholders for potential future charts, but comment out if not used immediately
-// window.orderVolumeChartInstance = null; // Or websiteOrdersChartInstance
 window.orderSourceChartInstance = null;
 
-// --- Helper Functions ---
 function showGlobalSpinner() {
   if (globalSpinner) globalSpinner.style.display = "block";
 }
@@ -212,7 +182,7 @@ function displayError(
   } else if (type === "list") {
     element.innerHTML = `<li class="list-group-item text-danger">${message}</li>`;
   } else {
-    element.innerHTML = `<div class="alert alert-danger m-2">${message}</div>`; // Default
+    element.innerHTML = `<div class="alert alert-danger m-2">${message}</div>`;
   }
 }
 
@@ -232,19 +202,16 @@ function applyPermissions(userPermissions) {
     if (!hasPermission) {
       el.style.display = "none";
     } else {
-      el.style.display = ""; // Ensure it's visible if permission exists
-      // Check if this is one of the pending action sections that is now visible
+      el.style.display = "";
       if (
         el.id === "pending-po-section" ||
         el.id === "pending-requests-section"
       ) {
-        // Updated ID
         hasVisiblePendingActions = true;
       }
     }
   });
 
-  // Show/hide the "No pending actions" message based on visibility of action sections
   if (noPendingActionsDiv) {
     noPendingActionsDiv.style.display = hasVisiblePendingActions
       ? "none"
@@ -252,7 +219,6 @@ function applyPermissions(userPermissions) {
   }
 }
 
-// --- Dark Mode Logic ---
 const preferredTheme = localStorage.getItem("theme");
 function setTheme(theme) {
   const htmlElement = document.documentElement;
@@ -268,19 +234,15 @@ function setTheme(theme) {
     if (themeToggle) themeToggle.innerHTML = moonIcon;
     localStorage.setItem("theme", "light");
   }
-  // Re-render charts with updated theme colors if they exist
-  // if (window.orderVolumeChartInstance) renderOrderVolumeChart(theme); // Keep commented if chart removed
   if (window.orderSourceChartInstance) renderOrderSourceChart(theme);
 }
 
-// Set initial theme
 if (preferredTheme) {
   setTheme(preferredTheme);
 } else {
-  setTheme("light"); // Default to light
+  setTheme("light");
 }
 
-// Add listener to the toggle button
 if (themeToggle) {
   themeToggle.addEventListener("click", () => {
     const current = document.documentElement.getAttribute("data-bs-theme");
@@ -288,37 +250,33 @@ if (themeToggle) {
   });
 }
 
-// --- Data Fetching & Updating Functions ---
 async function fetchKpiData() {
   try {
-    // Fetch counts using the new centralized function
     const [ordersCountRes, poCountRes, returnsCountRes, lowStockRes] =
       await Promise.all([
-        getCountOrData("orders o", ["count(*) as count"], "new"), // Fetch count of new orders
-        getCountOrData("po_orders po", ["count(*) as count"], "draft"), // Fetch count of draft POs
-        getCountOrData("requests r", ["count(*) as count"], "pending"), // Fetch count of pending requests
-        getCountOrData("stock s", ["s.sku_settings_id"], "low"), // Fetch list of low stock SKU groups
+        getCountOrData("orders o", ["count(*) as count"], "new"),
+        getCountOrData("po_orders po", ["count(*) as count"], "draft"),
+        getCountOrData("requests r", ["count(*) as count"], "pending"),
+        getCountOrData("stock s", ["s.sku_settings_id"], "low"),
       ]);
 
-    // Helper to update KPI text safely
     const updateKpi = (elementId, data, isLengthCount = false) => {
       const element = document.getElementById(elementId);
       if (element) {
-        let count = "N/A"; // Default value
+        let count = "N/A";
         if (data && Array.isArray(data)) {
           if (isLengthCount) {
-            count = data.length; // Use array length as count (for low stock)
+            count = data.length;
           } else if (
             data.length > 0 &&
             data[0] &&
             typeof data[0].count !== "undefined"
           ) {
-            count = data[0].count; // Get count from the first element
+            count = data[0].count;
           } else if (data.length === 0) {
-            count = 0; // If array is empty but query succeeded, count is 0
+            count = 0;
           }
         }
-        // Only update if count is a valid number (>= 0)
         element.textContent =
           typeof count === "number" && count >= 0 ? count : "N/A";
       } else {
@@ -328,11 +286,10 @@ async function fetchKpiData() {
 
     updateKpi("kpi-new-orders", ordersCountRes);
     updateKpi("kpi-pending-po", poCountRes);
-    updateKpi("kpi-pending-requests", returnsCountRes); // Updated ID
-    updateKpi("kpi-low-stock", lowStockRes, true); // Use length of result array as count
+    updateKpi("kpi-pending-requests", returnsCountRes);
+    updateKpi("kpi-low-stock", lowStockRes, true);
   } catch (error) {
     console.error("Unexpected error fetching KPI data:", error);
-    // Set all KPI fields to an error state
     [
       "kpi-new-orders",
       "kpi-pending-po",
@@ -352,7 +309,6 @@ async function fetchRecentOrders() {
   tbody.innerHTML = `<tr><td colspan="5" class="text-center p-5"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>`; // Show loading state
 
   try {
-    // Fetch recent orders using the centralized function
     const response = await getCountOrData(
       "orders o",
       [
@@ -370,7 +326,7 @@ async function fetchRecentOrders() {
 
     if (response && Array.isArray(response)) {
       if (response.length > 0) {
-        tbody.innerHTML = ""; // Clear loading message
+        tbody.innerHTML = "";
         response.forEach((order) => {
           const {
             timesort,
@@ -390,7 +346,6 @@ async function fetchRecentOrders() {
             cancel: "danger",
             refund: "secondary",
             return: "secondary",
-            // Add more status mappings as needed
           };
           const badgeClass = badgeMap[statusLower] || "light text-dark";
           const statusBadge = `<span class="badge bg-${badgeClass}">${
@@ -416,7 +371,6 @@ async function fetchRecentOrders() {
           '<tr><td colspan="5" class="text-center p-5">No recent orders found.</td></tr>';
       }
     } else {
-      // Handle null response (error occurred in getCountOrData)
       throw new Error("Failed to fetch recent orders (null response).");
     }
   } catch (error) {
@@ -439,7 +393,7 @@ async function fetchPendingPoDrafts() {
   try {
     const response = await getCountOrData(
       "po_orders po",
-      ["po.po_order_id", "f.name as factory_name"],
+      ["po.po_order_id", "f.name as factory_name", "f.id as factory_id"],
       "draft",
       10,
       null
@@ -454,17 +408,19 @@ async function fetchPendingPoDrafts() {
           tr.innerHTML = `
                         <td>${po.po_order_id || "N/A"}</td>
                         <td>${po.factory_name || "N/A"}</td>
-                        <td class="text-center"><a href="../po_management/po_order_details.php?po_order_id=${
-                          po.po_order_id
-                        }" class="btn btn-sm btn-warning">Manage</a></td>
-                    `; // Link to po_order_details.php
+                        <td class="text-center"><a href="../po_management/pre_po_details.php?factory_id=${
+                          po.factory_id
+                        }&po_order_id=${
+            po.po_order_id
+          }" class="btn btn-sm btn-warning">Manage</a></td>
+                    `;
           tbody.appendChild(tr);
         });
-        return true; // Actions found
+        return true;
       } else {
         tbody.innerHTML =
           '<tr><td colspan="3" class="text-center p-3">No pending PO drafts.</td></tr>';
-        return false; // No actions found
+        return false;
       }
     } else {
       console.error(
@@ -476,13 +432,13 @@ async function fetchPendingPoDrafts() {
   } catch (error) {
     console.error("Error fetching pending POs:", error);
     displayError("pending-po-tbody", "Could not load PO drafts.", "table");
-    return false; // Error occurred
+    return false;
   }
 }
 
 async function fetchPendingReturns() {
-  const tbody = document.getElementById("pending-requests-tbody"); // Updated ID
-  const section = document.getElementById("pending-requests-section"); // Updated ID
+  const tbody = document.getElementById("pending-requests-tbody");
+  const section = document.getElementById("pending-requests-section");
   if (!tbody || !section || section.style.display === "none") return false;
 
   tbody.innerHTML = `<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div></td></tr>`; // Loading state
@@ -494,8 +450,7 @@ async function fetchPendingReturns() {
       "pending",
       10,
       null
-    ); // Fetch pending requests
-    // Check the structure returned by select.php (assuming { data: [...] } format)
+    );
     if (Array.isArray(response)) {
       const requests = response;
       if (requests.length > 0) {
@@ -508,14 +463,14 @@ async function fetchPendingReturns() {
                           req.order_id
                         }">${req.order_id || "N/A"}</a></td>
                         <td class="text-center"><a href="../return_management/return.php?" class="btn btn-sm btn-danger">Process</a></td>
-                    `; // Use request_id in link
+                    `;
           tbody.appendChild(tr);
         });
-        return true; // Actions found
+        return true;
       } else {
         tbody.innerHTML =
           '<tr><td colspan="3" class="text-center p-3">No pending requests.</td></tr>';
-        return false; // No actions found
+        return false;
       }
     } else {
       console.error(
@@ -531,12 +486,11 @@ async function fetchPendingReturns() {
       "Could not load pending requests.",
       "table"
     );
-    return false; // Error occurred
+    return false;
   }
 }
 
 async function fetchSyncStatus() {
-  // ... (Existing fetchSyncStatus code - seems ok) ...
   const list = document.getElementById("sync-status-list");
   const timeEl = document.getElementById("last-sync-time");
   if (!list || !timeEl) return;
@@ -546,7 +500,7 @@ async function fetchSyncStatus() {
   timeEl.textContent = "Checking status...";
 
   try {
-    const response = await axios.get("../../backend/get/get_last_timesort.php"); // ** VERIFY Endpoint **
+    const response = await axios.get("../../backend/get/get_last_timesort.php");
 
     if (
       response.data &&
@@ -554,7 +508,7 @@ async function fetchSyncStatus() {
       Array.isArray(response.data.status)
     ) {
       if (response.data.status.length > 0) {
-        list.innerHTML = ""; // Clear loading
+        list.innerHTML = "";
         response.data.status.forEach((syncInfo) => {
           const li = document.createElement("li");
           li.className =
@@ -595,97 +549,145 @@ async function fetchSyncStatus() {
   }
 }
 
-// --- Chart Rendering Functions ---
-// NOTE: Chart rendering functions are COMMENTED OUT in Initialization
-//       as per the user's last provided dashboard.js code.
-//       Uncomment and ensure they work with backend endpoints if needed.
+let chartInstance = null;
 
 async function renderOrderVolumeChart(theme = "light") {
   const container = document.getElementById("orderVolumeChartContainer");
-  if (!container) return;
+  const websiteControls = document.getElementById("website-controls");
+  const canvas = document.getElementById("orderVolumeChart");
 
-  container.innerHTML =
-    '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading Chart...</span></div></div>';
+  if (!container || !canvas || !websiteControls) return;
+
+  container.classList.add("position-relative");
+  container.insertAdjacentHTML(
+    "beforeend",
+    `
+    <div id="chart-loading" class="position-absolute top-50 start-50 translate-middle text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading Chart...</span>
+      </div>
+    </div>
+  `
+  );
 
   try {
     const chartData = await fetchChartCountBy();
-    const year = new Date().getFullYear();
-    const monthLabels = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
+
+    // === สร้าง 12 เดือนล่าสุด ===
+    const end = new Date();
+    const labels = [];
+    const labelKeys = []; // สำหรับ lookup
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(end.getFullYear(), end.getMonth() - i, 1);
+      const label = `${d.toLocaleString("default", {
+        month: "short",
+      })} ${d.getFullYear()}`;
+      labels.push(label);
+      labelKeys.push({ year: d.getFullYear(), month: d.getMonth() }); // month: 0-based
+    }
 
     const datasets = chartData.map((entry) => {
       const label = entry.details?.name || "Unknown";
-      const siteData = entry.count_datas.find((c) => c.year === year);
-      const monthTotals = Array(12).fill(0);
 
-      if (siteData) {
-        siteData.months.forEach((days, i) => {
-          monthTotals[i] = days.reduce(
+      const dataByYM = {};
+      entry.count_datas.forEach((c) => {
+        const y = c.year;
+        c.months.forEach((days, mIndex) => {
+          const key = `${y}-${mIndex}`;
+          dataByYM[key] = days.reduce(
             (sum, val) => sum + (parseInt(val) || 0),
             0
           );
         });
-      }
+      });
+
+      const monthTotals = labelKeys.map(({ year, month }) => {
+        const key = `${year}-${month}`;
+        return dataByYM[key] || 0;
+      });
 
       return {
         label,
         data: monthTotals,
-        borderColor: `rgba(${Math.random() * 200}, ${Math.random() * 200}, ${
-          Math.random() * 200
-        }, 1)`,
+        borderColor: `rgba(${Math.floor(Math.random() * 180)}, ${Math.floor(
+          Math.random() * 180
+        )}, ${Math.floor(Math.random() * 180)}, 1)`,
         backgroundColor: `rgba(0,0,0,0.1)`,
         tension: 0.4,
       };
     });
 
-    container.innerHTML = '<canvas id="orderVolumeChart"></canvas>';
-    const ctx = document.getElementById("orderVolumeChart").getContext("2d");
+    if (chartInstance) chartInstance.destroy();
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      console.error("Canvas context not available");
+      return;
+    }
 
-    new Chart(ctx, {
+    chartInstance = new Chart(ctx, {
       type: "line",
       data: {
-        labels: monthLabels,
+        labels,
         datasets: datasets,
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           title: {
             display: true,
-            text: `Order Volume - ${year}`,
+            text: `Order Volume - Last 12 Months`,
+          },
+          legend: {
+            display: false,
           },
         },
       },
     });
+
+    let controlsHTML = "";
+    datasets.forEach((dataset, i) => {
+      controlsHTML += `
+        <div class="d-flex align-items-center mb-2">
+          <input type="checkbox" class="form-check-input me-2 website-checkbox" data-index="${i}" id="toggle-${i}" checked>
+          <span class="rounded-circle d-inline-block me-2" style="width:12px;height:12px;background:${dataset.borderColor}"></span>
+          <label for="toggle-${i}" class="form-check-label small text-muted text-truncate" style="max-width: 180px;">${dataset.label}</label>
+        </div>
+      `;
+    });
+    websiteControls.innerHTML = controlsHTML;
+
+    document.querySelectorAll(".website-checkbox").forEach((checkbox) => {
+      checkbox.addEventListener("change", function () {
+        const idx = parseInt(this.dataset.index);
+        chartInstance.data.datasets[idx].hidden = !this.checked;
+        chartInstance.update();
+      });
+    });
   } catch (err) {
     console.error("Chart rendering failed:", err);
     container.innerHTML = `<div class="alert alert-danger">Chart Load Error</div>`;
+  } finally {
+    const loading = document.getElementById("chart-loading");
+    if (loading) loading.remove();
   }
 }
 
-async function renderOrderSourceChart(theme = "light") {
-  const container = document.getElementById("orderSourceChartContainer");
+async function renderOrderSourceChart(
+  theme = "light",
+  chartID,
+  containerID,
+  type
+) {
+  const container = document.getElementById(containerID);
   container.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading Chart...</span></div></div>`;
 
   try {
     const response = await getCountOrData(
       "orders o",
       ["w.name AS website_name", "COUNT(o.order_id) AS total_orders"],
-      "new",
-      null,
-      null
+      type
     );
 
     if (response && Array.isArray(response) && response.length > 0) {
@@ -704,13 +706,15 @@ async function renderOrderSourceChart(theme = "light") {
         "#6f42c1",
       ];
 
-      container.innerHTML = `<canvas id="orderSourceChart"></canvas>`;
-      const ctx = document.getElementById("orderSourceChart").getContext("2d");
+      container.innerHTML = `<canvas id="${chartID}"></canvas>`;
+      const ctx = document.getElementById(chartID).getContext("2d");
 
-      if (window.orderSourceChartInstance)
-        window.orderSourceChartInstance.destroy();
+      // ใช้ chartID เป็น key เพื่อป้องกันกราฟซ้อนทับ
+      if (window[chartID] && typeof window[chartID].destroy === "function") {
+        window[chartID].destroy();
+      }
 
-      window.orderSourceChartInstance = new Chart(ctx, {
+      window[chartID] = new Chart(ctx, {
         type: "pie",
         data: {
           labels,
@@ -729,7 +733,9 @@ async function renderOrderSourceChart(theme = "light") {
           plugins: {
             title: {
               display: true,
-              text: "Orders by Source (Last 7 Days)",
+              text: `Orders by Source (${
+                type === "last30days" ? "Last 30 Days" : "Last 7 Days"
+              })`,
               font: { size: 16, weight: "bold" },
             },
             legend: {
@@ -750,15 +756,14 @@ async function renderOrderSourceChart(theme = "light") {
         },
       });
     } else {
-      container.innerHTML = `<div class="alert alert-warning">No orders found for the past 7 days.</div>`;
+      container.innerHTML = `<div class="alert alert-warning">No orders found for the selected range.</div>`;
     }
   } catch (error) {
-    console.error("Error rendering order source chart:", error);
-    container.innerHTML = `<div class="alert alert-danger">Failed to load data for source chart.</div>`;
+    console.error(`Error rendering chart ${chartID}:`, error);
+    container.innerHTML = `<div class="alert alert-danger">Failed to load chart data.</div>`;
   }
 }
 
-// --- Initialization ---
 document.addEventListener("DOMContentLoaded", async () => {
   applyPermissions(MOCK_USER_PERMISSIONS);
   showGlobalSpinner();
@@ -771,7 +776,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       fetchPendingReturns(),
       fetchSyncStatus(),
       renderOrderVolumeChart(localStorage.getItem("theme") || "light"),
-      renderOrderSourceChart(localStorage.getItem("theme") || "light"),
+      renderOrderSourceChart(
+        localStorage.getItem("theme") || "light",
+        "orderSourceChart",
+        "orderSourceChartContainer",
+        "last7days"
+      ),
+      renderOrderSourceChart(
+        localStorage.getItem("theme") || "light",
+        "orderSourceChart2",
+        "orderSourceChartContainer2",
+        "last30days"
+      ),
     ]);
 
     const poResult = results[2];

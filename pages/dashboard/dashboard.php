@@ -78,10 +78,8 @@ include('../../templates_/metadata.php');
         }
 
         .chart-container {
-            position: relative;
-            height: 320px;
-            /* Slightly taller charts */
-            width: 100%;
+            min-height: 420px;
+            padding: 10px;
         }
 
         /* --- Styles for new Chart Controls --- */
@@ -100,33 +98,8 @@ include('../../templates_/metadata.php');
             /* Add bottom margin for wrapping */
         }
 
-        /* Style for website checkboxes */
-        #website-controls-container {
-            max-height: 150px;
-            /* Limit height and add scroll */
-            overflow-y: auto;
-            padding: 10px;
-            border: 1px solid var(--bs-border-color-translucent);
-            border-radius: 0.25rem;
-            margin-top: 10px;
-            /* Spacing */
-            background-color: var(--bs-body-bg);
-            /* Use body background */
-        }
-
-        #website-controls-container .form-check {
-            padding-left: 1.75rem;
-            /* Align checkboxes */
-            margin-bottom: 0.3rem;
-        }
-
-        #website-controls-container .form-check-label {
-            font-size: 0.9em;
-            cursor: pointer;
-        }
-
-        #website-controls-container .form-check-input {
-            cursor: pointer;
+        #orderVolumeChart {
+            max-height: 360px !important;
         }
 
         /* Dark mode adjustments for controls */
@@ -287,16 +260,7 @@ include('../../templates_/metadata.php');
 
 <body>
     <?php
-    // Include Header (Should contain Navbar and potentially the #loading-spinner div)
     include('../../templates_/header.php');
-    ?>
-
-    <?php /* ---- Global Spinner ----
-           Make sure this div exists, ideally within header.php or just after <body>
-           <div id="loading-spinner" class="spinner-border text-primary" role="status" style="display: none;">
-              <span class="visually-hidden">Loading...</span>
-           </div>
-        */
     ?>
 
     <div class="container-fluid mt-4">
@@ -383,22 +347,32 @@ include('../../templates_/metadata.php');
             </div>
         </div>
         <div class="row mb-4 g-3">
-            <div class="col-lg-7" data-permission="view_order_reports"> <?php /* Adjust width if needed */ ?>
+            <div class="col-md-12 col-lg-2" data-permission="view_order_reports">
                 <div class="card shadow-sm h-100">
                     <div class="card-header py-3">
-                        <?php /* --- Title for the chart that will be placed here --- */ ?>
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-sliders-h me-2"></i>Website Filter</h6>
+                    </div>
+                    <div class="card-body" style="max-height: 360px;;overflow-y: auto;">
+                        <div id="website-controls" class="form-small"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col-lg-10" data-permission="view_order_reports">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-line me-2"></i>Order Trends</h6>
                     </div>
-                    <?php /* --- Optional: Add controls here if using the complex website chart --- */ ?>
                     <div class="card-body">
-                        <div class="chart-container" id="orderVolumeChartContainer"> <?php /* Container ID */ ?>
-                            <canvas id="orderVolumeChart"></canvas> <?php /* Canvas ID */ ?>
+                        <div class="chart-container" id="orderVolumeChartContainer">
+                            <canvas id="orderVolumeChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-5" data-permission="view_order_reports"> <?php /* Adjust width if needed */ ?>
+        <div class="row mb-4 g-3">
+            <div class="col-lg-6" data-permission="view_order_reports">
                 <div class="card shadow-sm h-100">
                     <div class="card-header py-3">
                         <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-pie me-2"></i>Orders by Source (Last 7 Days)</h6>
@@ -406,6 +380,18 @@ include('../../templates_/metadata.php');
                     <div class="card-body">
                         <div class="chart-container" id="orderSourceChartContainer">
                             <canvas id="orderSourceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-permission="view_order_reports">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-chart-pie me-2"></i>Orders by Source (Last 90 Days)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" id="orderSourceChartContainer2">
+                            <canvas id="orderSourceChart2"></canvas>
                         </div>
                     </div>
                 </div>
