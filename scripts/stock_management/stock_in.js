@@ -142,6 +142,42 @@ const updateSkuDropdown = (skuOptions, skuInput, skuDropdown) => {
     skuDropdown.appendChild(list);
   });
 };
+const appendDropdownList = (button, dropdown, data, description) => {
+  const list = document.createElement("li");
+  const option = document.createElement("a");
+  option.classList.add("dropdown-item");
+  option.setAttribute("data-id", data.id);
+  option.setAttribute("data-name", data.name);
+  option.textContent = description
+    ? `${data.name} (${description})`
+    : data.name;
+  option.addEventListener("click", function (event) {
+    event.preventDefault();
+    const selectedId = this.getAttribute("data-id");
+    const selectedName = this.getAttribute("data-name");
+    button.textContent = description
+      ? `${data.name} (${description})`
+      : data.name;
+    button.setAttribute("data-id", selectedId);
+  });
+  list.appendChild(option);
+  dropdown.appendChild(list);
+};
+
+const generateDropdown = async () => {
+  const warehouses = await DataController.select("warehouses", ["*"], "id");
+  const warehousesDropdown = document.getElementById("warehouses-dropdown");
+  const selectedWarehouse = document.getElementById("selected-warehouse");
+  warehousesDropdown.innerHTML = "";
+  warehouses.status.forEach((warehouse) => {
+    appendDropdownList(
+      selectedWarehouse,
+      warehousesDropdown,
+      warehouse,
+      warehouse.name
+    );
+  });
+};
 
 const generateItemListTable = () => {
   const itemDataContainer = document.getElementById("item-data-container");
@@ -318,6 +354,13 @@ addProductButton.addEventListener("click", function (event) {
 insertStockButton.addEventListener("click", async function (event) {
   event.preventDefault();
   const itemRows = document.querySelectorAll(".item");
+  const warehouseId = document
+    .getElementById("selected-warehouse")
+    .getAttribute("data-id");
+  if (!warehouseId) {
+    Alert.showErrorMessage("❌ กรุณาเลือกคลังสินค้า", "danger");
+    return;
+  }
   const items = Array.from(itemRows).map((itemRow) => {
     const skuInput = itemRow.querySelector(".order-product-sku");
     const quantityInput = itemRow.querySelector(".quantity-purchased");
@@ -325,6 +368,7 @@ insertStockButton.addEventListener("click", async function (event) {
       sku_settings_id: skuInput.getAttribute("order_product_id"),
       quantity: quantityInput.value,
       remaining_quantity: quantityInput.value,
+      warehouse_id: warehouseId,
     };
   });
 
@@ -334,7 +378,6 @@ insertStockButton.addEventListener("click", async function (event) {
     // const response = await DataController.insert("stock", items);
     items.forEach(async (item) => {
       const response = await DataController.insert("stock", item);
-      console.log(response);
     });
     Alert.showSuccessMessage("✅ สินค้าถูกเพิ่มเข้าสต็อกสำเร็จ!", "success");
     // delay 3 second to refresh page
@@ -356,4 +399,5 @@ downloadTemplateButton.addEventListener("click", handleTemplateDownload);
 document.addEventListener("DOMContentLoaded", () => {
   toggleSpinner(false);
   generateItemListTable();
+  generateDropdown();
 });

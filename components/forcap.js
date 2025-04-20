@@ -1,73 +1,49 @@
-const handleUpdateDraft = async (event) => {
-    try {
-      const { data, nested } = poDraft[0];
-      const { items } = nested;
-      const itemsRows = tbody.querySelectorAll(".item");
-      const itemsList = [];
-      const to_insert_items = [];
-      const to_update_items = [];
-      const to_delete_items = items.map((item) => item.po_order_item_id);
-      for (const itemRow of itemsRows) {
-        ...
-        const newItem = {
-          po_order_id: poOrderId,
-          orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
-          ...
-          product_status_id: 8,
-          ...(po_order_item_id && {
-            po_order_item_id: parseInt(po_order_item_id),
-          }),
-        };
-        itemsList.push(newItem);
-      for (const itemInList of itemsList) {
-        const index = to_delete_items.indexOf(itemInList.po_order_item_id);
-        if (index !== -1) {
-          let to_update_items_object = {};
-          to_update_items_object = updatedObject(
-            ...
-          );
-         
-          if (Object.keys(to_update_items_object).length > 0) {
-            to_update_items_object = updatedObject(
-              ...
-            );
-            to_update_items.push(to_update_items_object);
-          }
-          items.splice(index, 1);
-          to_delete_items.splice(index, 1);
-        } else {
-          to_insert_items.push(itemInList);
+const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
+  try {
+    const recipientEmail = "s6404062630511@email.kmutnb.ac.th";
+    const pdfBytes = await pdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+    const page = await pdf.getPage(1);
 
-      if (to_insert_items && to_insert_items.length > 0) {
-        for (const to_insert_item of to_insert_items) {
-          const res = await DataController.insert("po_orders_items", to_insert_item );
-          if (res.status) {
-            if (to_insert_item.orders_skus_id) {
-              const updateOrderItemStatus = await DataController.updateByKey(
-                ...
-                to_insert_item.orders_skus_id,
-                "product_status_id",
-                ...
-      if (to_update_items && to_update_items.length > 0) {
-        for (const to_update_item of to_update_items) {
-          const res = await DataController.update(
-            ...
-            to_update_item.po_order_item_id,
-            to_update_item
-      if (to_delete_items && to_delete_items.length > 0) {
-        for (const to_delete_item of to_delete_items) {
-          const itemToDelete = items.find(
-            (item) => item.po_order_item_id === to_delete_item
-          );
-          const res = await DataController._delete(
-            ...
-            to_delete_item
-          );
-          if (res.status) {
-            if (itemToDelete && itemToDelete.orders_skus_id) {
-              const updateOrderItemStatus = await DataController.updateByKey(
-                ...
-                itemToDelete.orders_skus_id,
-                "product_status_id",
-                1
-              );
+    const baseUrl = window.location.origin + "/test/work/v2.2/files/";
+    const pdfUrl = baseUrl + encodeURIComponent(pdfFile.name);
+    const pngUrl = baseUrl + encodeURIComponent(uploadResponse.fileName);
+
+    const factory = await DataController.selectByKey(
+      ...
+    );
+
+    const factoryData = factory?.status?.[0] || {};
+
+    const poItems = await DataController.selectByKey(
+      "po_orders_items",
+      "po_order_id",
+      newPOOrder.po_order_id
+    );
+
+    const emailContent = generateEnhancedEmailContent(
+      newPOOrder,
+      factoryData,
+      poItems?.status || []
+    );
+
+    const emailFormData = new FormData();
+    emailFormData.append("title", emailContent.title);
+    ...
+    emailFormData.append("factory_name", factoryData.name || "");
+
+    const response = await axios.post(
+      "../../backend/api/thaibulksms/send_email.php",
+      emailFormData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    await DataController.insert("po_orders_email_log", {
+      po_order_id: newPOOrder.po_order_id,
+      recipient_email: recipientEmail,
+      sent_date: new Date().toISOString().split("T")[0],
+      status: response.data.success ? "success" : "failed",
+    });
+    return response.data.success;

@@ -10,10 +10,10 @@
                 <div class="row mb-4">
                     <div class="col-3 text-end">Warehouse Name</div>
                     <div class="col-9 btn-group">
-                        <button class="btn btn-secondary dropdown-toggle  overflow-hidden" type="button" id="selected-website" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="select-warehouse">
+                        <button class="btn btn-secondary dropdown-toggle  overflow-hidden" type="button" id="selected-warehouse" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false" for="select-warehouse">
                             Select Warehouse
                         </button>
-                        <ul id="website-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
+                        <ul id="warehouses-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
                         </ul>
                     </div>
                 </div>

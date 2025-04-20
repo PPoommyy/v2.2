@@ -62,7 +62,7 @@ const loadFactoryDetails = async (factoryDetails, poOrderDetails) => {
     factoryEmail.value = email_address;
     if (poOrderDetails) {
       const orderNoteInput = document.getElementById("order-note-input");
-      orderNoteInput.value = poOrderDetails.notes;
+      orderNoteInput.value = poOrderDetails.notes || "";
       const fileInput = document.getElementById("file-input");
       fileInput.value = poOrderDetails.file_pathname;
     }
@@ -278,7 +278,6 @@ const generateItemListTable = async (poOrders) => {
     const tableBody = document.createElement("tbody");
     tableBody.id = "item-list-body";
     if (poOrders) {
-      console.log("poOrders", poOrders);
       const { data, nested } = poOrders;
       const { items } = nested;
       items.forEach((item) => {
@@ -571,10 +570,9 @@ function generateEnhancedEmailContent(order, factory, items) {
   };
 }
 
-const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
+const sendEmail = async (pdfFile, newPOOrder, factoryEmail) => {
   try {
-    // const { recipientEmail = "s6404062630554@email.kmutnb.ac.th" } = options;
-    const recipientEmail = "s6404062630511@email.kmutnb.ac.th";
+    const recipientEmail = factoryEmail || "s6404062630554@email.kmutnb.ac.th";
     const pdfBytes = await pdfFile.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
     const page = await pdf.getPage(1);
@@ -644,14 +642,15 @@ const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
 
     const emailFormData = new FormData();
     emailFormData.append("title", emailContent.title);
+    console.log("recipientEmail", recipientEmail);
     emailFormData.append("email", recipientEmail);
     emailFormData.append(
       "accept_url",
-      `${host}/pages/view_only/po_order_details.php?po_order_id=67de91c5z1eh0`
+      `${host}/pages/view_only/po_order_details.php?po_order_id=${newPOOrder.po_order_id}`
     );
     emailFormData.append(
       "cancel_url",
-      `${host}pages/view_only/po_order_details.php?po_order_id=67de91c5z1eh0`
+      `${host}pages/view_only/po_order_details.php?po_order_id=${newPOOrder.po_order_id}`
     );
     emailFormData.append("pdf_url", pdfUrl);
     emailFormData.append("png_url", pngUrl);
@@ -666,8 +665,6 @@ const sendEmail = async (pdfFile, newPOOrder, options = {}) => {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
-
-    console.log("Email sent successfully:", response.data);
 
     await DataController.insert("po_orders_email_log", {
       po_order_id: newPOOrder.po_order_id,
@@ -699,8 +696,6 @@ function mergeSimilarItems(items) {
   const merged = [];
 
   items.forEach((item) => {
-    console.log("sku_settings_id:", item.sku_settings_id);
-    console.log("item_price: ", item.item_price);
     const existing = merged.find(
       (i) =>
         i.sku_settings_id === item.sku_settings_id &&
@@ -722,13 +717,14 @@ function mergeSimilarItems(items) {
       });
     }
   });
-  console.log("merged", merged);
 
   return merged;
 }
 
 async function createPOAsPDF(newPOOrder, itemsList) {
   try {
+    console.log("newPOOrder", newPOOrder);
+    console.log("itemsList", itemsList);
     const logoBase64 = await toBase64("../../assets/img/boxsense.jpeg");
     /* const NotoSansThai = await toBase64(
       "../../assets/webfonts/NotoSansThai-Regular.ttf"
@@ -785,7 +781,7 @@ async function createPOAsPDF(newPOOrder, itemsList) {
             [
               { text: "ผู้ซื้อ / Buyer:", bold: true },
               { text: "BoxSense Co., Ltd." },
-              { text: `Tel: 02-123-4567`, fontSize: 9 },
+              { text: `Tel: 0889564992`, fontSize: 9 },
               { text: `Email: procurement@boxsense.com`, fontSize: 9 },
             ],
           ],
@@ -948,7 +944,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadFactoryDetails(factory_details[0], poDraft[0]);
     generateItemListTable(poDraft[0]);
   } else {
-    loadFactoryDetails(factoryId, null);
+    loadFactoryDetails(factory_details[0], null);
     generateItemListTable(null);
   }
 
@@ -1014,7 +1010,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
         const formData = new FormData();
         formData.append("file", file, filename);
-        const response = await DataController.upload(formData, "../files/");
+        const response = await DataController.upload(formData, "../../files/");
 
         if (response && response.fileName) {
           const to_insert_file = {
@@ -1102,7 +1098,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         Alert.showSuccessMessage("สร้าง Draft สำเร็จแล้ว");
         setTimeout(() => {
-          window.location.href = `po_order_list.php`;
+          // window.location.href = `po_order_list.php`;
         }, 2000);
       } else {
         Alert.showErrorMessage("ไม่สามารถสร้าง Draft ได้");
@@ -1134,7 +1130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (file) {
         const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
         formData.append("file", file, filename);
-        const response = await DataController.upload(formData, "../files/");
+        const response = await DataController.upload(formData, "../../files/");
 
         const to_insert_file = {
           po_order_id: poOrderId,
@@ -1153,9 +1149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const to_insert_items = [];
       const to_update_items = [];
       const to_delete_items = items.map((item) => item.po_order_item_id);
-      console.log("to_delete_items", to_delete_items);
       for (const itemRow of itemsRows) {
-        console.log(itemRow);
         let orders_skus_id = null;
         let item_price = 0.0;
         let total = 0.0;
@@ -1163,7 +1157,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         let id = null;
         let po_order_item_id = null;
         const orderIdSpan = itemRow.querySelector("span.order-id");
-        console.log("Order ID: ", orderIdSpan);
         if (orderIdSpan) {
           po_order_item_id = orderIdSpan.dataset.po_order_item_id;
           orders_skus_id = orderIdSpan.dataset.orders_skus_id;
@@ -1244,10 +1237,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           to_insert_items.push(itemInList);
         }
       }
-
-      console.log("to_insert_items", to_insert_items);
-      console.log("to_update_order", to_update_items);
-      console.log("to_delete_items", to_delete_items);
       if (itemsList.length == 0) {
         Alert.showErrorMessage("PO Order item is empty!");
         return;
@@ -1269,7 +1258,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 "product_status_id",
                 8
               );
-              console.log("Updated orders_skus status:", updateOrderItemStatus);
             }
 
             const confirmed = await swalQueue.fire({
@@ -1344,10 +1332,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 "product_status_id",
                 1
               );
-              console.log(
-                "Updated orders_skus status for deleted item:",
-                updateOrderItemStatus
-              );
             }
 
             const confirmed = await swalQueue.fire({
@@ -1370,9 +1354,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
       }
-      setTimeout(() => {
-        window.location.href = `po_order_list.php`;
-      }, 2000);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -1381,11 +1362,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const handleSendEmail = async (event) => {
     try {
       event.preventDefault();
-
       let po_order_id, itemsList, newPOOrder;
 
       if (poOrderId) {
-        console.log("Using existing draft for PO:", poOrderId);
+        await handleUpdateDraft();
         po_order_id = poOrderId;
 
         const tbody = document.getElementById("item-list-body");
@@ -1445,7 +1425,6 @@ document.addEventListener("DOMContentLoaded", async () => {
               po_order_id: po_order_id,
               orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
               sku_settings_id: parseInt(id),
-              sku_name: sku_name,
               quantity: parseInt(quantity),
               item_price: parseFloat(item_price),
               total: parseFloat(total),
@@ -1496,7 +1475,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
           const formData = new FormData();
           formData.append("file", file, filename);
-          const response = await DataController.upload(formData, "../files/");
+          const response = await DataController.upload(
+            formData,
+            "../../files/"
+          );
 
           if (response && response.fileName) {
             const to_insert_file = {
@@ -1577,7 +1559,6 @@ document.addEventListener("DOMContentLoaded", async () => {
               po_order_id: po_order_id,
               orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
               sku_settings_id: parseInt(id),
-              sku_name: sku_name,
               quantity: parseInt(quantity),
               item_price: parseFloat(item_price),
               total: total,
@@ -1589,7 +1570,6 @@ document.addEventListener("DOMContentLoaded", async () => {
               "po_orders_items",
               newItem
             );
-
             if (result2 && newItem.orders_skus_id) {
               const updateOrderItemStatus = await DataController.updateByKey(
                 "orders_skus",
@@ -1598,7 +1578,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 "product_status_id",
                 8
               );
-              console.log("Updated orders_skus status:", updateOrderItemStatus);
             }
           }
         }
@@ -1610,7 +1589,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const pdfFile = await createPOAsPDF(newPOOrder, itemsList);
-      console.log("pdfFile: ", pdfFile);
       if (!pdfFile) {
         Alert.showErrorMessage("Failed to generate PDF!");
         return;
@@ -1621,17 +1599,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         "id",
         newPOOrder.factory_id
       );
-      let factoryEmail = "s6404062630511@email.kmutnb.ac.th"; // อีเมลเริ่มต้น
+      let factoryEmail = "s6404062630554@email.kmutnb.ac.th"; // อีเมลเริ่มต้น
 
-      if (factoryData && factoryData.status && factoryData.status.length > 0) {
-        if (factoryData.status[0].email) {
-          factoryEmail = factoryData.status[0].email;
+      if (factoryData && factoryData.status) {
+        if (factoryData.status[0].email_address) {
+          factoryEmail = factoryData.status[0].email_address;
         }
       }
-
-      const sendEmailResult = await sendEmail(pdfFile, newPOOrder, {
-        recipientEmail: factoryEmail,
-      });
+      const sendEmailResult = await sendEmail(
+        pdfFile,
+        newPOOrder,
+        factoryEmail
+      );
 
       if (sendEmailResult) {
         Alert.showSuccessMessage("Email sent successfully!");

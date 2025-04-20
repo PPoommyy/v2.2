@@ -30,8 +30,8 @@ function sendRequest($url, $method, $headers, $content)
 }
 
 $requestData = json_decode(file_get_contents('php://input'), true);
-// $apiHost = "https://dpostinter.thailandpost.com";
-$apiHost = "https://dpinterapi.thailandpost.com";
+$apiHost = "https://dpostinter.thailandpost.com";
+// $apiHost = "https://dpinterapi.thailandpost.com";
 $payload = $requestData['payload'];
 $accessToken = $requestData['accessToken'];
 try {

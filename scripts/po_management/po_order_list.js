@@ -57,8 +57,6 @@ filterButton.addEventListener("click", function () {
 
 const modal = document.getElementById("editModal");
 
-generateTable(100, 1);
-
 function handlePaperClipIconClick(files) {
   const modalContent = generateFileListContent(files, 0); // Initialize with first file
   const modalElement = createModalElement(modalContent); // Create modal element with content
@@ -71,11 +69,7 @@ async function generateTable(limit, page) {
   try {
     toggleSpinner(true);
     const filterValues = getFilterValues();
-    const po_orders = await PODataController.get_po_list(
-      filterValues,
-      limit,
-      page
-    );
+    po_orders = await PODataController.get_po_list(filterValues, limit, page);
     const factories = await PODataController.get_factory_list();
     const po_orders_status = await PODataController.get_po_order_status();
 
@@ -348,7 +342,6 @@ function generateFileListContent(files) {
   const contentContainer = document.createElement("div");
   contentContainer.classList.add("file-list-container", "container"); // Add Bootstrap container class
 
-  // File list container
   const fileListContainer = document.createElement("div");
   fileListContainer.classList.add(
     "file-list-scroll",
@@ -356,20 +349,17 @@ function generateFileListContent(files) {
     "overflow-auto"
   ); // Add Bootstrap flexbox and wrap
 
-  // Populate the file list container with file items
   files.forEach((file) => {
     const fileItem = document.createElement("div");
     fileItem.classList.add("file-item", "p-2", "text-center"); // Add padding and centering
     // console.log(file);
     if (isImageFile(file.file_name)) {
-      // Display image if it's an image file
       const imageElement = document.createElement("img");
       imageElement.src = file.file_pathname;
       imageElement.alt = file.file_name;
       imageElement.classList.add("img-fluid", "mb-2"); // Use Bootstrap img-fluid class for responsive images
       fileItem.appendChild(imageElement);
     } else if (isTxtFile(file.file_name)) {
-      // Display .txt file using iframe
       const iframeElement = document.createElement("iframe");
       iframeElement.src = file.file_pathname;
       iframeElement.width = "100%"; // Use Bootstrap width class for responsiveness
@@ -377,8 +367,6 @@ function generateFileListContent(files) {
       fileItem.appendChild(iframeElement);
     }
 
-    // console.log(fileItem);
-    // Display file name and download button
     const fileNameElement = document.createElement("p");
     fileNameElement.textContent = file.file_name;
     fileNameElement.classList.add("mb-2"); // Add margin-bottom
@@ -387,13 +375,10 @@ function generateFileListContent(files) {
     const downloadButton = document.createElement("button");
     downloadButton.classList.add("btn", "btn-primary");
     downloadButton.innerText = "Download";
-    // console.log(downloadButton);
     downloadButton.type = "button";
     downloadButton.id = file.file_name.toLowerCase();
     downloadButton.for = file.file_name.toLowerCase();
-    // console.log('Event listener before adding:', downloadButton.onclick); // Log existing event listener
     downloadButton.addEventListener("click", async () => {
-      // console.log('Download button clicked');
       try {
         const result = await DataController.download(file.file_pathname);
         const link = document.createElement("a");
@@ -405,14 +390,12 @@ function generateFileListContent(files) {
         Alert.showErrorMessage("File Downloaded failed!");
       }
     });
-    // console.log('Event listener after adding:', downloadButton.onclick); // Log updated event listener
 
     fileItem.appendChild(downloadButton);
 
     fileListContainer.appendChild(fileItem);
   });
 
-  // Append file list container to content container
   contentContainer.appendChild(fileListContainer);
 
   return contentContainer;
@@ -483,19 +466,134 @@ function getFilterValues() {
 
 function updateCheckBoxList(key) {
   const index = checkboxStates.indexOf(key);
-  // const downloadOrdersButton = document.getElementById('downloadOrders');
+  const deleteOrdersButton = document.getElementById("deleteOrders");
 
   if (index === -1) {
     checkboxStates.push(key);
   } else {
     checkboxStates.splice(index, 1);
   }
-  checkboxStates.sort(function (a, b) {
-    return a - b;
-  });
+
+  checkboxStates.sort((a, b) => a - b);
   if (checkboxStates.length > 0) {
     // downloadOrdersButton.removeAttribute('disabled');
+    deleteOrdersButton.removeAttribute("disabled");
   } else {
     // downloadOrdersButton.setAttribute('disabled', '');
+    deleteOrdersButton.setAttribute("disabled", "");
   }
 }
+
+const handleDeleteOrders = async (e) => {
+  e.preventDefault();
+  const confirmAlert = await Alert.showConfirmModal(
+    "Are you sure you want to delete po_orders?"
+  );
+  const swalQueue = Alert.createQueue();
+  const results = [];
+
+  if (!confirmAlert.isConfirmed) {
+    return;
+  }
+
+  const selectedOrders = [];
+
+  po_orders.forEach((po_order) => {
+    console.log(po_order);
+    const { timesort } = po_order.data;
+    if (checkboxStates.includes(timesort)) {
+      selectedOrders.push(po_order);
+    }
+  });
+
+  for (let index = 0; index < selectedOrders.length; index++) {
+    const po_order = selectedOrders[index];
+    console.log(po_order);
+    const { po_order_id } = po_order.data;
+    try {
+      const result1 = await DataController._delete(
+        "po_orders",
+        "po_order_id",
+        po_order_id
+      );
+      const result2 = await DataController._delete(
+        "po_orders_items",
+        "po_order_id",
+        po_order_id
+      );
+      const orderResult = {
+        po_orders: result1.status,
+        po_orders_items: result2.status,
+      };
+      results.push(orderResult);
+      if (result1.status && result2.status) {
+        const confirmed = await swalQueue.fire({
+          title: `Order ${po_order_id} deleted successfully!`,
+          icon: "success",
+          timer: 1500,
+          showCancelButton: false,
+        });
+      } else {
+        const confirmed = await swalQueue.fire({
+          title: `Failed to delete order ${po_order_id}`,
+          icon: "error",
+          showCancelButton: false,
+          showConfirmButton: true,
+          confirmButtonText: "Next &rarr;",
+        });
+
+        if (!confirmed.isConfirmed) {
+          break;
+        }
+      }
+    } catch (error) {
+      const confirmed = await swalQueue.fire({
+        title: `Failed to delete order ${po_order_id}`,
+        icon: "error",
+        showCancelButton: false,
+        showConfirmButton: true,
+        confirmButtonText: "Next &rarr;",
+      });
+
+      if (!confirmed.isConfirmed) {
+        break;
+      }
+    }
+  }
+  generateTable(100, 1);
+};
+
+const eventListenersMap = new Map();
+
+const removeAllEventListeners = () => {
+  const eventListeners = eventListenersMap.get("buttons");
+  if (eventListeners) {
+    eventListeners.forEach(({ element, type, listener }) => {
+      if (element) {
+        element.removeEventListener(type, listener);
+      }
+    });
+  }
+  eventListenersMap.set("buttons", []);
+};
+
+const addAllEventListeners = () => {
+  const deleteOrders = document.getElementById("deleteOrders");
+  const eventListeners = [
+    { element: deleteOrders, type: "click", listener: handleDeleteOrders },
+  ];
+  const activeListeners = [];
+
+  eventListeners.forEach(({ element, type, listener }) => {
+    if (element) {
+      element.addEventListener(type, listener, false);
+      activeListeners.push({ element, type, listener });
+    }
+  });
+
+  eventListenersMap.set("buttons", activeListeners);
+};
+
+removeAllEventListeners();
+addAllEventListeners();
+generateTable(100, 1);

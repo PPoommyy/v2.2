@@ -238,25 +238,6 @@ function get_sku_by_name($conn, $name)
     }
 }
 
-function get_website_group($conn)
-{
-    try {
-        $query = "
-            SELECT id, name
-            FROM website_groups
-            ORDER BY id ASC;
-            ";
-        $stmt = $conn->prepare($query);
-        $stmt->execute();
-
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $jsonData = json_encode($result);
-        return $jsonData;
-    } catch (PDOException $e) {
-        return null;
-    }
-}
-
 function get_website_by_group($conn, $group_id)
 {
     try {

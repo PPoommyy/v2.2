@@ -280,7 +280,6 @@ async function generateTable(limit, page) {
                   trackingNumber
                 );
 
-              console.log(createTracking);
               if (createTracking.success) {
                 // Update the tracking table
                 const result = await DataController.updateByKey(
@@ -542,14 +541,14 @@ function generateFileListContent(files) {
     if (isImageFile(file.file_name)) {
       // Display image if it's an image file
       const imageElement = document.createElement("img");
-      imageElement.src = "../" + file.file_pathname;
+      imageElement.src = file.file_pathname;
       imageElement.alt = file.file_name;
       imageElement.classList.add("img-fluid", "mb-2"); // Use Bootstrap img-fluid class for responsive images
       fileItem.appendChild(imageElement);
     } else if (isTxtFile(file.file_name)) {
       // Display .txt file using iframe
       const iframeElement = document.createElement("iframe");
-      iframeElement.src = "../" + file.file_pathname;
+      iframeElement.src = file.file_pathname;
       iframeElement.width = "100%"; // Use Bootstrap width class for responsiveness
       iframeElement.classList.add("border", "p-2", "mb-2"); // Add border, padding, and margin
       fileItem.appendChild(iframeElement);
@@ -585,21 +584,25 @@ function generateFileListContent(files) {
     // console.log(downloadButton);
     downloadButton.type = "button";
     downloadButton.id = file.file_name.toLowerCase();
-    downloadButton.for = file.file_name.toLowerCase();
     // console.log('Event listener before adding:', downloadButton.onclick); // Log existing event listener
     downloadButton.addEventListener("click", async () => {
-      // console.log('Download button clicked');
       try {
         const result = await DataController.download(file.file_pathname);
+
         const link = document.createElement("a");
         link.href = window.URL.createObjectURL(result);
         link.download = file.file_name;
+        document.body.appendChild(link);
         link.click();
+        link.remove();
+
         Alert.showSuccessMessage("Download file successfully!");
       } catch (error) {
-        Alert.showErrorMessage("File Downloaded failed!");
+        console.error("Download error:", error); // <--- เพิ่ม log นี้
+        Alert.showErrorMessage("File Download failed!");
       }
     });
+
     // console.log('Event listener after adding:', downloadButton.onclick); // Log updated event listener
 
     fileItem.appendChild(downloadButton);
@@ -649,20 +652,24 @@ function copyTextToClipboard(text) {
 
 function createModalElement(content) {
   const modalElement = document.createElement("div");
-  modalElement.classList.add("modal", "fade"); // Add modal classes
+  modalElement.classList.add("modal", "fade");
+
   modalElement.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- Use modal-lg for large modal -->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">File List</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="max-height: 400px; overflow-y: auto;"> <!-- Inline style for scrolling -->
-                    ${content.innerHTML} <!-- Insert content into modal body -->
-                </div>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
             </div>
         </div>
-    `;
+    </div>
+  `;
+
+  const modalBody = modalElement.querySelector(".modal-body");
+  modalBody.appendChild(content);
+
   return modalElement;
 }
 
@@ -751,14 +758,14 @@ deleteOrders
   }
 }
 
-const handleDownloadOrders = (e) => {
+const handleDownloadOrders = async (e) => {
   e.preventDefault();
-  Downloader.generateOrderExcel(orders, toggleSpinner, checkboxStates);
+  await Downloader.generateOrderExcel2(orders, toggleSpinner, checkboxStates);
 };
 
-const handleNewDownloadOrders = (e) => {
+const handleNewDownloadOrders = async (e) => {
   e.preventDefault();
-  Downloader.generateOrderExcel2(orders, toggleSpinner, checkboxStates);
+  await Downloader.generateOrderExcel2(orders, toggleSpinner, checkboxStates);
 };
 
 const handleCreateInvoice = async (e) => {
@@ -834,7 +841,6 @@ const handleThpost = async (e) => {
       await ThaiPostAPIController.createToken(thaiPostApiHost)
     ).response;
     if (createTokenResult) {
-      // Split orders into filteredOrders (need barcodes) and barcodeGeneratedOrders (already have barcodes)
       const filteredOrders = await filterOrdersWithBarcodes(selectedOrders);
 
       if (filteredOrders.length > 0) {

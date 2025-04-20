@@ -136,6 +136,34 @@ const getCountOrData = async (
   }
 };
 
+async function fetchChartCountBy(options = {}) {
+  const {
+    table = "websites",
+    column = "*",
+    order_by = "id",
+    key = "website_id",
+    data_key = "id",
+    date = "payments_date",
+    table_key = "orders",
+  } = options;
+
+  try {
+    const response = await axios.get(`../../backend/count/count_by.php`, {
+      params: { table, column, order_by, key, data_key, date, table_key },
+    });
+
+    if (response.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else {
+      console.error("Invalid data structure from count_by.php", response.data);
+      return [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch chart data:", err);
+    return [];
+  }
+}
+
 // --- MOCK Permissions (!!! REPLACE with actual permission fetching !!!) ---
 const MOCK_USER_PERMISSIONS = [
   "view_customer_orders",
@@ -573,219 +601,179 @@ async function fetchSyncStatus() {
 //       Uncomment and ensure they work with backend endpoints if needed.
 
 async function renderOrderVolumeChart(theme = "light") {
-  // ... (Existing function - requires backend/get/charts/order_volume.php) ...
-  const canvas = document.getElementById("orderVolumeChart");
   const container = document.getElementById("orderVolumeChartContainer");
-  if (!canvas || !container) return;
-  if (window.orderVolumeChartInstance)
-    window.orderVolumeChartInstance.destroy();
-  const bodyColor =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue("--bs-body-color")
-      .trim() || (theme === "dark" ? "#e9ecef" : "#212529");
-  const gridColor =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue("--bs-border-color-translucent")
-      .trim() ||
-    (theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)");
-  const primaryColor =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue("--bs-primary")
-      .trim() || "rgb(54, 162, 235)";
-  const warningColor =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue("--bs-warning")
-      .trim() || "rgb(255, 159, 64)";
+  if (!container) return;
 
   container.innerHTML =
     '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading Chart...</span></div></div>';
 
   try {
-    const response = await axios.get(
-      "../../backend/get/charts/order_volume.php?period=7d"
-    ); // <<< REQUIRES THIS ENDPOINT
-    if (
-      response.data &&
-      response.data.labels &&
-      Array.isArray(response.data.labels)
-    ) {
-      container.innerHTML = '<canvas id="orderVolumeChart"></canvas>'; // Restore canvas
-      const newCanvas = document.getElementById("orderVolumeChart"); // Get new canvas element
-      const ctx = newCanvas.getContext("2d");
-      window.orderVolumeChartInstance = new Chart(ctx, {
-        /* ... Chart options ... */ type: "line",
-        data: {
-          /* ... Chart data using response.data ... */
-          labels: response.data.labels,
-          datasets: [
-            {
-              label: "Customer Orders",
-              data: response.data.customerOrders || [],
-              borderColor: primaryColor,
-              backgroundColor: primaryColor.includes("rgb")
-                ? primaryColor.replace(")", ", 0.1)").replace("rgb", "rgba")
-                : primaryColor,
-              tension: 0.2,
-              pointBackgroundColor: primaryColor,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              borderWidth: 1.5,
-            },
-            {
-              label: "Factory Orders (PO)",
-              data: response.data.poOrders || [],
-              borderColor: warningColor,
-              backgroundColor: warningColor.includes("rgb")
-                ? warningColor.replace(")", ", 0.1)").replace("rgb", "rgba")
-                : warningColor,
-              tension: 0.2,
-              pointBackgroundColor: warningColor,
-              pointRadius: 3,
-              pointHoverRadius: 5,
-              borderWidth: 1.5,
-            },
-          ],
-        },
-        options: {
-          /* ... Chart options using bodyColor, gridColor ... */
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: gridColor },
-              ticks: { color: bodyColor },
-            },
-            x: { grid: { color: gridColor }, ticks: { color: bodyColor } },
+    const chartData = await fetchChartCountBy();
+    const year = new Date().getFullYear();
+    const monthLabels = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const datasets = chartData.map((entry) => {
+      const label = entry.details?.name || "Unknown";
+      const siteData = entry.count_datas.find((c) => c.year === year);
+      const monthTotals = Array(12).fill(0);
+
+      if (siteData) {
+        siteData.months.forEach((days, i) => {
+          monthTotals[i] = days.reduce(
+            (sum, val) => sum + (parseInt(val) || 0),
+            0
+          );
+        });
+      }
+
+      return {
+        label,
+        data: monthTotals,
+        borderColor: `rgba(${Math.random() * 200}, ${Math.random() * 200}, ${
+          Math.random() * 200
+        }, 1)`,
+        backgroundColor: `rgba(0,0,0,0.1)`,
+        tension: 0.4,
+      };
+    });
+
+    container.innerHTML = '<canvas id="orderVolumeChart"></canvas>';
+    const ctx = document.getElementById("orderVolumeChart").getContext("2d");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: monthLabels,
+        datasets: datasets,
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: `Order Volume - ${year}`,
           },
-          plugins: { legend: { labels: { color: bodyColor } } },
-          interaction: { intersect: false, mode: "index" },
         },
-      });
-    } else {
-      throw new Error("Invalid data for volume chart");
-    }
-  } catch (error) {
-    console.error("Error rendering order volume chart:", error);
-    displayError(
-      "orderVolumeChartContainer",
-      "Could not load volume chart data.",
-      "chart"
-    );
+      },
+    });
+  } catch (err) {
+    console.error("Chart rendering failed:", err);
+    container.innerHTML = `<div class="alert alert-danger">Chart Load Error</div>`;
   }
 }
 
 async function renderOrderSourceChart(theme = "light") {
-  // ... (Existing function - requires backend/get/charts/order_sources.php) ...
-  const canvas = document.getElementById("orderSourceChart");
   const container = document.getElementById("orderSourceChartContainer");
-  if (!canvas || !container) return;
-  if (window.orderSourceChartInstance)
-    window.orderSourceChartInstance.destroy();
-  const bodyColor =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue("--bs-body-color")
-      .trim() || (theme === "dark" ? "#e9ecef" : "#212529");
-  const borderColor =
-    getComputedStyle(document.documentElement)
-      .getPropertyValue("--bs-body-bg")
-      .trim() || (theme === "dark" ? "#1a1d20" : "#ffffff");
-  const backgroundColors = [
-    "#0d6efd",
-    "#ffc107",
-    "#dc3545",
-    "#198754",
-    "#6f42c1",
-    "#fd7e14",
-    "#adb5bd",
-    "#6610f2",
-    "#20c997",
-  ];
-
-  container.innerHTML =
-    '<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading Chart...</span></div></div>';
+  container.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading Chart...</span></div></div>`;
 
   try {
-    const response = await axios.get(
-      "../../backend/get/charts/order_sources.php?period=7d"
-    ); // <<< REQUIRES THIS ENDPOINT
-    if (
-      response.data &&
-      response.data.labels &&
-      Array.isArray(response.data.labels) &&
-      response.data.data.length > 0
-    ) {
-      container.innerHTML = '<canvas id="orderSourceChart"></canvas>'; // Restore canvas
-      const newCanvas = document.getElementById("orderSourceChart");
-      const ctx = newCanvas.getContext("2d");
+    const response = await getCountOrData(
+      "orders o",
+      ["w.name AS website_name", "COUNT(o.order_id) AS total_orders"],
+      "new",
+      null,
+      null
+    );
+
+    if (response && Array.isArray(response) && response.length > 0) {
+      const labels = response.map((row) => row.website_name);
+      const data = response.map((row) => parseInt(row.total_orders));
+
+      const backgroundColors = [
+        "#0d6efd",
+        "#dc3545",
+        "#ffc107",
+        "#20c997",
+        "#6610f2",
+        "#fd7e14",
+        "#adb5bd",
+        "#198754",
+        "#6f42c1",
+      ];
+
+      container.innerHTML = `<canvas id="orderSourceChart"></canvas>`;
+      const ctx = document.getElementById("orderSourceChart").getContext("2d");
+
+      if (window.orderSourceChartInstance)
+        window.orderSourceChartInstance.destroy();
+
       window.orderSourceChartInstance = new Chart(ctx, {
-        /* ... Chart options ... */ type: "doughnut",
+        type: "pie",
         data: {
-          /* ... Chart data using response.data ... */
-          labels: response.data.labels,
+          labels,
           datasets: [
             {
               label: "Orders",
-              data: response.data.data,
-              backgroundColor: backgroundColors.slice(
-                0,
-                response.data.labels.length
-              ),
-              borderColor: borderColor,
-              borderWidth: 2,
+              data,
+              backgroundColor: backgroundColors.slice(0, labels.length),
               hoverOffset: 8,
             },
           ],
         },
         options: {
-          /* ... Chart options using bodyColor ... */ responsive: true,
+          responsive: true,
           maintainAspectRatio: false,
           plugins: {
+            title: {
+              display: true,
+              text: "Orders by Source (Last 7 Days)",
+              font: { size: 16, weight: "bold" },
+            },
             legend: {
               position: "bottom",
-              labels: { color: bodyColor, boxWidth: 12, padding: 15 },
+              labels: {
+                padding: 15,
+                font: { size: 12 },
+                color: theme === "dark" ? "#e9ecef" : "#212529",
+              },
             },
-            tooltip: { bodySpacing: 4, padding: 10 },
+            tooltip: {
+              callbacks: {
+                label: (context) =>
+                  `${context.label}: ${context.parsed} orders`,
+              },
+            },
           },
-          cutout: "60%",
         },
       });
     } else {
-      throw new Error("Invalid data for source chart");
+      container.innerHTML = `<div class="alert alert-warning">No orders found for the past 7 days.</div>`;
     }
   } catch (error) {
     console.error("Error rendering order source chart:", error);
-    displayError(
-      "orderSourceChartContainer",
-      "Could not load source chart data.",
-      "chart"
-    );
+    container.innerHTML = `<div class="alert alert-danger">Failed to load data for source chart.</div>`;
   }
 }
 
 // --- Initialization ---
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Apply Permissions & Initial Theme
-  applyPermissions(MOCK_USER_PERMISSIONS); // Use actual permissions
-
-  // 2. Show Global Spinner
+  applyPermissions(MOCK_USER_PERMISSIONS);
   showGlobalSpinner();
 
-  // 3. Fetch all data concurrently and wait for all to settle
   try {
     const results = await Promise.allSettled([
       fetchKpiData(),
       fetchRecentOrders(),
-      fetchPendingPoDrafts(), // Returns true/false if actions found
-      fetchPendingReturns(), // Returns true/false if actions found
+      fetchPendingPoDrafts(),
+      fetchPendingReturns(),
       fetchSyncStatus(),
-      // --- Charts are initially commented out based on user's code ---
-      // Uncomment these lines if you want the charts to load
       renderOrderVolumeChart(localStorage.getItem("theme") || "light"),
       renderOrderSourceChart(localStorage.getItem("theme") || "light"),
     ]);
 
-    // --- Logic for updating "No pending actions" message ---
     const poResult = results[2];
     const returnResult = results[3];
     const hasPendingPo =
@@ -810,9 +798,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         noPendingActionsDiv.style.display = "none";
       }
     }
-    // --- End pending actions logic ---
 
-    // Optional: Check results for specific failures
     results.forEach((result, index) => {
       if (result.status === "rejected") {
         console.error(`Initial load failed for task ${index}:`, result.reason);
@@ -820,7 +806,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   } catch (error) {
     console.error("Error during initial dashboard load sequence:", error);
-    hideGlobalSpinner(); // Ensure spinner hides even on major error
+    hideGlobalSpinner();
     if (Swal) {
       Swal.fire({
         icon: "error",
@@ -833,9 +819,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Failed to initialize some dashboard components. Please try refreshing."
       );
     }
-    return; // Stop further execution in case of major init error
+    return;
   }
 
-  // 4. Hide Global Spinner AFTER all fetches are settled (if no major error stopped execution)
   hideGlobalSpinner();
 });

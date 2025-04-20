@@ -190,7 +190,7 @@ if (insertOrderButton) {
       if (file) {
         const filename = `file-${Date.now()}.${getFileExtension(file.name)}`;
         formData.append("file", file, filename);
-        const response = await DataController.upload(formData, "../files/");
+        const response = await DataController.upload(formData, "../../files/");
 
         const to_insert_file = {
           order_id: orderId,
@@ -499,9 +499,10 @@ if (saveOrderButton) {
       const formData = new FormData();
       const file = fileInput.files[0];
       if (file) {
+        console.log(file);
         const filename = `file-${Date.now()}.${getFileExtension(file.name)}`;
         formData.append("file", file, filename);
-        const response = await DataController.upload(formData, "../files/");
+        const response = await DataController.upload(formData, "../../files/");
         const to_insert_file = {
           order_id: orderId,
           file_name: response.fileName,
@@ -1576,9 +1577,6 @@ const generateDropdown = async (order_id, request_id) => {
           fileListGroup.appendChild(listItem);
         });
       }
-    } else {
-      const result = await get_website_datas();
-      data = result;
     }
 
     const websiteDropdown = document.getElementById("website-dropdown");

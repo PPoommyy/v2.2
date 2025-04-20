@@ -19,7 +19,7 @@ function sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancel_url)
     $emailParams = [
         'template_uuid' => $template_uuid,
         'mail_from' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
-        'mail_to' => ['email' => 's6404062630511@email.kmutnb.ac.th'],
+        'mail_to' => ['email' => $email],
         'payload' => [
             'OPTION_1' => $accept_url,
             'OPTION_2' => $cancel_url,

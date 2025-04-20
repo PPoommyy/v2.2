@@ -509,7 +509,7 @@ const sendEmail = async (pdfFile, newPOOrder) => {
     pngFormData.append("file", pngFile, pngFileName);
     const uploadResponse = await DataController.upload(
       pngFormData,
-      "../files/"
+      "../../files/"
     );
     console.log("uploadResponse", uploadResponse);
     if (!uploadResponse?.fileName) {
@@ -783,7 +783,10 @@ async function createPOAsPDF(newPOOrder, itemsList) {
 
     const formData = new FormData();
     formData.append("file", pdfFile, `PO-${newPOOrder.po_order_id}.pdf`);
-    const uploadResponse = await DataController.upload(formData, "../files/");
+    const uploadResponse = await DataController.upload(
+      formData,
+      "../../files/"
+    );
 
     if (uploadResponse?.fileName) {
       const fileData = {
@@ -859,7 +862,7 @@ createDraftButton.addEventListener("click", async () => {
     if (file) {
       const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
       formData.append("file", file, filename);
-      const response = await DataController.upload(formData, "../files/");
+      const response = await DataController.upload(formData, "../../files/");
 
       const to_insert_file = {
         po_order_id: factoryId,
@@ -954,7 +957,7 @@ sendEmailButton.addEventListener("click", async () => {
     if (file) {
       const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
       formData.append("file", file, filename);
-      const response = await DataController.upload(formData, "../files/");
+      const response = await DataController.upload(formData, "../../files/");
 
       const to_insert_file = {
         po_order_id: factoryId,

@@ -29,18 +29,18 @@ function sendRequest($url, $method, $headers, $content)
     ];
 }
 $requestData = json_decode(file_get_contents('php://input'), true);
-// $apiHost = "https://dpostinter.thailandpost.com";
-$apiHost = "https://dpinterapi.thailandpost.com";
+/* $apiHost = "https://dpinterapi.thailandpost.com";
 $urlencoded = http_build_query([
     'username' => 'testuser1',
     'password' => '12345',
     'grant_type' => 'password'
-]);
-/* $urlencoded = http_build_query([
+]); */
+$apiHost = "https://dpostinter.thailandpost.com";
+$urlencoded = http_build_query([
     'username' => 'boxsense',
     'password' => 'QUEBECpost',
     'grant_type' => 'password'
-]); */
+]);
 try {
     $headers = "Content-Type: application/x-www-form-urlencoded";
     $response = sendRequest("$apiHost/api/token", 'POST', $headers, $urlencoded);

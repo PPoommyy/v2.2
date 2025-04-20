@@ -563,9 +563,9 @@ const generateOrderExcel2 = async (orders, toggleSpinner, checkboxStates) => {
       }
     });
 
-    const result = await get_product_sets(false, false);
+    /* const result = await get_product_sets(false, false);
     const { product_sets } = result;
-    replaceSetItems(selectedOrders, product_sets);
+    replaceSetItems(selectedOrders, product_sets); */
 
     selectedOrders.sort((a, b) => a.details.timesort - b.details.timesort);
 
