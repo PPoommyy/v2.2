@@ -214,7 +214,7 @@ addButton.addEventListener("click", async function (event) {
   tableRow.appendChild(Cell.createInputCell("email"));
   tableRow.appendChild(Cell.createInputCell("password_hash"));
   tableRow.appendChild(Cell.createInputCell("full_name"));
-  tableRow.appendChild(Cell.createInputCell("role_id", 1, "number"));
+  tableRow.appendChild(Cell.createSelectCell(roles.status, "role_id"));
   const removeButton = document.createElement("button");
   removeButton.classList.add("btn", "btn-danger");
   removeButton.innerHTML = '<i class="fa fa-xmark"></i>';
@@ -250,6 +250,8 @@ saveButton.addEventListener("click", async () => {
     for (let index = 0; index < newRows.length; index++) {
       const row = newRows[index];
       const inputs = row.querySelectorAll("input");
+      const selects = row.querySelectorAll("select");
+
       const insertedData = {};
 
       let hasEmptyValue = false;
@@ -257,6 +259,15 @@ saveButton.addEventListener("click", async () => {
       inputs.forEach((input, inputIndex) => {
         const key = input.getAttribute("for");
         const value = input.value;
+        if (!value) {
+          hasEmptyValue = true;
+          return;
+        }
+        insertedData[key] = value;
+      });
+      selects.forEach((select, selectIndex) => {
+        const key = select.getAttribute("for");
+        const value = select.value;
         if (!value) {
           hasEmptyValue = true;
           return;
@@ -275,6 +286,7 @@ saveButton.addEventListener("click", async () => {
       insertedData["is_active"] = 1;
       try {
         const result = await DataController.insert("users", insertedData);
+        console.log("result", result);
         results.push(result);
         const confirmed = await swalQueue.fire({
           title: `Row ${index + 1} inserted successfully!`,
