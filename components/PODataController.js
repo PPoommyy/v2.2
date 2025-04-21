@@ -3,7 +3,6 @@ import { DataController } from "./DataController.js";
 const get_factory_list = async () => {
   try {
     const response = await DataController.select("factories", ["*"], "id");
-    console.log(response);
     return response.status;
   } catch (error) {
     throw error;
@@ -17,7 +16,6 @@ const get_po_order_status = async () => {
       ["*"],
       "id"
     );
-    console.log(response);
     return response.status;
   } catch (error) {
     throw error;
@@ -146,7 +144,6 @@ const get_pre_po_order = async (factory_id) => {
       nestedKey,
       nestedTables
     );
-    console.log(response);
     return response.status;
   } catch (error) {
     throw error;
@@ -219,7 +216,6 @@ const get_po_list = async (filterValues, limit1, page1) => {
       nestedKey,
       nestedTables
     );
-    console.log(response);
     return response.status;
   } catch (error) {
     throw error;

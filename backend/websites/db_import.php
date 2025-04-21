@@ -5,7 +5,7 @@ try {
     header('Cache-Control: post-check=0, pre-check=0', false);
     header('Pragma: no-cache');
 
-    $target_db = new PDO("mysql:host=localhost;dbname=komsant_test;charset=utf8", 'komsant', 'ktest347#');
+    $target_db = new PDO("mysql:host=103.13.231.64;dbname=komsant_test;charset=utf8", 'komsant', 'ktest347#');
     $target_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     function generateUniqueOrderId($target_db)
@@ -184,7 +184,7 @@ try {
                         $orderSkuInsert = $target_db->prepare("INSERT INTO orders_skus (
                             unique_id, order_id, order_item_id, sku_settings_id, 
                             item_price, shipping_price, total, quantity_purchased, 
-                            is_amazon, date_created, product_status_id
+                            product_status_id
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                         $orderSkuInsert->execute(array(
                             $uniqueId,
@@ -195,8 +195,6 @@ try {
                             0.0,
                             $item['total'],
                             $item['quantity'],
-                            1,
-                            $currentDateTime,
                             1
                         ));
                     }

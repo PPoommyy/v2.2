@@ -65,12 +65,12 @@ function sendRequest($url, $params)
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'] ?? '';
-    $accept_url = $_POST['accept_url'] ?? '';
-    $cancle_url = $_POST['cancle_url'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $pdfUrl = $_POST['pdf_url'] ?? '';
-    $pngUrl = $_POST['png_url'] ?? '';
+    $title = $_POST['title'] ? $_POST['title'] : '';
+    $accept_url = $_POST['accept_url'] ? $_POST['accept_url'] : '';
+    $cancle_url = $_POST['cancle_url'] ? $_POST['cancle_url'] : '';
+    $email = $_POST['email'] ? $_POST['email'] : '';
+    $pdfUrl = $_POST['pdf_url'] ? $_POST['pdf_url'] : '';
+    $pngUrl = $_POST['png_url'] ? $_POST['png_url'] : '';
 
     try {
         if (empty($email)) {

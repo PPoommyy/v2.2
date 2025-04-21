@@ -54,7 +54,6 @@ const createSkuDiv = (skuInput) => {
     skuInput.removeAttribute("order_product_name");
     const searchTerm = skuInput.value;
     const skuOptions = await get_sku_search(searchTerm);
-    // console.log(skuOptions);
     updateSkuDropdown(skuOptions.data, skuInput, skuDropdown);
   });
 

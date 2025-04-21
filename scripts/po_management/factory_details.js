@@ -123,8 +123,6 @@ const saveFactory = async () => {
     email_address: factoryEmailAddress.value,
   };
 
-  console.log("factory", factory);
-
   const factoryUpdateResult = await DataController.update(
     "factories",
     "id",
@@ -159,7 +157,6 @@ const saveFactory = async () => {
     console.log("item_price: ", item_price); */
 
     if (isChecked && factorySkuSettingsId === "null") {
-      console.log("insert new row");
       const skuSettingsId = checkbox
         .closest("tr")
         .querySelector("td:nth-child(2)").textContent;
@@ -169,7 +166,6 @@ const saveFactory = async () => {
           sku_settings_id: parseInt(skuSettingsId),
           item_price: item_price,
         });
-        console.log("Insert result:", result);
         insertResults.push(result);
       } catch (error) {
         console.error("Error inserting SKU:", error);

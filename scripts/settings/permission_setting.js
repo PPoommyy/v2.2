@@ -16,7 +16,6 @@ updateButton.addEventListener("click", async () => {
       key,
       value
     );
-    console.log(result);
     if (result && result.status) {
       Alert.showSuccessMessage("Update successful");
     } else {
@@ -39,7 +38,6 @@ const get_permission_list = async () => {
       100,
       0
     );
-    console.log(response);
     return response;
   } catch (error) {
     throw error;

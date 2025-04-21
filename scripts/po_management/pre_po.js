@@ -198,7 +198,6 @@ const loadFactorySkus = async (factoryId) => {
 
       items.slice(1).forEach((item) => {
         const itemRow = document.createElement("tr");
-        // console.log(item);
         const itemCheckbox = document.createElement("input");
         itemCheckbox.type = "checkbox";
         itemCheckbox.name = "itemCheckbox";
@@ -310,7 +309,6 @@ function updateCheckBoxList(item, order_id, checked) {
   } else {
     createPoOrderButton.setAttribute("disabled", "");
   }
-  // console.log("Updated checkboxStates: ", checkboxStates);
 }
 
 const createPoOrderButton = document.getElementById("createPoOrder");

@@ -57,7 +57,7 @@ const createInputCell = (key, placeholder, type) => {
   if (type) input.type = type;
   else input.type = "text";
   input.classList.add("form-control");
-  input.placeholder = placeholder ? placeholder : "Enter text...";
+  if (placeholder) input.value = placeholder;
   cell.appendChild(input);
   return cell;
 };

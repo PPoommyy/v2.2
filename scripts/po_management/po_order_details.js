@@ -311,7 +311,6 @@ const generateItemListTable = async (po_order_id) => {
       const tableBody = document.createElement("tbody");
       tableBody.id = "item-list-body";
       items.forEach((item) => {
-        console.log(item);
         const { order_id } = item;
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row");
@@ -613,7 +612,6 @@ const sendEmail = async (pdfFile, newPOOrder, factoryEmail) => {
 
     const emailFormData = new FormData();
     emailFormData.append("title", emailContent.title);
-    console.log("recipientEmail", recipientEmail);
     emailFormData.append("email", recipientEmail);
     emailFormData.append(
       "accept_url",
@@ -694,8 +692,6 @@ function mergeSimilarItems(items) {
 
 async function createPOAsPDF(newPOOrder, itemsList) {
   try {
-    console.log("newPOOrder", newPOOrder);
-    console.log("itemsList", itemsList);
     const logoBase64 = await toBase64("../../assets/img/boxsense.jpeg");
     /* const NotoSansThai = await toBase64(
       "../../assets/webfonts/NotoSansThai-Regular.ttf"

@@ -16,5 +16,4 @@ const testGetData = async () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const data = await testGetData();
-  console.log(data);
 });

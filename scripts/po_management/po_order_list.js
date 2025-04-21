@@ -109,7 +109,6 @@ async function generateTable(limit, page) {
     const tableBody = document.createElement("tbody");
 
     po_orders.forEach((order) => {
-      console.log(order);
       const { data, nested } = order;
       const { items, files } = nested;
       if (items.length === 0) return;
@@ -352,7 +351,6 @@ function generateFileListContent(files) {
   files.forEach((file) => {
     const fileItem = document.createElement("div");
     fileItem.classList.add("file-item", "p-2", "text-center"); // Add padding and centering
-    // console.log(file);
     if (isImageFile(file.file_name)) {
       const imageElement = document.createElement("img");
       imageElement.src = file.file_pathname;
@@ -499,7 +497,6 @@ const handleDeleteOrders = async (e) => {
   const selectedOrders = [];
 
   po_orders.forEach((po_order) => {
-    console.log(po_order);
     const { timesort } = po_order.data;
     if (checkboxStates.includes(timesort)) {
       selectedOrders.push(po_order);
@@ -508,7 +505,6 @@ const handleDeleteOrders = async (e) => {
 
   for (let index = 0; index < selectedOrders.length; index++) {
     const po_order = selectedOrders[index];
-    console.log(po_order);
     const { po_order_id } = po_order.data;
     try {
       const result1 = await DataController._delete(

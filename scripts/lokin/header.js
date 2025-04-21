@@ -48,11 +48,6 @@ const menus = {
       { name: "permission_setting", label: "Permission Settings", show: true },
       { name: "role_setting", label: "Role Settings", show: true },
       { name: "sku_setting", label: "SKU Settings", show: true },
-      {
-        name: "product_set_setting",
-        label: "Product Set Settings",
-        show: true,
-      },
       { name: "factory_setting", label: "Factory Settings", show: true },
       { name: "factory_details", label: "Factory Details", show: false },
       { name: "website_setting", label: "Website Settings", show: true },

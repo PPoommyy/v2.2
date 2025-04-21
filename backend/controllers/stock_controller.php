@@ -176,7 +176,7 @@ function update_stock($conn, $to_update)
             $stmt = $conn->prepare($checkStock);
             $stmt->execute([$sku_settings_id]);
             $stockInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-            $total_stock = $stockInfo['total_stock'] ?? 0;
+            $total_stock = $stockInfo['total_stock'] ? $stockInfo['total_stock'] : 0;
 
             if ($total_stock === 0) {
                 $results[] = [

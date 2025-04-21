@@ -144,6 +144,7 @@ async function generateTable(limit, page) {
             name,
             description: permission_description,
           } = permission;
+
           const checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.value = permissionId;
@@ -172,7 +173,6 @@ async function generateTable(limit, page) {
         });
 
         permissionListContainer.appendChild(gridContainer);
-
         document.getElementById("permissionRoleId").value = id;
         const permissionModal = new bootstrap.Modal(
           document.getElementById("permissionModal")
@@ -321,8 +321,9 @@ updatePermissionButton.addEventListener("click", async () => {
   );
 
   const rolePermissions = await get_role_permission_by_id(roleId);
+
   const existingPermissions = new Set(
-    rolePermissions.status.map((rp) => rp.id)
+    rolePermissions.status.map((rp) => parseInt(rp.id))
   );
 
   let to_insert = [];
@@ -358,7 +359,6 @@ updatePermissionButton.addEventListener("click", async () => {
   }
 
   Alert.showSuccessMessage("Permissions updated successfully!");
-
   const permissionModal = bootstrap.Modal.getInstance(
     document.getElementById("permissionModal")
   );

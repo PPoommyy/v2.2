@@ -2,8 +2,8 @@ import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 import { PODataController } from "../../components/PODataController.js";
 
-const host = "http://localhost/test/work/v2.2";
-// const host = "https://komsant/v2.2";
+// const host = "http://localhost/test/work/v2.2";
+const host = "https://komsant/v2.2";
 
 const get_factory_sku_search = async (searchTerm, factory_id) => {
   try {
@@ -61,7 +61,6 @@ const loadFactoryDetails = async (factoryDetails, poOrderDetails) => {
     factoryNumber.value = contact_number;
     factoryEmail.value = email_address;
     if (poOrderDetails) {
-      console.log("poOrderDetails", poOrderDetails);
       const { files } = poOrderDetails.nested;
       const orderNoteInput = document.getElementById("order-note-input");
       orderNoteInput.value = poOrderDetails.notes || "";
@@ -302,7 +301,6 @@ const generateItemListTable = async (poOrders) => {
     if (poOrders) {
       const { data, nested } = poOrders;
       const { items } = nested;
-      console.log("items", items);
       items.forEach((item) => {
         const tableRow = document.createElement("tr");
         tableRow.classList.add("item", "row");
@@ -665,7 +663,6 @@ const sendEmail = async (pdfFile, newPOOrder, factoryEmail) => {
 
     const emailFormData = new FormData();
     emailFormData.append("title", emailContent.title);
-    console.log("recipientEmail", recipientEmail);
     emailFormData.append("email", recipientEmail);
     emailFormData.append(
       "accept_url",
@@ -746,8 +743,6 @@ function mergeSimilarItems(items) {
 
 async function createPOAsPDF(newPOOrder, itemsList) {
   try {
-    console.log("newPOOrder", newPOOrder);
-    console.log("itemsList", itemsList);
     const logoBase64 = await toBase64("../../assets/img/boxsense.jpeg");
     /* const NotoSansThai = await toBase64(
       "../../assets/webfonts/NotoSansThai-Regular.ttf"
@@ -971,8 +966,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     generateItemListTable(null);
   }
 
-  console.log("poOrderId", poOrderId);
-  console.log("poDraft", poDraft);
   const handleAddddProduct = async (event) => {
     event.preventDefault();
     const tbody = document.getElementById("item-list-body");

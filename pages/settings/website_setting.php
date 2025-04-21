@@ -33,6 +33,47 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="databaseModal" tabindex="-1" role="dialog" aria-labelledby="databaseModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="databaseModalLabel">Database Settings</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="databaseWebsiteId">
+                        <div class="mb-3">
+                            <label for="db_host" class="form-label">Database Host</label>
+                            <input type="text" id="db_host" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="db_name" class="form-label">Database Name</label>
+                            <input type="text" id="db_name" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="db_user" class="form-label">Database User</label>
+                            <input type="text" id="db_user" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="db_password" class="form-label">Database Password</label>
+                            <input type="password" id="db_password" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label for="retreive_period" class="form-label">Retrieve Period (days)</label>
+                            <input type="number" id="retreive_period" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="databaseSaveButton">
+                            <i class="fa fa-floppy-disk"></i> Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="databaseRemoveButton">
+                            <i class="fa fa-trash"></i> Remove
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="website-list" class="container"></div>
     </div>
     <?php include("../../templates_/footer.php"); ?>

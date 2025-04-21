@@ -35,14 +35,12 @@
             if (poOrderId) {
                 // ใส่ path PDF ลงใน iframe
                 const pdfPath = `../../files/PO-${poOrderId}.pdf`;
-                console.log("PDF Path: ", pdfPath);
                 document.getElementById('po-pdf-frame').src = pdfPath;
 
                 // ดึงสถานะจาก backend
                 axios.get(`../../backend/get/get_po_status.php?po_order_id=${poOrderId}`)
                     .then(response => {
                         const status = response.data.po_order_status_id;
-                        console.log('PO Status:', status);
 
                         actionArea.innerHTML = ''; // ล้างก่อน
 

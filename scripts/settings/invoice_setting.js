@@ -9,7 +9,6 @@ updateButton.addEventListener("click", async () => {
   const key = document.getElementById("editKey").value;
   const value = document.getElementById("editValue").value;
   if (value) {
-    // console.log("id: " + id + " key: " + key + " value: " + value);
     const result = await DataController.updateByKey(
       "country_currency",
       "id",
@@ -52,11 +51,6 @@ async function generateTable(limit, page) {
     const orderTypes = result.order_types;
     const totalCount = result.count;
 
-    console.log("countries: ", countries);
-    console.log("currencies: ", currencies);
-    console.log("serviceMethods: ", serviceMethods);
-    console.log("orderTypes: ", orderTypes);
-    console.log("result: ", result);
     const totalPages = Math.ceil(totalCount / limit);
 
     const countryDataContainer = document.getElementById(

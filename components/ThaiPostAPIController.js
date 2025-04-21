@@ -8,7 +8,6 @@ const createToken = async (apiHost) => {
     const response = await axios.get(
       `../../backend/api/thaipost/thaipost_create_token.php`
     );
-    console.log("response:", response);
     return response.data;
   } catch (error) {
     throw error;

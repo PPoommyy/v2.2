@@ -212,7 +212,7 @@ addButton.addEventListener("click", async function (event) {
   tableRow.classList.add("new-row");
   tableRow.appendChild(Cell.createInputCell("username"));
   tableRow.appendChild(Cell.createInputCell("email"));
-  tableRow.appendChild(Cell.createInputCell("password_hash"));
+  tableRow.appendChild(Cell.createInputCell("password_hash", "", "password"));
   tableRow.appendChild(Cell.createInputCell("full_name"));
   tableRow.appendChild(Cell.createSelectCell(roles.status, "role_id"));
   const removeButton = document.createElement("button");
@@ -285,7 +285,6 @@ saveButton.addEventListener("click", async () => {
       }
       try {
         const result = await DataController.insert("users", insertedData);
-        console.log("result", result);
         results.push(result);
         const confirmed = await swalQueue.fire({
           title: `Row ${index + 1} inserted successfully!`,

@@ -1,6 +1,6 @@
 <?php
 $data = json_decode(file_get_contents("php://input"), true);
-$permissions = $data['permissions'] ?? [];
+$permissions = $data['permissions'] ? $data['permissions']  : [];
 
 function hasPermission($permissions, $name)
 {
@@ -12,7 +12,7 @@ function hasPermission($permissions, $name)
 
 $buttons = "";
 
-$buttonClass = "btn btn-sm me-2 mb-2"; // ระยะห่างแนวนอนและแนวล่าง
+$buttonClass = "btn btn-sm me-2 mb-2";
 
 if (hasPermission($permissions, 'download_orders')) {
     $buttons .= '<button id="downloadOrders" class="' . $buttonClass . ' btn-warning" disabled>
