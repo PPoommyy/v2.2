@@ -33,16 +33,14 @@
             const actionArea = document.getElementById('actionArea');
 
             if (poOrderId) {
-                // ใส่ path PDF ลงใน iframe
                 const pdfPath = `../../files/PO-${poOrderId}.pdf`;
                 document.getElementById('po-pdf-frame').src = pdfPath;
 
-                // ดึงสถานะจาก backend
                 axios.get(`../../backend/get/get_po_status.php?po_order_id=${poOrderId}`)
                     .then(response => {
                         const status = response.data.po_order_status_id;
 
-                        actionArea.innerHTML = ''; // ล้างก่อน
+                        actionArea.innerHTML = '';
 
                         if (status == 1) {
                             actionArea.appendChild(confirmButton);
@@ -85,11 +83,11 @@
                     });
 
                 confirmButton.addEventListener('click', function() {
-                    sendConfirmation(poOrderId, true);
+                    sendConfirmation(poOrderId, "confirm");
                 });
 
                 rejectButton.addEventListener('click', function() {
-                    sendConfirmation(poOrderId, false);
+                    sendConfirmation(poOrderId, "reject");
                 });
 
             } else {
@@ -97,8 +95,7 @@
             }
 
             function sendConfirmation(poOrderId, action) {
-                const isConfirmed = action === true ? 1 : (action === false ? 0 : action);
-                const apiUrl = `../../backend/api/confirm_po.php?po_order_id=${poOrderId}&is_confirmed=${isConfirmed}`;
+                const apiUrl = `../../backend/api/confirm_po.php?po_order_id=${poOrderId}&action=${action}`;
 
                 axios.get(apiUrl)
                     .then(response => {

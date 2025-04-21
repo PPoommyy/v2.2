@@ -101,7 +101,7 @@ const updatedObject = (object, key, oldData, newData) => {
 
 const updateTotal = async (tableRow) => {
   let item_price = parseFloat(tableRow.querySelector(".item-price").value);
-  let quantity_purchased = parseInt(
+  let quantity_purchased = parseFloat(
     tableRow.querySelector(".quantity-purchased").value
   );
 
@@ -340,7 +340,7 @@ const generateItemListTable = async (poOrders) => {
         const totalInput = createInput(
           "number",
           "total",
-          parseFloat(item.total).toFixed(2),
+          parseFloat(item.item_price * item.quantity).toFixed(2),
           true
         );
         tableRow.appendChild(createTableCell(totalInput, 2));
@@ -552,9 +552,7 @@ function generateEnhancedEmailContent(order, factory, items) {
   }
 
   return {
-    title: `ใบสั่งซื้อ #${order.po_order_id} จาก ${
-      factory.name || "บริษัทของเรา"
-    }`,
+    title: `ใบสั่งซื้อ #${order.po_order_id} จาก Boxsense`,
     body: `
       <div style="font-family: 'Sarabun', sans-serif; line-height: 1.6;">
         <p>เรียน ${factory.contact || "ผู้เกี่ยวข้อง"},</p>
@@ -670,7 +668,7 @@ const sendEmail = async (pdfFile, newPOOrder, factoryEmail) => {
     );
     emailFormData.append(
       "cancel_url",
-      `${host}pages/view_only/po_order_details.php?po_order_id=${newPOOrder.po_order_id}`
+      `${host}/pages/view_only/po_order_details.php?po_order_id=${newPOOrder.po_order_id}`
     );
     emailFormData.append("pdf_url", pdfUrl);
     emailFormData.append("png_url", pngUrl);
@@ -722,6 +720,9 @@ function mergeSimilarItems(items) {
         parseFloat(i.item_price) === parseFloat(item.item_price)
     );
 
+    console.log("mergeSimilarItems", item);
+    console.log("item_price = ", parseFloat(item.item_price));
+    console.log("total = ", parseFloat(item.total));
     if (existing) {
       existing.quantity += parseFloat(item.quantity);
       existing.total += parseFloat(item.total);
@@ -947,15 +948,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const factoryId = new URLSearchParams(window.location.search).get(
     "factory_id"
   );
-  console.log("factoryId", factoryId);
   const poOrderId = new URLSearchParams(window.location.search).get(
     "po_order_id"
   );
-  console.log("poOrderId", poOrderId);
   const factory_details = await PODataController.get_factory_details(factoryId);
-  console.log("factory_details", factory_details);
   const poDraft = await PODataController.get_factory_draft(factoryId);
-  console.log("poDraft", poDraft);
   if (poOrderId) {
     loadFactoryDetails(factory_details[0], poDraft[0]);
     generateItemListTable(poDraft[0]);
@@ -1020,7 +1017,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const lastTimeSort = await get_last_timesort(idateYear + "" + idateMonth);
       const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
 
-      // ✅ Upload ไฟล์แนบ (ถ้ามี)
       const file = fileInput?.files?.[0];
       if (file) {
         const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
@@ -1053,7 +1049,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       for (const item of items) {
         let orders_skus_id = null;
         let id = null;
-        let item_price = 0;
+        let item_price = 0.0;
+        let total = 0.0;
         let quantity = 0;
 
         const orderIdSpan = item.querySelector("span.order-id");
@@ -1065,26 +1062,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           const skuInput = item.querySelector("input.order-product-sku");
           const quantityInput = item.querySelector("input.quantity-purchased");
-          quantity = parseInt(quantityInput.value);
-          id = parseInt(skuInput.getAttribute("order_product_id"));
+          quantity = parseFloat(quantityInput.value);
+          id = parseFloat(skuInput.getAttribute("order_product_id"));
           if (!id && skuInput.value) {
             const result = await get_sku_by_name(skuInput.value);
             if (result.status === 200) {
-              id = parseInt(result.data[0].id);
+              id = parseFloat(result.data[0].id);
             } else {
               Alert.showErrorMessage(`ไม่พบสินค้า "${skuInput.value}"`);
               return;
             }
           }
         }
+        const totalInput = item.querySelector("input.total");
+        total = parseFloat(totalInput.value);
 
         const newItem = {
           po_order_id,
-          orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
-          sku_settings_id: parseInt(id),
-          quantity: parseInt(quantity),
+          orders_skus_id: orders_skus_id ? parseFloat(orders_skus_id) : null,
+          sku_settings_id: parseFloat(id),
+          quantity: parseFloat(quantity),
           item_price: parseFloat(item_price) || 0,
-          product_status_id: 8, // pending
+          total: parseFloat(total),
+          product_status_id: 8,
         };
 
         itemsList.push(newItem);
@@ -1112,7 +1112,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
 
-        console.log("Draft created successfully:", po_order_id);
         return {
           success: true,
           poOrderId: po_order_id,
@@ -1146,9 +1145,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const { data, nested } = poDraft[0];
       const { items } = nested;
-      console.log("data", data);
-      console.log("nested", nested);
-      console.log("items", items);
       const tbody = document.getElementById("item-list-body");
       const orderNoteInput = document.getElementById("order-note-input").value;
       const fileInput = document.getElementById("file-input");
@@ -1185,10 +1181,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const to_insert_items = [];
       const to_update_items = [];
       const to_delete_items = items.map((item) =>
-        parseInt(item.po_order_item_id)
+        parseFloat(item.po_order_item_id)
       );
-      console.log("to_delete_items", to_delete_items);
-      console.log("itemsRows", itemsRows);
       for (const itemRow of itemsRows) {
         let orders_skus_id = null;
         let item_price = 0.0;
@@ -1204,12 +1198,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           const skuInput = itemRow.querySelector("input.order-product-sku");
           const sku = skuInput.value;
-          id = parseInt(skuInput.getAttribute("order_product_id"));
+          id = parseFloat(skuInput.getAttribute("order_product_id"));
           if (sku) {
             if (!id) {
               const result = await get_sku_by_name(sku);
               if (result.status === 200) {
-                id = parseInt(result.data[0].id);
+                id = parseFloat(result.data[0].id);
               } else {
                 Alert.showErrorMessage(
                   `Couldn't find Product "${sku}" in database`
@@ -1222,29 +1216,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         const itemPriceInput = itemRow.querySelector("input.item-price");
         item_price = parseFloat(itemPriceInput.value);
         const quantityInput = itemRow.querySelector("input.quantity-purchased");
-        quantity = parseInt(quantityInput.value);
+        quantity = parseFloat(quantityInput.value);
         const totalInput = itemRow.querySelector("input.total");
         total = parseFloat(totalInput.value);
         const newItem = {
           po_order_id: poOrderId,
-          orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
-          sku_settings_id: parseInt(id),
-          quantity: parseInt(quantity),
+          orders_skus_id: orders_skus_id ? parseFloat(orders_skus_id) : null,
+          sku_settings_id: parseFloat(id),
+          quantity: parseFloat(quantity),
           item_price: parseFloat(item_price),
           total: parseFloat(total),
           product_status_id: 8,
           ...(po_order_item_id && {
-            po_order_item_id: parseInt(po_order_item_id),
+            po_order_item_id: parseFloat(po_order_item_id),
           }),
         };
         itemsList.push(newItem);
       }
 
-      console.log("itemsList", itemsList);
       for (const itemInList of itemsList) {
-        console.log("itemInList.po_order_item_id", itemInList.po_order_item_id);
         const index = to_delete_items.indexOf(itemInList.po_order_item_id);
-        console.log("index", index);
         if (index !== -1) {
           let to_update_items_object = {};
           to_update_items_object = updatedObject(
@@ -1419,7 +1410,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           const { data, nested } = updatedPODataResult[0];
           itemsListForPDF = nested.items;
           poOrderDataForPDF = data;
-        } else {
           await DataController.update(
             "po_orders",
             "po_order_id",
@@ -1428,7 +1418,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               po_order_status_id: 1,
             }
           );
-
+        } else {
           poOrderDataForPDF.po_order_status_id = 1;
           Alert.showErrorMessage(
             `Couldn't find updated PO Order details: ${po_order_id_to_use}`
@@ -1444,8 +1434,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           itemsListForPDF = createResult.items;
           poOrderDataForPDF = createResult.poOrderData;
 
-          console.log("Draft created, PO Order ID:", po_order_id_to_use);
-
           await DataController.update(
             "po_orders",
             "po_order_id",
@@ -1455,8 +1443,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
           );
           poOrderDataForPDF.po_order_status_id = 1;
-
-          console.log("PO Order status updated to Sent.");
         } else {
           console.error("Failed to create draft:", createResult.message);
           return;
@@ -1527,7 +1513,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (sendEmailResult) {
         Alert.showSuccessMessage("Email sent successfully!");
         setTimeout(() => {
-          window.location.href = `po_order_list.php`;
+          // window.location.href = `po_order_list.php`;
         }, 2000);
       } else {
         await DataController.update(
