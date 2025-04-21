@@ -22,6 +22,8 @@ function toggleSpinner(loading) {
   }
 }
 
+let checkboxStates = [];
+
 function updateCheckBoxList(key, checkboxStates) {
   const index = checkboxStates.indexOf(key);
   // const downloadOrdersButton = document.getElementById('downloadOrders');
@@ -61,11 +63,11 @@ const generateTable = async (table, limit, page) => {
     const tableBody = document.createElement("tbody");
     toggleSpinner(true);
     let tableHeaders = [];
-    let checkboxStates = [];
+    checkboxStates = [];
 
     if (table === "total") {
       const stockData = stock.data.stock;
-      tableHeaders = ["", "Product Name", "Remaining Stock"];
+      tableHeaders = [/* "",  */ "Product Name", "Remaining Stock"];
       tableHeaders.forEach((header) => {
         const th = document.createElement("th");
         th.textContent = header;
@@ -79,7 +81,7 @@ const generateTable = async (table, limit, page) => {
         checkboxInput.type = "checkbox";
         checkboxInput.name = "items";
         checkboxInput.value = sku_settings_id;
-        tableRow.appendChild(
+        /* tableRow.appendChild(
           Cell.createElementCell(checkboxInput, false, false, [
             "th",
             "w-auto",
@@ -87,7 +89,7 @@ const generateTable = async (table, limit, page) => {
             "d-flex",
             "justify-content-center",
           ])
-        );
+        ); */
         tableRow.appendChild(
           Cell.createSpanCell(product_order_product_sku, false, false)
         );
@@ -110,7 +112,7 @@ const generateTable = async (table, limit, page) => {
     } else if (table === "stock_in") {
       const stockData = stock.data.stock_in;
       tableHeaders = [
-        "",
+        // "",
         "Product Name",
         "Receive Quantity",
         "Remaining Quantity",
@@ -134,15 +136,15 @@ const generateTable = async (table, limit, page) => {
         checkboxInput.type = "checkbox";
         checkboxInput.name = "items";
         checkboxInput.value = stock_id;
-        tableRow.appendChild(
-          Cell.createElementCell(checkboxInput, false, false, [
-            "th",
-            "w-auto",
-            "text-center",
-            "d-flex",
-            "justify-content-center",
-          ])
-        );
+        // tableRow.appendChild(
+        //   Cell.createElementCell(checkboxInput, false, false, [
+        //     "th",
+        //     "w-auto",
+        //     "text-center",
+        //     "d-flex",
+        //     "justify-content-center",
+        //   ])
+        // );
         tableRow.appendChild(
           Cell.createSpanCell(product_order_product_sku, false, false)
         );
@@ -168,7 +170,11 @@ const generateTable = async (table, limit, page) => {
       });
     } else if (table === "stock_out") {
       const stockData = stock.data.stock_out;
-      tableHeaders = ["", "Product Name", "Issued Quantity", "Issued Date"];
+      tableHeaders = [
+        /* "",  */ "Product Name",
+        "Issued Quantity",
+        "Issued Date",
+      ];
       tableHeaders.forEach((header) => {
         const th = document.createElement("th");
         th.textContent = header;
@@ -187,7 +193,7 @@ const generateTable = async (table, limit, page) => {
         checkboxInput.type = "checkbox";
         checkboxInput.name = "items";
         checkboxInput.value = stock_out_id;
-        tableRow.appendChild(
+        /* tableRow.appendChild(
           Cell.createElementCell(checkboxInput, false, false, [
             "th",
             "w-auto",
@@ -195,7 +201,7 @@ const generateTable = async (table, limit, page) => {
             "d-flex",
             "justify-content-center",
           ])
-        );
+        ); */
         tableRow.appendChild(
           Cell.createSpanCell(product_order_product_sku, false, false)
         );
@@ -229,6 +235,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   const totalStockMenu = document.getElementById("total-stock");
   const stockIn = document.getElementById("stock-in");
   const stockOut = document.getElementById("stock-out");
+
+  const checkButtonPermission = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (user) {
+      fetch("../../backend/lokin/check_permission_buttons.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          permissions: user[0].permissions,
+          page: "stock",
+        }),
+      })
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("permission-buttons-container").innerHTML =
+            html;
+          generateTable("total", 100, 1);
+        });
+    }
+  };
+
+  checkButtonPermission();
+
   generateTable("total", 100, 1);
   totalStockMenu.addEventListener("click", async () => {
     generateTable("total", 100, 1);

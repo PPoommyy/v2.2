@@ -96,7 +96,7 @@
             <span class="visually-hidden">Loading...</span>
         </div>
         <div class="mb-3 row">
-            <div class="col-sm-12 col-md-7">
+            <!-- <div class="col-sm-12 col-md-7">
                 <button id="itemAccepted" class="btn btn-success btn-sm" disabled>
                     <span class="fa-solid fa-clipboard-check"></span> Item Accepted
                 </button>
@@ -106,7 +106,9 @@
                 <button id="deleteRequest" class="btn btn-danger btn-sm" disabled>
                     <span class="fa-solid fa-trash"></span> Delete
                 </button>
-            </div>
+            </div> -->
+            <div id="permission-buttons-container" class="col-sm-12 col-md-7"></div>
+
             <div class="col-sm-12 col-md-5" id="pagination2">
                 <ul class="pagination justify-content-end"></ul>
             </div>

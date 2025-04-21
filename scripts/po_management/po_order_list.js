@@ -590,6 +590,27 @@ const addAllEventListeners = () => {
   eventListenersMap.set("buttons", activeListeners);
 };
 
-removeAllEventListeners();
-addAllEventListeners();
-generateTable(100, 1);
+const checkButtonPermission = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (user) {
+    fetch("../../backend/lokin/check_permission_buttons.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        permissions: user[0].permissions,
+        page: "po_order_list",
+      }),
+    })
+      .then((res) => res.text())
+      .then((html) => {
+        document.getElementById("permission-buttons-container").innerHTML =
+          html;
+        removeAllEventListeners();
+        addAllEventListeners();
+        generateTable(100, 1);
+      });
+  }
+};
+
+checkButtonPermission();

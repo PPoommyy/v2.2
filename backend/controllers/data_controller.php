@@ -513,37 +513,40 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
         if (!empty($where)) {
             foreach ($where as $index => $condition) {
                 if (count($condition) < 3) continue;
+
                 $column = $condition[0];
                 $operator = strtoupper($condition[1]);
                 $paramKey = ":param$index";
+
+                // ตรวจสอบว่าระบุ HAVING ไหม
                 $isHaving = isset($condition[3]) && strtoupper($condition[3]) === 'HAVING';
-                $clauseToAdd = "";
 
                 if ($operator === 'BETWEEN' && is_array($condition[2]) && count($condition[2]) == 2) {
-                    $paramKey1 = ":param" . $index . "_1";
-                    $paramKey2 = ":param" . $index . "_2";
-                    $clauseToAdd = "$column BETWEEN $paramKey1 AND $paramKey2";
+                    $paramKey1 = ":param{$index}_1";
+                    $paramKey2 = ":param{$index}_2";
+                    $clause = "$column BETWEEN $paramKey1 AND $paramKey2";
                     $params[$paramKey1] = $condition[2][0];
                     $params[$paramKey2] = $condition[2][1];
                 } elseif ($operator === 'IN' && is_array($condition[2])) {
                     $inParams = [];
                     foreach ($condition[2] as $i => $val) {
-                        $inKey = ":param" . $index . "_" . $i;
+                        $inKey = ":param{$index}_$i";
                         $inParams[] = $inKey;
                         $params[$inKey] = $val;
                     }
-                    $clauseToAdd = "$column IN (" . implode(",", $inParams) . ")";
+                    $clause = "$column IN (" . implode(",", $inParams) . ")";
                 } else {
-                    $clauseToAdd = "$column $operator $paramKey";
+                    $clause = "$column $operator $paramKey";
                     $params[$paramKey] = $condition[2];
                 }
 
                 if ($isHaving) {
-                    $havingClauses[] = $clauseToAdd;
+                    $havingClauses[] = $clause;
                 } else {
-                    $whereClauses[] = $clauseToAdd;
+                    $whereClauses[] = $clause;
                 }
             }
+
             if (!empty($whereClauses)) {
                 $query .= " WHERE " . implode(" $logical_operator ", $whereClauses);
             }
@@ -551,21 +554,24 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
 
         if ($group_by) {
             $query .= " GROUP BY $group_by";
+
             if (!empty($havingClauses)) {
                 $query .= " HAVING " . implode(" $logical_operator ", $havingClauses);
             }
         }
 
-        if ($order_by) $query .= " ORDER BY $order_by $order_by_type";
+        if ($order_by) {
+            $query .= " ORDER BY $order_by $order_by_type";
+        }
 
         if ($limit) {
             $query .= " LIMIT :limit";
-            $params[':limit'] = (int) $limit;
+            $params[':limit'] = (int)$limit;
         }
 
         if ($offset) {
             $query .= " OFFSET :offset";
-            $params[':offset'] = (int) $offset;
+            $params[':offset'] = (int)$offset;
         }
 
         $stmt = $conn->prepare($query);
@@ -584,7 +590,6 @@ function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $
         return json_encode(["error" => $e->getMessage(), "query" => $query]);
     }
 }
-
 
 function select_count($conn, $table, $order_by)
 {

@@ -267,9 +267,9 @@ include('../../templates_/metadata.php');
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-            <button id="theme-toggle-button" class="btn btn-outline-secondary btn-sm">
+            <!-- <button id="theme-toggle-button" class="btn btn-outline-secondary btn-sm">
                 <i class="fas fa-moon"></i> Dark Mode <?php /* JS will update text/icon */ ?>
-            </button>
+            </button> -->
         </div>
 
 
@@ -303,7 +303,7 @@ include('../../templates_/metadata.php');
                         </div>
                         <i class="fas fa-file-invoice kpi-icon text-warning"></i>
                     </div>
-                    <a href="../po_management/pre_po.php" class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="../po_management/po_order_list.php" class="card-footer d-flex align-items-center justify-content-between">
                         <span>Manage Drafts</span>
                         <i class="fas fa-arrow-circle-right"></i>
                     </a>
@@ -478,7 +478,7 @@ include('../../templates_/metadata.php');
                 </div>
             </div>
         </div>
-        <div class="row mb-4 g-3">
+        <!-- <div class="row mb-4 g-3">
             <div class="col-lg-6" data-permission="view_system_settings">
                 <div class="card shadow-sm h-100">
                     <div class="card-header py-3">
@@ -494,7 +494,7 @@ include('../../templates_/metadata.php');
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div><?php
             // Include Footer
             include("../../templates_/footer.php");

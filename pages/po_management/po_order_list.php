@@ -126,14 +126,16 @@
         </div>
         <div id="po-orders-data-container" class="overflow-scroll"></div>
         <div class="mb-3 row">
-            <div class="col-sm-12 col-md-7">
+            <!--  <div class="col-sm-12 col-md-7">
                 <button id="downloadOrders" class="btn btn-warning btn-sm" disabled>
                     <span class="fa-solid fa-arrow-circle-down"></span> Download Orders
                 </button>
                 <button id="deleteOrders" class="btn btn-danger btn-sm" disabled>
                     <span class="fa-solid fa-trash"></span> Delete
                 </button>
-            </div>
+            </div> -->
+            <div id="permission-buttons-container" class="col-sm-12 col-md-7"></div>
+
             <div class="col-sm-12 col-md-5" id="pagination2">
                 <ul class="pagination justify-content-end"></ul>
             </div>

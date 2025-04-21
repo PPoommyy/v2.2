@@ -3,7 +3,7 @@ import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 
 const order_id = document.getElementById("orderId").value;
-const request_id = document.getElementById("requestId").value;
+const request_id = parseInt(document.getElementById("requestId").value);
 let to_return_order_id = null;
 const addProduct = document.getElementById("add-product");
 
@@ -285,7 +285,6 @@ if (insertOrderButton) {
               shipping_price: 0,
               quantity_purchased: quantity,
               total: quantity * price,
-              date_created: insertedDate,
             };
             itemsList.push(newItem);
           }
@@ -727,7 +726,6 @@ if (saveOrderButton) {
               shipping_price: 0,
               quantity_purchased: quantity,
               total: quantity * price,
-              date_created: formatDate(new Date()),
             };
             itemsList.push(newItem);
           }
@@ -1092,7 +1090,6 @@ const get_order_data_from_request = async (request_id) => {
       "o.raw_address",
       "o.override_address",
       "o.order_note",
-      "os.orders_skus_id",
       "w.name as website_name",
       "w.id as website_id",
       "c.name as currency_code",

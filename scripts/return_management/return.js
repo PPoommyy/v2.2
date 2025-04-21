@@ -19,7 +19,6 @@ const get_requests = async (table, limit, page) => {
     const filterValues = getFilterValues();
     const where = [];
 
-    // order_date BETWEEN order_date_start AND order_date_end
     if (
       filterValues.order_date_start.include &&
       filterValues.order_date_end.include
@@ -34,7 +33,6 @@ const get_requests = async (table, limit, page) => {
       ]);
     }
 
-    // request_date BETWEEN request_date_start AND request_date_end
     if (
       filterValues.request_date_start.include &&
       filterValues.request_date_end.include
@@ -49,7 +47,6 @@ const get_requests = async (table, limit, page) => {
       ]);
     }
 
-    // request_status_id = request_status_id
     if (filterValues.request_status_id.include) {
       where.push([
         "request_status_id",
@@ -58,7 +55,6 @@ const get_requests = async (table, limit, page) => {
       ]);
     }
 
-    // request_type_id = request_type_id
     if (filterValues.request_type_id.include) {
       where.push([
         "request_type_id",
@@ -230,7 +226,7 @@ const handleUpdateRequestStatus = async (
 
   const swalQueue = Alert.createQueue();
   const selectedRequests = requests.filter((req) =>
-    checkboxStates.includes(req.request_id)
+    checkboxStates.includes(parseInt(req.request_id))
   );
   const results = [];
 
@@ -248,10 +244,10 @@ const handleUpdateRequestStatus = async (
             quantity: item.quantity_purchased,
             remaining_quantity: item.quantity_purchased,
           };
-          await DataController.insert("stock", to_insert);
+          const result = await DataController.insert("stock", to_insert);
         }
       } else if (status === "damaged") {
-        await DataController.updateByKey(
+        const updateNote = await DataController.updateByKey(
           "requests",
           "id",
           request_id,
@@ -417,6 +413,7 @@ const generateTable = async (table, limit, page) => {
         request_date,
         request_reason,
         request_type,
+        request_type_id,
         request_status,
         request_status_id,
         note,
@@ -434,7 +431,10 @@ const generateTable = async (table, limit, page) => {
       const buttonGroup = document.createElement("div");
       buttonGroup.classList.add("btn-group");
 
-      if (request_status_id === 2) {
+      if (
+        parseInt(request_status_id) === 2 &&
+        parseInt(request_type_id) === 1
+      ) {
         const createOrderBtn = document.createElement("button");
         createOrderBtn.classList.add(
           "btn",
@@ -747,5 +747,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
+  const checkButtonPermission = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (user) {
+      fetch("../../backend/lokin/check_permission_buttons.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          permissions: user[0].permissions,
+          page: "return",
+        }),
+      })
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("permission-buttons-container").innerHTML =
+            html;
+        });
+    }
+  };
+
+  checkButtonPermission();
   generateTable("requests", 100, 0);
 });

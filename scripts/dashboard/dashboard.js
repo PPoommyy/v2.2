@@ -79,8 +79,12 @@ const getCountOrData = async (
           join = [
             ["LEFT JOIN", "sku_settings ss", "s.sku_settings_id", "ss.id"],
           ];
-          columns = ["s.sku_settings_id", "ss.order_product_sku"];
-          having = [["SUM(s.remaining_quantity)", "<", 5]];
+          columns = [
+            "s.sku_settings_id",
+            "ss.order_product_sku",
+            "SUM(s.remaining_quantity) as total",
+          ];
+          where = [["SUM(s.remaining_quantity)", "<", 5, "HAVING"]];
           orderBy = "s.sku_settings_id";
           groupBy = "s.sku_settings_id";
         }
@@ -280,7 +284,7 @@ async function fetchKpiData() {
         console.warn(`KPI Element not found: ${elementId}`);
       }
     };
-
+    console.log("lowStockRes", lowStockRes);
     updateKpi("kpi-new-orders", ordersCountRes);
     updateKpi("kpi-pending-po", poCountRes);
     updateKpi("kpi-pending-requests", returnsCountRes);

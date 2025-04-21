@@ -42,7 +42,6 @@ async function generateTable(limit, page) {
     const tableHeaderRow = document.createElement("tr");
     tableHeaderRow.innerHTML = `
         <th>Details</th>
-        <th>ID</th>
         <th>Name</th>
         <th>Location</th>
         <th>Contact</th>
@@ -88,7 +87,6 @@ async function generateTable(limit, page) {
         Cell.closeEditModal();
         generateTable(100, 1);
       });
-      tableRow.appendChild(Cell.createSpanCell(id, false, false));
       tableRow.appendChild(Cell.createSpanCell(name, false, false));
       tableRow.appendChild(Cell.createSpanCell(location, false, false));
       tableRow.appendChild(Cell.createSpanCell(contact_person, false, false));
@@ -121,7 +119,6 @@ addButton.addEventListener("click", async function (event) {
   const tbody = document.getElementById("factory-data-tbody");
   const tableRow = document.createElement("tr");
   tableRow.classList.add("new-row");
-  tableRow.appendChild(Cell.createSpanCell(""));
   tableRow.appendChild(Cell.createSpanCell(""));
   tableRow.appendChild(Cell.createInputCell("name"));
   tableRow.appendChild(Cell.createInputCell("location"));
