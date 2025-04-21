@@ -85,7 +85,7 @@ const generateSection2 = async (limit, page) => {
         tableRow.innerHTML = `
             <td>
                 <input type="checkbox" name="factory_sku_settings_id_${factory_sku_settings_id}" value="${factory_sku_settings_id}" ${
-          exist === 1 ? "checked" : ""
+          exist == 1 ? "checked" : ""
         } data-item-price="${item_price}">
             </td>
             <td>${sku_settings_id}</td>
@@ -217,7 +217,6 @@ const createFactory = async () => {
     email_address: factoryEmailAddress.value,
   };
   const result = await DataController.insert("factories", factory);
-  console.log("result", result);
   if (result) {
     Alert.showSuccessMessage();
   } else {
