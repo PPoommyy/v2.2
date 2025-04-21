@@ -11,9 +11,9 @@ try {
     $factories = json_decode(select($conn, 'factories', ['*'], 'id', $limit, $offset), true);
 
     $arrayObject = array_map(function ($factory) use ($conn) {
-        $join_factories_skus = [[]];
-        $column_factories_skus = [[]];
-        $where_factories_skus = [[]];
+        $join_factories_skus = array(array());
+        $column_factories_skus = array(array());
+        $where_factories_skus = array(array());
         $factory_skus = json_decode(select($conn, 'factory_sku', $column_factories_skus, 'sku_settings_id', "ASC", null, null, $join_factories_skus, $where_factories_skus), true);
         return [
             'details' => $factory,
@@ -31,6 +31,6 @@ try {
 
     $jsonData = json_encode($response);
     echo $jsonData;
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
 }

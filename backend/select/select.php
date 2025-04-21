@@ -11,8 +11,8 @@ $limit = isset($_GET['limit']) ? $_GET['limit'] : null;
 $page = isset($_GET['page']) ? $_GET['page'] : null;
 $requestData = json_decode(file_get_contents('php://input'), true);
 $column = $requestData['column'];
-$join = isset($requestData['join']) ? $requestData['join'] : [[]];
-$where = isset($requestData['where']) ? $requestData['where'] : [[]];
+$join = isset($requestData['join']) ? $requestData['join'] : array(array());
+$where = isset($requestData['where']) ? $requestData['where'] : array(array());
 $logical_operator = isset($requestData['logical_operator']) ? $requestData['logical_operator'] : "AND";
 
 try {
@@ -25,7 +25,7 @@ try {
 
     $jsonData = json_encode($response);
     echo $jsonData;
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo $e->getMessage();
 }
 ?>

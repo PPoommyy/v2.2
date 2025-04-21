@@ -3,7 +3,7 @@ import { DataController } from "../../components/DataController.js";
 import { PODataController } from "../../components/PODataController.js";
 
 // const host = "http://localhost/test/work/v2.2";
-const host = "https://komsant/v2.2";
+const host = "https://komsant.com/v2.2";
 
 const get_factory_sku_search = async (searchTerm, factory_id) => {
   try {
@@ -637,7 +637,7 @@ const sendEmail = async (pdfFile, newPOOrder, factoryEmail) => {
     };
     await DataController.insert("po_orders_files", pngFileData);
 
-    const baseUrl = window.location.origin + "/test/work/v2.2/files/";
+    const baseUrl = `${host}/files/`;
     const pdfUrl = baseUrl + encodeURIComponent(pdfFile.name);
     const pngUrl = baseUrl + encodeURIComponent(uploadResponse.fileName);
 
@@ -744,12 +744,6 @@ function mergeSimilarItems(items) {
 async function createPOAsPDF(newPOOrder, itemsList) {
   try {
     const logoBase64 = await toBase64("../../assets/img/boxsense.jpeg");
-    /* const NotoSansThai = await toBase64(
-      "../../assets/webfonts/NotoSansThai-Regular.ttf"
-    );
-    const NotoSansThaiBold = await toBase64(
-      "../../assets/webfonts/NotoSansThai-Bold.ttf"
-    ); */
     const mergedItemsList = mergeSimilarItems(itemsList);
 
     const totalAmount = mergedItemsList.reduce(
@@ -953,11 +947,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const factoryId = new URLSearchParams(window.location.search).get(
     "factory_id"
   );
+  console.log("factoryId", factoryId);
   const poOrderId = new URLSearchParams(window.location.search).get(
     "po_order_id"
   );
+  console.log("poOrderId", poOrderId);
   const factory_details = await PODataController.get_factory_details(factoryId);
+  console.log("factory_details", factory_details);
   const poDraft = await PODataController.get_factory_draft(factoryId);
+  console.log("poDraft", poDraft);
   if (poOrderId) {
     loadFactoryDetails(factory_details[0], poDraft[0]);
     generateItemListTable(poDraft[0]);
@@ -1006,7 +1004,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     tbody.appendChild(tableRow);
   };
 
-  const handleCreateDraft = async (event) => {
+  const handleCreateDraft = async (isCalledFromSend = false) => {
     try {
       const tbody = document.getElementById("item-list-body");
       const orderNoteInput = document.getElementById("order-note-input").value;
@@ -1114,16 +1112,33 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         }
 
-        Alert.showSuccessMessage("สร้าง Draft สำเร็จแล้ว");
-        setTimeout(() => {
-          // window.location.href = `po_order_list.php`;
-        }, 2000);
+        console.log("Draft created successfully:", po_order_id);
+        return {
+          success: true,
+          poOrderId: po_order_id,
+          items: itemsList,
+          poOrderData: newPOOrder,
+        };
       } else {
         Alert.showErrorMessage("ไม่สามารถสร้าง Draft ได้");
+        return {
+          success: false,
+          message: "ไม่สามารถสร้าง Draft ได้",
+          poOrderId: null,
+          items: [],
+          poOrderData: null,
+        };
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error creating draft:", error);
       Alert.showErrorMessage("เกิดข้อผิดพลาดในการสร้าง Draft");
+      return {
+        success: false,
+        message: "เกิดข้อผิดพลาดในการสร้าง Draft",
+        poOrderId: null,
+        items: [],
+        poOrderData: null,
+      };
     }
   };
 
@@ -1131,6 +1146,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const { data, nested } = poDraft[0];
       const { items } = nested;
+      console.log("data", data);
+      console.log("nested", nested);
+      console.log("items", items);
       const tbody = document.getElementById("item-list-body");
       const orderNoteInput = document.getElementById("order-note-input").value;
       const fileInput = document.getElementById("file-input");
@@ -1166,7 +1184,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const itemsList = [];
       const to_insert_items = [];
       const to_update_items = [];
-      const to_delete_items = items.map((item) => item.po_order_item_id);
+      const to_delete_items = items.map((item) =>
+        parseInt(item.po_order_item_id)
+      );
+      console.log("to_delete_items", to_delete_items);
+      console.log("itemsRows", itemsRows);
       for (const itemRow of itemsRows) {
         let orders_skus_id = null;
         let item_price = 0.0;
@@ -1218,8 +1240,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         itemsList.push(newItem);
       }
 
+      console.log("itemsList", itemsList);
       for (const itemInList of itemsList) {
+        console.log("itemInList.po_order_item_id", itemInList.po_order_item_id);
         const index = to_delete_items.indexOf(itemInList.po_order_item_id);
+        console.log("index", index);
         if (index !== -1) {
           let to_update_items_object = {};
           to_update_items_object = updatedObject(
@@ -1380,253 +1405,122 @@ document.addEventListener("DOMContentLoaded", async () => {
   const handleSendEmail = async (event) => {
     try {
       event.preventDefault();
-      let po_order_id, itemsList, newPOOrder;
-
+      let po_order_id_to_use;
+      let itemsListForPDF;
+      let poOrderDataForPDF;
+      let isNewOrder = false;
       if (poOrderId) {
         await handleUpdateDraft();
-        po_order_id = poOrderId;
-
-        const tbody = document.getElementById("item-list-body");
-        const orderNoteInput =
-          document.getElementById("order-note-input").value;
-        const itemsRows = tbody.querySelectorAll(".item");
-
-        itemsList = [];
-        for (const itemRow of itemsRows) {
-          let orders_skus_id = null;
-          let item_price = 0.0;
-          let total = 0.0;
-          let quantity = 0;
-          let id = null;
-          let sku_name = "";
-
-          const orderIdSpan = itemRow.querySelector("span.order-id");
-          if (orderIdSpan) {
-            orders_skus_id = orderIdSpan.dataset.orders_skus_id;
-            id = orderIdSpan.dataset.sku_settings_id;
-            const skuData = await DataController.selectByKey(
-              "sku_settings",
-              "id",
-              id
-            );
-            if (skuData && skuData.status && skuData.status.length > 0) {
-              sku_name = skuData.status[0].sku || "";
-            }
-          } else {
-            const skuInput = itemRow.querySelector("input.order-product-sku");
-            sku_name = skuInput.value;
-            id = parseInt(skuInput.getAttribute("order_product_id"));
-            if (!id && sku_name) {
-              const result = await get_sku_by_name(sku_name);
-              if (result.status === 200) {
-                id = parseInt(result.data[0].id);
-              } else {
-                Alert.showErrorMessage(
-                  `Couldn't find Product "${sku_name}" in database`
-                );
-                return;
-              }
-            }
-          }
-
-          const itemPriceInput = itemRow.querySelector("input.item-price");
-          item_price = parseFloat(itemPriceInput.value);
-          const quantityInput = itemRow.querySelector(
-            "input.quantity-purchased"
-          );
-          quantity = parseInt(quantityInput.value);
-          const totalInput = itemRow.querySelector("input.total");
-          total = parseFloat(totalInput.value);
-
-          if (id && quantity > 0) {
-            const newItem = {
-              po_order_id: po_order_id,
-              orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
-              sku_settings_id: parseInt(id),
-              quantity: parseInt(quantity),
-              item_price: parseFloat(item_price),
-              total: parseFloat(total),
-            };
-            itemsList.push(newItem);
-          }
-        }
-
-        newPOOrder = await PODataController.get_po_details(po_order_id);
-        if (newPOOrder && newPOOrder.length > 0) {
-          const { data, nested } = newPOOrder[0];
-          const { items } = nested;
-          itemsList = items;
-          newPOOrder = data;
-
-          await DataController.update("po_orders", "po_order_id", po_order_id, {
-            po_order_status_id: 1,
-            notes: orderNoteInput,
-          });
-
-          newPOOrder.po_order_status_id = 1;
-          newPOOrder.notes = orderNoteInput;
+        po_order_id_to_use = poOrderId;
+        const updatedPODataResult = await PODataController.get_po_details(
+          po_order_id_to_use
+        );
+        if (updatedPODataResult && updatedPODataResult.length > 0) {
+          const { data, nested } = updatedPODataResult[0];
+          itemsListForPDF = nested.items;
+          poOrderDataForPDF = data;
         } else {
-          Alert.showErrorMessage(`Couldn't find PO Order: ${po_order_id}`);
+          await DataController.update(
+            "po_orders",
+            "po_order_id",
+            po_order_id_to_use,
+            {
+              po_order_status_id: 1,
+            }
+          );
+
+          poOrderDataForPDF.po_order_status_id = 1;
+          Alert.showErrorMessage(
+            `Couldn't find updated PO Order details: ${po_order_id_to_use}`
+          );
           return;
         }
       } else {
-        const tbody = document.getElementById("item-list-body");
-        const orderNoteInput =
-          document.getElementById("order-note-input").value;
-        const fileInput = document.getElementById("file-input");
+        isNewOrder = true;
+        const createResult = await handleCreateDraft(); // เรียกใช้ handleCreateDraft
 
-        po_order_id = await generateUniqueOrderId();
+        if (createResult.success) {
+          po_order_id_to_use = createResult.poOrderId;
+          itemsListForPDF = createResult.items;
+          poOrderDataForPDF = createResult.poOrderData;
 
-        const currentDate = new Date().toISOString().split("T")[0];
-        const odate = currentDate.split("-").join("/");
-        const idate = new Date(odate);
-        const idateYear = String(idate.getFullYear()).slice(-2);
-        const idateMonth = (idate.getMonth() + 1).toString().padStart(2, "0");
-        const lastTimeSort = await get_last_timesort(
-          idateYear + "" + idateMonth
-        );
-        const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
+          console.log("Draft created, PO Order ID:", po_order_id_to_use);
 
-        // อัปโหลดไฟล์แนบ (ถ้ามี)
-        const file = fileInput?.files?.[0];
-        if (file) {
-          const filename = `po-${Date.now()}.${getFileExtension(file.name)}`;
-          const formData = new FormData();
-          formData.append("file", file, filename);
-          const response = await DataController.upload(
-            formData,
-            "../../files/"
+          await DataController.update(
+            "po_orders",
+            "po_order_id",
+            po_order_id_to_use,
+            {
+              po_order_status_id: 1,
+            }
           );
+          poOrderDataForPDF.po_order_status_id = 1;
 
-          if (response && response.fileName) {
-            const to_insert_file = {
-              po_order_id: po_order_id,
-              file_name: response.fileName,
-              file_pathname: response.filePath,
-            };
-
-            await DataController.insert("po_order_files", to_insert_file);
-          }
-        }
-
-        newPOOrder = {
-          po_order_id: po_order_id,
-          timesort: newTimeSort,
-          factory_id: factoryId,
-          po_order_status_id: 1,
-          notes: orderNoteInput,
-        };
-
-        const result1 = await DataController.insert("po_orders", newPOOrder);
-        if (!result1.status) {
-          Alert.showErrorMessage("Failed to create new PO Order!");
+          console.log("PO Order status updated to Sent.");
+        } else {
+          console.error("Failed to create draft:", createResult.message);
           return;
         }
-
-        itemsList = [];
-        const items = tbody.querySelectorAll(".item");
-        for (const item of items) {
-          let orders_skus_id = null;
-          let sku_name = "";
-          let id = null;
-          let item_price = 0;
-          let quantity = 0;
-          let total = 0;
-
-          const orderIdSpan = item.querySelector("span.order-id");
-          if (orderIdSpan) {
-            orders_skus_id = orderIdSpan.dataset.orders_skus_id;
-            id = orderIdSpan.dataset.sku_settings_id;
-
-            const skuData = await DataController.selectByKey(
-              "sku_settings",
-              "id",
-              id
-            );
-            if (skuData && skuData.status && skuData.status.length > 0) {
-              sku_name = skuData.status[0].sku || "";
-            }
-          } else {
-            const skuInput = item.querySelector("input.order-product-sku");
-            sku_name = skuInput.value;
-            id = parseInt(skuInput.getAttribute("order_product_id"));
-            if (!id && sku_name) {
-              const result = await get_sku_by_name(sku_name);
-              if (result.status === 200) {
-                id = parseInt(result.data[0].id);
-              } else {
-                Alert.showErrorMessage(
-                  `Couldn't find Product "${sku_name}" in database`
-                );
-                return;
-              }
-            }
-          }
-
-          const itemPriceInput = item.querySelector("input.item-price");
-          item_price = parseFloat(itemPriceInput.value);
-          const quantityInput = item.querySelector("input.quantity-purchased");
-          quantity = parseInt(quantityInput.value);
-          const totalInput = item.querySelector("input.total");
-          total = totalInput
-            ? parseFloat(totalInput.value)
-            : item_price * quantity;
-
-          if (id && quantity > 0) {
-            const newItem = {
-              po_order_id: po_order_id,
-              orders_skus_id: orders_skus_id ? parseInt(orders_skus_id) : null,
-              sku_settings_id: parseInt(id),
-              quantity: parseInt(quantity),
-              item_price: parseFloat(item_price),
-              total: total,
-              product_status_id: 8,
-            };
-            itemsList.push(newItem);
-
-            const result2 = await DataController.insert(
-              "po_orders_items",
-              newItem
-            );
-            if (result2 && newItem.orders_skus_id) {
-              const updateOrderItemStatus = await DataController.updateByKey(
-                "orders_skus",
-                "orders_skus_id",
-                newItem.orders_skus_id,
-                "product_status_id",
-                8
-              );
-            }
-          }
-        }
       }
+      const finalPODataResult = await PODataController.get_po_details(
+        po_order_id_to_use
+      );
 
-      if (itemsList.length === 0) {
-        Alert.showErrorMessage("PO Order item is empty!");
+      if (finalPODataResult && finalPODataResult.length > 0) {
+        const { data, nested } = finalPODataResult[0];
+        poOrderDataForPDF = data;
+        itemsListForPDF = nested.items;
+
+        if (!itemsListForPDF || itemsListForPDF.length === 0) {
+          Alert.showErrorMessage("ไม่พบรายการสินค้าหลังจากดึงข้อมูล!");
+          return;
+        }
+        if (
+          !itemsListForPDF[0].hasOwnProperty("order_product_sku") ||
+          !itemsListForPDF[0].hasOwnProperty("report_product_name")
+        ) {
+          console.warn(
+            "Fetched items list might be missing 'order_product_sku' or 'report_product_name'. Check PODataController.get_po_details backend logic."
+          );
+        }
+        if (poOrderDataForPDF.po_order_status_id !== 1) {
+          console.warn(
+            `PO status in fetched data is ${poOrderDataForPDF.po_order_status_id}, expected 1.`
+          );
+        }
+      } else {
+        Alert.showErrorMessage(
+          `Couldn't fetch complete PO details for PDF: ${po_order_id_to_use}`
+        );
         return;
       }
 
-      const pdfFile = await createPOAsPDF(newPOOrder, itemsList);
+      const pdfFile = await createPOAsPDF(poOrderDataForPDF, itemsListForPDF);
       if (!pdfFile) {
         Alert.showErrorMessage("Failed to generate PDF!");
+        await DataController.update(
+          "po_orders",
+          "po_order_id",
+          po_order_id_to_use,
+          { po_order_status_id: 5 }
+        );
+
         return;
       }
 
       const factoryData = await DataController.selectByKey(
         "factories",
         "id",
-        newPOOrder.factory_id
+        poOrderDataForPDF.factory_id
       );
       let factoryEmail = "s6404062630554@email.kmutnb.ac.th"; // อีเมลเริ่มต้น
 
-      if (factoryData && factoryData.status) {
-        if (factoryData.status[0].email_address) {
-          factoryEmail = factoryData.status[0].email_address;
-        }
+      if (factoryData?.status?.[0]?.email_address) {
+        factoryEmail = factoryData.status[0].email_address;
       }
       const sendEmailResult = await sendEmail(
         pdfFile,
-        newPOOrder,
+        poOrderDataForPDF,
         factoryEmail
       );
 
@@ -1636,6 +1530,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           window.location.href = `po_order_list.php`;
         }, 2000);
       } else {
+        await DataController.update(
+          "po_orders",
+          "po_order_id",
+          po_order_id_to_use,
+          { po_order_status_id: 5 }
+        );
+
         Alert.showErrorMessage("Failed to send email!");
       }
     } catch (error) {

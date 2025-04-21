@@ -11,8 +11,8 @@ $po_order_id = isset($_GET['po_order_id']) ? $_GET['po_order_id'] : null;
     <div class="container py-4">
         <div class="d-flex align-items-center mb-4">
             <h1 class="mb-0">
-                <?= $po_order_id ? 'PO Order Details' : 'Add New PO Order'; ?>
-                <?= $po_order_id ? '<small class="text-secondary ms-2">(' . $po_order_id . ')</small>' : '' ?>
+                <?php echo $po_order_id ? 'PO Order Details' : 'Add New PO Order'; ?>
+                <?php echo $po_order_id ? '<small class="text-secondary ms-2">(' . $po_order_id . ')</small>' : '' ?>
             </h1>
         </div>
 

@@ -18,7 +18,7 @@ try {
     ];
 
     echo json_encode($response);
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo json_encode([
         'error' => $e->getMessage()
     ]);

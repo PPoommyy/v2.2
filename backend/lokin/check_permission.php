@@ -14,6 +14,6 @@ try {
     }
 
     echo json_encode(["menus" => $menus]);
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo $e->getMessage();
 }

@@ -67,7 +67,7 @@ function sendRequest($url, $params)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = $_POST['title'] ? $_POST['title'] : '';
     $accept_url = $_POST['accept_url'] ? $_POST['accept_url'] : '';
-    $cancle_url = $_POST['cancle_url'] ? $_POST['cancle_url'] : '';
+    $cancel_url = $_POST['cancel_url'] ? $_POST['cancel_url'] : '';
     $email = $_POST['email'] ? $_POST['email'] : '';
     $pdfUrl = $_POST['pdf_url'] ? $_POST['pdf_url'] : '';
     $pngUrl = $_POST['png_url'] ? $_POST['png_url'] : '';
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Email address is missing");
         }
 
-        $response = sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancle_url);
+        $response = sendEmail($title, $email, $pdfUrl, $pngUrl, $accept_url, $cancel_url);
 
         if ($response['message_id']) {
             echo json_encode(['success' => true, 'message' => 'Email sent successfully', 'request' => $pdfUrl . "\n" . $pngUrl]);

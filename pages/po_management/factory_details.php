@@ -11,9 +11,9 @@ $factory_id = isset($_GET['factory_id']) ? $_GET['factory_id'] : null;
     <div class="container">
         <p class="mb-4">
             <strong class="h1">
-                <?= $factory_id ? 'Factory Details' : 'Add New Factory'; ?>
+                <?php echo $factory_id ? 'Factory Details' : 'Add New Factory'; ?>
             </strong>
-            <?= $factory_id ? '<small class="text-secondary">(' . $factory_id . ')</small>' : '' ?>
+            <?php echo $factory_id ? '<small class="text-secondary">(' . $factory_id . ')</small>' : '' ?>
         </p>
         <div class="row">
             <div class="col-6">

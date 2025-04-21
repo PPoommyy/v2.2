@@ -13,9 +13,9 @@ $request_id = isset($_GET['request_id']) ? $_GET['request_id'] : null;
     <div class="container">
         <p class="mb-4">
             <strong class="h1">
-                <?= $order_id ? 'Order Details' : 'Add New Order'; ?>
+                <?php echo $order_id ? 'Order Details' : 'Add New Order'; ?>
             </strong>
-            <?= $order_id ? '<small class="text-secondary">(' . $order_id . ')</small>' : '' ?>
+            <?php echo $order_id ? '<small class="text-secondary">(' . $order_id . ')</small>' : '' ?>
         </p>
         <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-5 container">

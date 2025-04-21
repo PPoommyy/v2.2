@@ -490,7 +490,7 @@ function get_data($conn, $table, $columns, $filter = '', $filterParams = [], $or
     }
 }
 
-function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $offset = null, $joins = [[]], $where = [[]], $logical_operator = 'AND', $group_by = null)
+function select($conn, $table, $key, $order_by, $order_by_type, $limit = null, $offset = null, $joins = array(array()), $where = array(array()), $logical_operator = 'AND', $group_by = null)
 {
     try {
         $columnList = implode(", ", $key);

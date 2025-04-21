@@ -72,6 +72,6 @@ try {
 
     $jsonData = json_encode($response);
     echo $jsonData;
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
 }

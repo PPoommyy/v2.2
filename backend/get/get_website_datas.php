@@ -20,7 +20,7 @@ try {
     $jsonData = json_encode($arrayObject);
 
     echo $jsonData;
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo $e->getMessage();
 }
 ?>

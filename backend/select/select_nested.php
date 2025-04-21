@@ -10,8 +10,8 @@ $page_1 = isset($_GET['page1']) ? $_GET['page1'] : null;
 
 $requestData = json_decode(file_get_contents('php://input'), true);
 $column_1 = isset($requestData['column1']) ? $requestData['column1'] : null;
-$join_1 = isset($requestData['join1']) ? $requestData['join1'] : [[]];
-$where_1 = isset($requestData['where1']) ? $requestData['where1'] : [[]];
+$join_1 = isset($requestData['join1']) ? $requestData['join1'] : array(array());
+$where_1 = isset($requestData['where1']) ? $requestData['where1'] : array(array());
 $logical_operator_1 = isset($requestData['logical_operator1']) ? $requestData['logical_operator1'] : "AND";
 $group_by_1 = isset($requestData['group_by_1']) ? $requestData['group_by_1'] : null;
 $nested_key = isset($requestData['nestedKey']) ? $requestData['nestedKey'] : null;
@@ -38,8 +38,8 @@ try {
             $order_by_type = isset($nested['order_by_type']) ? $nested['order_by_type'] : "ASC";
             $limit = isset($nested['limit']) ? $nested['limit'] : null;
             $page = isset($nested['page']) ? $nested['page'] : null;
-            $joins = isset($nested['joins']) ? $nested['joins'] : [[]];
-            $where = isset($nested['where']) ? $nested['where'] : [[]];
+            $joins = isset($nested['joins']) ? $nested['joins'] : array(array());
+            $where = isset($nested['where']) ? $nested['where'] : array(array());
             $logical_operator = isset($nested['logical_operator']) ? $nested['logical_operator'] : "AND";
             $response_key = isset($nested['response_key']) ? $nested['response_key'] : $table;
 

@@ -4,14 +4,14 @@ try {
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Cache-Control: post-check=0, pre-check=0', false);
     header('Pragma: no-cache');
-    /* $HOST = 'localhost';
+    $HOST = 'localhost';
     $USERNAME = 'komsant';
     $PASSWORD = 'ktest347#';
-    $DATABASE = 'komsant_test'; */
-    $HOST = 'localhost';
+    $DATABASE = 'komsant_test';
+    /* $HOST = 'localhost';
     $USERNAME = 'root';
     $PASSWORD = '';
-    $DATABASE = 'komsant_om';
+    $DATABASE = 'komsant_om'; */
     $conn = new PDO("mysql:host=$HOST;dbname=$DATABASE;charset=utf8", $USERNAME, $PASSWORD);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     //echo "Connected successfully"; 

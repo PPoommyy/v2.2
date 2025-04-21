@@ -17,8 +17,8 @@ $po_order_id = isset($_GET['po_order_id']) ? $_GET['po_order_id'] : null;
         <div class="container py-4">
             <div class="d-flex align-items-center mb-4">
                 <h1 class="mb-0 fs-3">
-                    <?= $po_order_id ? 'PO Order Details' : 'Add New PO Order'; ?>
-                    <?= $po_order_id ? '<small class="text-secondary ms-2">(' . $po_order_id . ')</small>' : '' ?>
+                    <?php echo $po_order_id ? 'PO Order Details' : 'Add New PO Order'; ?>
+                    <?php echo $po_order_id ? '<small class="text-secondary ms-2">(' . $po_order_id . ')</small>' : '' ?>
                 </h1>
             </div>
 
@@ -34,12 +34,15 @@ $po_order_id = isset($_GET['po_order_id']) ? $_GET['po_order_id'] : null;
                                 ["Factory Number", "factory-number", "Factory Number"],
                                 ["Factory Email", "factory-email", "Factory Email"]
                             ];
-                            foreach ($inputs as [$label, $id, $placeholder]) {
+                            foreach ($inputs as $input) {
+                                $label = $input[0];
+                                $id = $input[1];
+                                $placeholder = $input[2];
                                 echo "
-                        <div class='mb-3'>
-                            <label class='form-label fw-bold'>$label</label>
-                            <input type='text' id='$id' class='form-control' placeholder='$placeholder' disabled>
-                        </div>";
+                                    <div class='mb-3'>
+                                        <label class='form-label fw-bold'>$label</label>
+                                        <input type='text' id='$id' class='form-control' placeholder='$placeholder' disabled>
+                                    </div>";
                             }
                             ?>
 

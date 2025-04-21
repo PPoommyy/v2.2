@@ -336,7 +336,7 @@ createPoOrderButton.addEventListener("click", async () => {
   }
 
   const encodedData = encodeURIComponent(JSON.stringify(selectedItems));
-  const queryString = `pre_po_details.php?factory_id=${selectedFactory}&data=${encodedData}${
+  const queryString = `./pre_po_details.php?factory_id=${selectedFactory}&data=${encodedData}${
     poDraft.length > 0 ? `&po_order_id=${poDraft[0].data.po_order_id}` : ""
   }`;
   window.location.href = queryString;

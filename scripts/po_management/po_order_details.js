@@ -695,7 +695,7 @@ async function createPOAsPDF(newPOOrder, itemsList) {
     const logoBase64 = await toBase64("../../assets/img/boxsense.jpeg");
     /* const NotoSansThai = await toBase64(
       "../../assets/webfonts/NotoSansThai-Regular.ttf"
-    );
+    ); 
     const NotoSansThaiBold = await toBase64(
       "../../assets/webfonts/NotoSansThai-Bold.ttf"
     ); */
