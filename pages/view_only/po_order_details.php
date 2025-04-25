@@ -53,6 +53,14 @@
                             processingText.innerText = 'Processing...';
                             actionArea.appendChild(processingText);
 
+                            const shippedButton = document.createElement('button');
+                            shippedButton.className = 'btn btn-warning me-2';
+                            shippedButton.innerHTML = '<i class="fa fa-truck-fast"></i> Shipped';
+                            shippedButton.addEventListener('click', function() {
+                                sendConfirmation(poOrderId, 'shipped');
+                            });
+                            actionArea.appendChild(shippedButton);
+
                             const cancelButton = document.createElement('button');
                             cancelButton.className = 'btn btn-secondary';
                             cancelButton.innerHTML = '<i class="fa fa-ban"></i> Cancel';
@@ -70,6 +78,11 @@
                             canceledText.className = 'fw-bold text-danger';
                             canceledText.innerText = 'PO Order Is Canceled';
                             actionArea.appendChild(canceledText);
+                        } else if (status == 6) {
+                            const shippedText = document.createElement('div');
+                            shippedText.className = 'fw-bold text-danger';
+                            shippedText.innerText = 'PO Order Is Shipped';
+                            actionArea.appendChild(shippedText);
                         } else {
                             const unknownText = document.createElement('div');
                             unknownText.className = 'fw-bold text-muted';

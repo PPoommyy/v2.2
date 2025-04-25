@@ -523,68 +523,42 @@ function toggleDatePicker(inputId) {
 
 function generateFileListContent(files) {
   const contentContainer = document.createElement("div");
-  contentContainer.classList.add("file-list-container", "container"); // Add Bootstrap container class
+  contentContainer.classList.add("file-list-container", "container");
 
-  // File list container
   const fileListContainer = document.createElement("div");
   fileListContainer.classList.add(
     "file-list-scroll",
     "d-flex",
     "overflow-auto"
-  ); // Add Bootstrap flexbox and wrap
+  );
 
-  // Populate the file list container with file items
   files.forEach((file) => {
     const fileItem = document.createElement("div");
-    fileItem.classList.add("file-item", "p-2", "text-center"); // Add padding and centering
-    // console.log(file);
+    fileItem.classList.add("file-item", "p-2", "text-center");
     if (isImageFile(file.file_name)) {
-      // Display image if it's an image file
       const imageElement = document.createElement("img");
       imageElement.src = file.file_pathname;
       imageElement.alt = file.file_name;
-      imageElement.classList.add("img-fluid", "mb-2"); // Use Bootstrap img-fluid class for responsive images
+      imageElement.classList.add("img-fluid", "mb-2");
       fileItem.appendChild(imageElement);
     } else if (isTxtFile(file.file_name)) {
-      // Display .txt file using iframe
       const iframeElement = document.createElement("iframe");
       iframeElement.src = file.file_pathname;
-      iframeElement.width = "100%"; // Use Bootstrap width class for responsiveness
-      iframeElement.classList.add("border", "p-2", "mb-2"); // Add border, padding, and margin
+      iframeElement.width = "100%";
+      iframeElement.classList.add("border", "p-2", "mb-2");
       fileItem.appendChild(iframeElement);
     }
 
-    // console.log(fileItem);
-    // Display file name and download button
     const fileNameElement = document.createElement("p");
     fileNameElement.textContent = file.file_name;
-    fileNameElement.classList.add("mb-2"); // Add margin-bottom
+    fileNameElement.classList.add("mb-2");
     fileItem.appendChild(fileNameElement);
 
-    /* 
-        const downloadButton = document.createElement('button');
-            downloadButton.classList.add('btn', 'btn-primary');
-            downloadButton.innerHTML = 'Download';
-            downloadButton.addEventListener('click', async ()=>{
-                try {
-                    const result = await DataController.download(file.file_pathname);
-                    const link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(result);
-                    link.download = file.file_name;
-                    link.click();
-                    Alert.showSuccessMessage("Download file successfully!");
-                } catch (error) {
-                    Alert.showErrorMessage("File Downloaded failed!");
-                }
-            });
-        */
     const downloadButton = document.createElement("button");
     downloadButton.classList.add("btn", "btn-primary");
     downloadButton.innerText = "Download";
-    // console.log(downloadButton);
     downloadButton.type = "button";
     downloadButton.id = file.file_name.toLowerCase();
-    // console.log('Event listener before adding:', downloadButton.onclick); // Log existing event listener
     downloadButton.addEventListener("click", async () => {
       try {
         const result = await DataController.download(file.file_pathname);
@@ -598,30 +572,25 @@ function generateFileListContent(files) {
 
         Alert.showSuccessMessage("Download file successfully!");
       } catch (error) {
-        console.error("Download error:", error); // <--- เพิ่ม log นี้
+        console.error("Download error:", error);
         Alert.showErrorMessage("File Download failed!");
       }
     });
-
-    // console.log('Event listener after adding:', downloadButton.onclick); // Log updated event listener
 
     fileItem.appendChild(downloadButton);
 
     fileListContainer.appendChild(fileItem);
   });
 
-  // Append file list container to content container
   contentContainer.appendChild(fileListContainer);
 
   return contentContainer;
 }
 
-// Function to handle click event on paperClipIcon button
 function handlePaperClipIconClick(files) {
-  const modalContent = generateFileListContent(files, 0); // Initialize with first file
-  const modalElement = createModalElement(modalContent); // Create modal element with content
+  const modalContent = generateFileListContent(files, 0);
+  const modalElement = createModalElement(modalContent);
 
-  // Open the modal using your custom Modal module
   Modal.openModal(modalElement);
 }
 

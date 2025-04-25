@@ -193,6 +193,9 @@ const saveFactory = async () => {
   try {
     await Promise.all([...updateOperations, ...deleteOperations]);
     Alert.showSuccessMessage("Factory details and SKUs updated successfully.");
+    setTimeout(() => {
+      location.reload();
+    }, 3000);
   } catch (error) {
     console.error("Error updating/deleting SKUs:", error);
     Alert.showErrorMessage("Failed to update factory SKUs.");

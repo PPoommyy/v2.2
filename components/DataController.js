@@ -1,3 +1,5 @@
+import { Alert } from "./Alert.js";
+
 const insert = async (table, insertedData) => {
   try {
     const response = await axios.post(

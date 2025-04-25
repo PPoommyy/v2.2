@@ -16,6 +16,17 @@
                         <ul id="warehouses-dropdown" class="dropdown-menu" aria-labelledby="dropdown">
                         </ul>
                     </div>
+                    <div class="mb-3">
+                        <label for="po-selector" class="form-label fw-bold">เลือก PO ที่ต้องการนำเข้า</label>
+                        <select id="po-selector" class="form-select" multiple style="height: 200px;">
+                        </select>
+                        <div class="form-text">กด Ctrl (หรือ ⌘ บน Mac) เพื่อเลือกหลาย PO</div>
+
+                        <button id="import-po-items" class="btn btn-outline-primary mt-2">
+                            <i class="fa fa-download me-1"></i> นำเข้าสินค้าจาก PO ที่เลือก
+                        </button>
+                    </div>
+
                 </div>
             </div>
             <div class="col-sm-12 col-md-12 col-lg-7 row">

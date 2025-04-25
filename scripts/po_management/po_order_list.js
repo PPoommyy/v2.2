@@ -72,7 +72,6 @@ async function generateTable(limit, page) {
     po_orders = await PODataController.get_po_list(filterValues, limit, page);
     const factories = await PODataController.get_factory_list();
     const po_orders_status = await PODataController.get_po_order_status();
-
     generateDropdown(factories, po_orders_status);
     /* const totalCount = result.count;
     const totalPages = Math.ceil(totalCount / limit);
@@ -174,7 +173,13 @@ async function generateTable(limit, page) {
         ])
       );
       tableRow.appendChild(
-        Cell.createSpanCell(order_status, false, items.length)
+        Cell.createSelectOnModalCell(
+          "Order Status",
+          po_orders_status,
+          po_order_id,
+          "po_order_status_id",
+          order_status
+        )
       );
 
       tableBody.appendChild(tableRow);
@@ -280,14 +285,7 @@ async function generateDropdown(factories, po_orders_status) {
         "order-filter"
       );
     });
-    /* payment_status.forEach((paymentStatusName) => {
-      appendDropdownList(
-        selectedPaymentStatus,
-        paymentStatusDropdown,
-        paymentStatusName,
-        "payment-filter"
-      );
-    }); */
+
     dateInputStart.addEventListener("change", () => {
       const checkbox = document.getElementById("daterange-filter");
       checkbox.checked = true;

@@ -167,87 +167,63 @@ function update_stock($conn, $to_update)
         $results = [];
 
         foreach ($to_update as $item) {
-            $sku_settings_id = $item['sku_settings_id'];
-            $quantity_to_issue = $item['quantity_to_issue'];
+            $sku_settings_id = (int)$item['sku_settings_id'];
+            $quantity_to_issue = (int)$item['quantity_to_issue'];
+            $warehouse_id = isset($item['warehouse_id']) ? (int)$item['warehouse_id'] : 1;
             $total_issued = 0;
 
-            // ดึงจำนวนสินค้าในคลังทั้งหมด
-            $checkStock = "SELECT SUM(remaining_quantity) AS total_stock FROM stock WHERE sku_settings_id = ?";
-            $stmt = $conn->prepare($checkStock);
-            $stmt->execute([$sku_settings_id]);
-            $stockInfo = $stmt->fetch(PDO::FETCH_ASSOC);
-            $total_stock = $stockInfo['total_stock'] ? $stockInfo['total_stock'] : 0;
+            // 🔁 เบิกจาก stock ที่มีอยู่ก่อน
+            $sql = "SELECT id, remaining_quantity FROM stock 
+                    WHERE sku_settings_id = ? AND warehouse_id = ? AND remaining_quantity > 0 
+                    ORDER BY received_date ASC";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$sku_settings_id, $warehouse_id]);
+            $stock_rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            if ($total_stock === 0) {
-                $results[] = [
-                    'sku_settings_id' => $sku_settings_id,
-                    'quantity_requested' => $quantity_to_issue,
-                    'quantity_issued' => 0,
-                    'status' => 'not_found'
-                ];
-                continue;
-            } elseif ($total_stock < $quantity_to_issue) {
-                $results[] = [
-                    'sku_settings_id' => $sku_settings_id,
-                    'quantity_requested' => $quantity_to_issue,
-                    'quantity_issued' => $total_stock,
-                    'status' => 'not_enough'
-                ];
-                $quantity_to_issue = $total_stock;
-            }
-
-            while ($quantity_to_issue > 0) {
-                $sql = "SELECT id, remaining_quantity FROM stock 
-                            WHERE sku_settings_id = ? AND remaining_quantity > 0 
-                            ORDER BY received_date ASC 
-                            LIMIT 1";
-
-                $stmt = $conn->prepare($sql);
-                $stmt->execute([$sku_settings_id]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if (!$row) {
-                    break;
-                }
+            foreach ($stock_rows as $row) {
+                if ($quantity_to_issue <= 0) break;
 
                 $stock_id = $row['id'];
-                $remaining = $row['remaining_quantity'];
+                $available = (int)$row['remaining_quantity'];
+                $used = min($available, $quantity_to_issue);
 
-                if ($remaining >= $quantity_to_issue) {
-                    $updateStock = "UPDATE stock SET remaining_quantity = remaining_quantity - ? WHERE id = ?";
-                    $stmt = $conn->prepare($updateStock);
-                    $stmt->execute([$quantity_to_issue, $stock_id]);
+                // อัปเดต stock
+                $updateStock = "UPDATE stock SET remaining_quantity = remaining_quantity - ? WHERE id = ?";
+                $stmt = $conn->prepare($updateStock);
+                $stmt->execute([$used, $stock_id]);
 
-                    $insertOut = "INSERT INTO stock_out (stock_id, sku_settings_id, quantity, issued_date) 
-                                      VALUES (?, ?, ?, NOW())";
-                    $stmt = $conn->prepare($insertOut);
-                    $stmt->execute([$stock_id, $sku_settings_id, $quantity_to_issue]);
+                // บันทึก stock_out
+                $insertOut = "INSERT INTO stock_out (stock_id, sku_settings_id, quantity, issued_date) 
+                              VALUES (?, ?, ?, NOW())";
+                $stmt = $conn->prepare($insertOut);
+                $stmt->execute([$stock_id, $sku_settings_id, $used]);
 
-                    $total_issued += $quantity_to_issue;
-                    $quantity_to_issue = 0;
-                } else {
-                    $updateStock = "UPDATE stock SET remaining_quantity = 0 WHERE id = ?";
-                    $stmt = $conn->prepare($updateStock);
-                    $stmt->execute([$stock_id]);
-
-                    $insertOut = "INSERT INTO stock_out (stock_id, sku_settings_id, quantity, issued_date) 
-                                      VALUES (?, ?, ?, NOW())";
-                    $stmt = $conn->prepare($insertOut);
-                    $stmt->execute([$stock_id, $sku_settings_id, $remaining]);
-
-                    $total_issued += $remaining;
-                    $quantity_to_issue -= $remaining;
-                }
+                $quantity_to_issue -= $used;
+                $total_issued += $used;
             }
 
-            if ($total_issued > 0) {
-                $results[] = [
-                    'sku_settings_id' => $sku_settings_id,
-                    'quantity_requested' => $item['quantity_to_issue'],
-                    'quantity_issued' => $total_issued,
-                    'status' => 'success'
-                ];
+            // ✅ ถ้ายังไม่พอ → สร้างแถวใหม่พร้อมติดลบ
+            if ($quantity_to_issue > 0) {
+                $insertStock = "INSERT INTO stock (sku_settings_id, quantity, remaining_quantity, warehouse_id, received_date)
+                                VALUES (?, ?, ?, ?, NOW())";
+                $stmt = $conn->prepare($insertStock);
+                $stmt->execute([$sku_settings_id, 0, -$quantity_to_issue, $warehouse_id]);
+
+                $stock_id = $conn->lastInsertId();
+
+                $insertOut = "INSERT INTO stock_out (stock_id, sku_settings_id, quantity, issued_date) 
+                              VALUES (?, ?, ?, NOW())";
+                $stmt = $conn->prepare($insertOut);
+                $stmt->execute([$stock_id, $sku_settings_id, $quantity_to_issue]);
+
+                $total_issued += $quantity_to_issue;
             }
+
+            $results[] = [
+                'sku_settings_id' => $sku_settings_id,
+                'quantity_issued' => $total_issued,
+                'status' => 'success'
+            ];
         }
 
         $conn->commit();

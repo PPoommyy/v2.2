@@ -134,8 +134,8 @@ try {
                     buyer_phone_number, recipient_name, ship_phone_number, ship_promotion_discount, 
                     shipping_fee, ship_address_1, ship_address_2, ship_address_3, ship_city, 
                     ship_state, ship_postal_code, ship_country, date_created, date_updated, 
-                    timesort, order_status_id, order_type_id, fulfillment_status, website_id, 
-                    currency_id, payment_method_id, raw_address, order_note
+                    timesort, order_status_id, order_type_id, website_id, 
+                    currency_id, payment_method_id, override_address, raw_address, order_note
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                 $orderInsert->execute(array(
@@ -161,10 +161,10 @@ try {
                     $newTimeSort,
                     $order['order_status_id'] > 1 ? $order['order_status_id'] - 1 : 6,
                     1,
-                    'Processing',
                     $site['website_id'],
                     $currencyId,
                     $paymentMethodId,
+                    null,
                     $addressData['raw_address'],
                     null
                 ));
@@ -179,25 +179,38 @@ try {
                     $skuStmt->execute(array($productModel));
                     $sku = $skuStmt->fetch(PDO::FETCH_ASSOC);
 
-                    if ($sku) {
-                        $uniqueId = $targetOrderId . ',' . $sku['id'];
-                        $orderSkuInsert = $target_db->prepare("INSERT INTO orders_skus (
-                            unique_id, order_id, order_item_id, sku_settings_id, 
-                            item_price, shipping_price, total, quantity_purchased, 
-                            product_status_id
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                        $orderSkuInsert->execute(array(
-                            $uniqueId,
-                            $targetOrderId,
-                            $sku['id'],
-                            $sku['id'],
-                            $item['price'],
-                            0.0,
-                            $item['total'],
-                            $item['quantity'],
+                    if (!$sku) {
+                        $skuInsert = $target_db->prepare("INSERT INTO sku_settings (order_product_sku, report_product_name, warehouse_id, warehouse_sku_id, sku_brand_id) VALUES (?, ?, ?, ?, ?)");
+                        $skuInsert->execute(array(
+                            $productModel,
+                            $item['name'],
+                            1,
+                            1,
                             1
                         ));
+                        $skuId = $target_db->lastInsertId();
+                    } else {
+                        $skuId = $sku['id'];
                     }
+
+                    $uniqueId = $targetOrderId . ',' . $skuId;
+                    $orderSkuInsert = $target_db->prepare("INSERT INTO orders_skus (
+                        unique_id, order_id, order_item_id, sku_settings_id, 
+                        item_price, shipping_price, total, quantity_purchased, 
+                        product_status_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                    $orderSkuInsert->execute(array(
+                        $uniqueId,
+                        $targetOrderId,
+                        $skuId,
+                        $skuId,
+                        $item['price'],
+                        0.0,
+                        $item['total'],
+                        $item['quantity'],
+                        1
+                    ));
                 }
                 $processed++;
                 $existingSourceOrderIds[$order['order_id']] = true;

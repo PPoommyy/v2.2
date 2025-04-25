@@ -1,6 +1,7 @@
 import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 import { Downloader } from "../../components/Downloader.js";
+import { PODataController } from "../../components/PODataController.js";
 
 const get_sku_search = async (searchTerm) => {
   try {
@@ -178,10 +179,11 @@ const generateDropdown = async () => {
   });
 };
 
-const generateItemListTable = () => {
+const generateItemListTable = async () => {
   const itemDataContainer = document.getElementById("item-data-container");
   itemDataContainer.innerHTML = "";
-
+  const shipped_po_list = await PODataController.get_shipped_po_list();
+  console.log("shipped_po_list", shipped_po_list);
   const tableElement = document.createElement("table");
   tableElement.classList.add(
     "table",
@@ -378,10 +380,19 @@ insertStockButton.addEventListener("click", async function (event) {
     items.forEach(async (item) => {
       const response = await DataController.insert("stock", item);
     });
+    const selectedPOs = Array.from(
+      document.getElementById("po-selector").selectedOptions
+    ).map((opt) => opt.value);
+
+    for (const po_order_id of selectedPOs) {
+      await DataController.update("po_orders", "po_order_id", po_order_id, {
+        po_order_status_id: 3,
+      });
+    }
     Alert.showSuccessMessage("✅ สินค้าถูกเพิ่มเข้าสต็อกสำเร็จ!", "success");
     // delay 3 second to refresh page
     setTimeout(() => {
-      // location.reload();
+      location.reload();
     }, 3000);
   } catch (error) {
     console.error(error);
@@ -390,13 +401,83 @@ insertStockButton.addEventListener("click", async function (event) {
     toggleSpinner(false);
   }
 });
+const importPOItems = async () => {
+  const selectedPOs = Array.from(
+    document.getElementById("po-selector").selectedOptions
+  ).map((opt) => opt.value);
+  if (selectedPOs.length === 0) {
+    Alert.showErrorMessage("❌ กรุณาเลือกอย่างน้อย 1 PO", "danger");
+    return;
+  }
+
+  const shipped_po_list = await PODataController.get_shipped_po_list();
+
+  const selectedItems = shipped_po_list
+    .filter((po) => selectedPOs.includes(po.data.po_order_id))
+    .flatMap((po) => po.nested.items);
+
+  const tbody = document.getElementById("item-list-body");
+
+  selectedItems.forEach((item) => {
+    const tableRow = document.createElement("tr");
+    tableRow.classList.add("item", "row");
+
+    const skuInput = createInput(
+      "text",
+      "order-product-sku",
+      item.order_product_sku,
+      true
+    );
+    skuInput.setAttribute("order_product_id", item.sku_settings_id);
+    skuInput.setAttribute("order_product_name", item.report_product_name);
+    tableRow.appendChild(createTableCell(skuInput, 8));
+
+    const quantityInput = createInput(
+      "number",
+      "quantity-purchased",
+      item.quantity,
+      false
+    );
+    quantityInput.min = 1;
+    tableRow.appendChild(createTableCell(quantityInput, 2));
+
+    const removeButton = document.createElement("button");
+    removeButton.classList.add("btn", "btn-danger", "btn-sm");
+    removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+    removeButton.addEventListener("click", () => tableRow.remove());
+    tableRow.appendChild(createTableCell(removeButton, 2));
+
+    tbody.appendChild(tableRow);
+  });
+
+  Alert.showSuccessMessage("📦 เพิ่มสินค้าจาก PO สำเร็จ!", "success");
+};
+
+const loadPOSelector = async () => {
+  const poSelector = document.getElementById("po-selector");
+  const shipped_po_list = await PODataController.get_shipped_po_list();
+
+  poSelector.innerHTML = "";
+
+  shipped_po_list.forEach((po) => {
+    const { data } = po;
+    const option = document.createElement("option");
+    option.value = data.po_order_id;
+    option.text = `PO #${data.po_order_id} - ${data.factory_name}`;
+    poSelector.appendChild(option);
+  });
+};
 
 // เพิ่ม event listeners สำหรับปุ่มใหม่
 importCSVButton.addEventListener("click", handleCSVImport);
 downloadTemplateButton.addEventListener("click", handleTemplateDownload);
+document
+  .getElementById("import-po-items")
+  .addEventListener("click", importPOItems);
 
 document.addEventListener("DOMContentLoaded", () => {
   toggleSpinner(false);
+  loadPOSelector();
   generateItemListTable();
   generateDropdown();
 });

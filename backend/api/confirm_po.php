@@ -18,6 +18,8 @@ try {
         $new_status_id = 2;
     } else if ($action == 'cancel') {
         $new_status_id = 1;
+    } else if ($action == 'shipped') {
+        $new_status_id = 6;
     } else {
         throw new Exception("Invalid action");
     }

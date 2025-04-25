@@ -14,6 +14,102 @@ const get_stock_search = async (searchTerm) => {
   }
 };
 
+const get_order_data = async () => {
+  try {
+    const column1 = [
+      "o.order_id",
+      "o.payments_date",
+      "o.buyer_name",
+      "o.ship_phone_number",
+      "o.ship_promotion_discount",
+      "o.shipping_fee",
+      "o.deposit",
+      "o.ship_address_1",
+      "o.ship_address_2",
+      "o.ship_address_3",
+      "o.ship_city",
+      "o.ship_state",
+      "o.ship_postal_code",
+      "o.ship_country",
+      "o.timesort",
+      "o.raw_address",
+      "o.override_address",
+      "o.order_note",
+      "w.name as website_name",
+      "w.id as website_id",
+      "c.name as currency_code",
+      "c.id as currency_id",
+      "pm.name as payment_methods",
+      "pm.id as payment_method_id",
+      "ost.name as order_status",
+      "ost.id as order_status_id",
+      "ot.name as order_type",
+      "ot.id as order_type_id",
+    ];
+    const join1 = [
+      ["orders_skus os", "o.order_id", "os.order_id"],
+      ["currencies c", "o.currency_id", "c.id"],
+      ["websites w", "o.website_id", "w.id"],
+      ["payment_methods pm", "o.payment_method_id", "pm.id"],
+      ["order_status ost", "o.order_status_id", "ost.id"],
+      ["order_types ot", "o.order_type_id", "ot.id"],
+    ];
+    const where1 = [["o.order_status_id", "=", 6]];
+    const nestedKey = "order_id";
+
+    const nestedTables = [
+      {
+        table: "orders_skus os",
+        columns: [
+          "os.orders_skus_id",
+          "os.unique_id",
+          "os.order_item_id",
+          "os.sku_settings_id",
+          "os.item_price",
+          "os.quantity_purchased",
+          "os.shipping_price",
+          "os.total",
+          "ss.order_product_sku",
+          "ss.report_product_name",
+          "ws.name AS sku",
+          "sb.name AS brand",
+        ],
+        order_by: "os.orders_skus_id",
+        joins: [
+          ["sku_settings ss", "os.sku_settings_id", "ss.id"],
+          ["warehouse_skus ws", "ss.warehouse_sku_id", "ws.id"],
+          ["sku_brands sb", "ss.sku_brand_id", "sb.id"],
+        ],
+        response_key: "items",
+      },
+      {
+        table: "order_files of",
+        columns: ["of.id", "of.order_id", "file_name", "file_pathname"],
+        order_by: "of.id",
+        response_key: "files",
+      },
+    ];
+    const response = await DataController.selectNested(
+      "orders o",
+      column1,
+      "o.timesort",
+      "DESC",
+      null,
+      null,
+      join1,
+      where1,
+      null,
+      nestedKey,
+      nestedTables,
+      "o.order_id"
+    );
+    return response.status;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 const get_stock = async (table, limit, page) => {
   try {
     const response = await axios.get(
@@ -419,6 +515,16 @@ updateStockButton.addEventListener("click", async function (event) {
   try {
     toggleSpinner(true);
     const response = await update_stock(items);
+    console.log(response);
+    const selectedOrders = Array.from(
+      document.getElementById("order-selector").selectedOptions
+    ).map((opt) => opt.value);
+
+    for (const order_id of selectedOrders) {
+      await DataController.update("orders", "order_id", order_id, {
+        order_status_id: 2,
+      });
+    }
     Alert.showSuccessMessage("✅ อัปเดตสต็อกสำเร็จ!", "success");
   } catch (error) {
     console.error(error);
@@ -431,7 +537,110 @@ updateStockButton.addEventListener("click", async function (event) {
 importCSVButton.addEventListener("click", handleCSVImport);
 downloadTemplateButton.addEventListener("click", handleTemplateDownload);
 
+const importOrderItems = async () => {
+  const selectedOrders = Array.from(
+    document.getElementById("order-selector").selectedOptions
+  ).map((opt) => opt.value);
+
+  if (selectedOrders.length === 0) {
+    Alert.showErrorMessage("❌ กรุณาเลือกอย่างน้อย 1 Order", "danger");
+    return;
+  }
+
+  try {
+    const orderDataList = await get_order_data();
+
+    const matchedOrders = orderDataList.filter((order) =>
+      selectedOrders.includes(order.data.order_id.toString())
+    );
+
+    const selectedItems = matchedOrders.flatMap((order) =>
+      order.nested.items.map((item) => ({
+        ...item,
+        order_product_sku: item.order_product_sku,
+        report_product_name: item.report_product_name,
+        sku_settings_id: item.sku_settings_id,
+        quantity: item.quantity_purchased,
+        total_remaining: item.total_remaining || 99, // fallback for demo
+      }))
+    );
+
+    const tbody = document.getElementById("item-list-body");
+
+    selectedItems.forEach((item) => {
+      const tableRow = document.createElement("tr");
+      tableRow.classList.add("item", "row");
+
+      const skuInput = createInput(
+        "text",
+        "order-product-sku",
+        item.order_product_sku,
+        true
+      );
+      skuInput.setAttribute("order_product_id", item.sku_settings_id);
+      skuInput.setAttribute("order_product_name", item.report_product_name);
+      skuInput.setAttribute("total_remaining", item.total_remaining);
+      tableRow.appendChild(createTableCell(skuInput, 6));
+
+      const remainingQuantityInput = createInput(
+        "number",
+        "total-remaining",
+        item.total_remaining,
+        true
+      );
+      tableRow.appendChild(createTableCell(remainingQuantityInput, 2));
+
+      const quantityInput = createInput(
+        "number",
+        "quantity-to-issue",
+        item.quantity,
+        false
+      );
+      quantityInput.min = 1;
+      quantityInput.max = item.total_remaining;
+      tableRow.appendChild(createTableCell(quantityInput, 2));
+
+      const removeButton = document.createElement("button");
+      removeButton.classList.add("btn", "btn-danger", "btn-sm");
+      removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+      removeButton.addEventListener("click", () => tableRow.remove());
+      tableRow.appendChild(createTableCell(removeButton, 2));
+
+      tbody.appendChild(tableRow);
+    });
+
+    Alert.showSuccessMessage("📤 เพิ่มรายการเบิกสินค้าสำเร็จ", "success");
+  } catch (error) {
+    console.error("❌ โหลดสินค้าจาก Order ไม่สำเร็จ", error);
+    Alert.showErrorMessage("❌ โหลดสินค้าจาก Order ไม่สำเร็จ", "danger");
+  }
+};
+
+const loadOrderSelector = async () => {
+  try {
+    const orderSelector = document.getElementById("order-selector");
+
+    const orderDataList = await get_order_data();
+
+    orderSelector.innerHTML = "";
+    orderDataList.forEach((order) => {
+      const { order_id, timesort, buyer_name } = order.data;
+      const option = document.createElement("option");
+      option.value = order_id;
+      option.textContent = `Order #${timesort} - ${buyer_name}`;
+      orderSelector.appendChild(option);
+    });
+  } catch (error) {
+    console.error("❌ โหลดรายการ Order ไม่สำเร็จ", error);
+  }
+};
+
+document
+  .getElementById("import-order-items")
+  .addEventListener("click", importOrderItems);
+
 document.addEventListener("DOMContentLoaded", () => {
   toggleSpinner(false);
   generateItemListTable();
+  loadOrderSelector();
 });
