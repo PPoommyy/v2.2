@@ -5,6 +5,7 @@
 <body>
     <?php include('../../templates_/header.php'); ?>
     <?php
+    // ฟังก์ชัน hasPermission อยู่ที่เดิม ไม่มีการเปลี่ยนแปลง
     function hasPermission($permissionName)
     {
         if (!isset($_SESSION['user']['permissions'])) return false;
@@ -20,6 +21,26 @@
         <div class="mb-3"></div>
         <div class="col-sm-12 col-md-6 col-lg-6 card mb-3 p-3 justify-content-start">
             <p class="h1 mb-3">List of Order</p>
+
+            <!-- NEW: Search Input -->
+            <div class="row mb-4">
+                <label for="search-order-input" class="col-sm-12 col-md-3 col-lg-3 col-form-label">Search Order</label>
+                <div class="col-sm-12 col-md-8 col-lg-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search-order-input" placeholder="Enter Buyer Name or Email">
+                        <span class="input-group-text bg-secondary text-white"><i class="fas fa-search"></i></span>
+                    </div>
+                </div>
+                <div class="col-1">
+                    <div>
+                        <input type="checkbox" id="search-filter-active" data-toggle="tooltip" data-placement="top" title="Include Search Term" checked />
+                        <small class="text-muted d-none">Always active if text present</small> <!-- Or make this visible and functional -->
+                    </div>
+                </div>
+            </div>
+            <!-- END NEW: Search Input -->
+
+
             <div class="row mb-4">
                 <div class="col-sm-12 col-md-3 col-lg-3">Sale Channel</div>
                 <div class="col-sm-12 col-md-8 col-lg-8 btn-group">
@@ -43,8 +64,8 @@
                                 <label class="input-group-text bg-secondary text-white" for="order-date-input-start"><span class="fa fa-calendar"></span></label>
                             </div>
                         </div>
-                        <div class="col-2 d-flex justify-content-center">
-                            <p class="h3"> - </p>
+                        <div class="col-2 d-flex justify-content-center align-items-center">
+                            <p class="h3 m-0"> - </p>
                         </div>
                         <div class="col-5">
                             <div class="input-group" id='dateEnd'>
@@ -87,7 +108,7 @@
                 </div>
             </div>
             <div class="d-md-flex justify-content-md-end">
-                <button id="filter-button" class="btn btn-primary" type="button">Filter</button>
+                <button id="filter-button" class="btn btn-primary" type="button"><i class="fas fa-filter me-1"></i>Filter</button>
             </div>
         </div>
         <div class="row">
@@ -113,7 +134,7 @@
                 </div>
             </div>
         </div>
-        <div id="loading-spinner" class="spinner-border text-primary fixed-top top-50 start-50" role="status">
+        <div id="loading-spinner" class="spinner-border text-primary fixed-top top-50 start-50" role="status" style="display: none; width: 3rem; height: 3rem; z-index: 1056;">
             <span class="visually-hidden">Loading...</span>
         </div>
         <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -151,64 +172,31 @@
                 </div>
             </div>
         </div>
-        <div id="order-data-container" class="overflow-scroll"></div>
+        <div id="order-data-container" class="table-responsive"></div> <!-- Added table-responsive for better small screen viewing -->
         <div class="mb-3 row">
             <div class="col-sm-12 col-md-7">
-                <!-- <button id="downloadOrders" class="btn btn-warning btn-sm" disabled>
-                    <span class="fa-solid fa-arrow-circle-down"></span> Download Orders
-                </button>
-                <button id="newDownloadOrders" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> New! Download Orders
-				</button>
-                <button id="createInvoices" class="btn btn-warning btn-sm" disabled>
-                    <span class="fa-solid fa-arrow-circle-down"></span> Create Invoice
-                </button>
-                <button id="itemSummaries" class="btn btn-warning btn-sm" disabled>
-                    <span class="fa-solid fa-arrow-circle-down"></span> Item Summary
-                </button>
-                <button id="dhlPreAlerts" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> DHL Pre-alert
-				</button>
-				<button id="dpost" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> DPOST
-				</button>
-                <button id="thpost" class="btn btn-warning btn-sm" disabled>
-                    <span class="fa-solid fa-arrow-circle-down"></span> THPOST
-                </button>
-                <button id="aftershipCSV" class="btn btn-warning btn-sm" disabled>
-					<span class="fa-solid fa-arrow-circle-down"></span> Aftership CSV
-				</button>
-                <button id="downloadBarcodes" class="btn btn-warning btn-sm" disabled>
-                    <span class="fa-solid fa-arrow-circle-down"></span> Download Barcodes
-                </button>
-                <button id="deleteOrders" class="btn btn-danger btn-sm" disabled>
-                    <span class="fa-solid fa-trash"></span> Delete
-                </button> -->
-                <div id="permission-buttons-container" class="col-sm-12 col-md-7 d-flex flex-wrap align-items-start"></div>
-
+                <div id="permission-buttons-container" class="col-sm-12 d-flex flex-wrap align-items-start"></div>
             </div>
             <div class="col-sm-12 col-md-5" id="pagination2">
                 <ul class="pagination justify-content-end"></ul>
             </div>
         </div>
-        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <!-- Modal for download orders (seems duplicated, ensure one is correct or merged) -->
+        <!-- Assuming this is the one for file list based on your existing js for handlePaperClipIconClick -->
+        <div class="modal fade" id="fileListModal" tabindex="-1" aria-labelledby="fileListModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="editModalLabel">Download Orders</h5>
+                        <h5 class="modal-title" id="fileListModalLabel">File List</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body row">
-                        <div id="ordersList" class="col-4 overflow-scroll" style="max-height: 400px;"></div>
-                        <div id="toDownload" class="col-8 overflow-scroll" style="max-height: 400px;"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="updateButton">Update</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <div class="modal-body" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Content will be injected by JavaScript -->
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
     <?php include("../../templates_/footer.php"); ?>
 </body>

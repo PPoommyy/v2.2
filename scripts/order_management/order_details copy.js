@@ -2,73 +2,36 @@ import { AddressController } from "../../components/AddressController.js";
 import { Alert } from "../../components/Alert.js";
 import { DataController } from "../../components/DataController.js";
 
-const orderIdValue = document.getElementById("orderId").value; 
-const requestIdValue = parseInt(document.getElementById("requestId").value, 10);
+const order_id = document.getElementById("orderId").value;
+const request_id = parseInt(document.getElementById("requestId").value);
 let to_return_order_id = null;
-const addProductButton = document.getElementById("add-product"); 
-let currentSkuSearchRequest = null; 
-let pendingFileToUpload = null;
+const addProduct = document.getElementById("add-product");
 
-addProductButton.addEventListener("click", function (event) {
+addProduct.addEventListener("click", function (event) {
   event.preventDefault();
   const tbody = document.getElementById("item-list-body");
-  if (!tbody) {
-    console.error("item-list-body not found!");
-    return;
-  }
-
-  const tableRow = tbody.insertRow(); 
-  tableRow.classList.add("item"); 
-
-  let cell = tableRow.insertCell();
+  const tableRow = document.createElement("tr");
+  tableRow.classList.add("item", "row");
   const skuInput = createInput("text", "order-product-sku", "", false);
   const skuDiv = createSkuDiv(skuInput);
-  cell.appendChild(skuDiv);
-
-  cell = tableRow.insertCell();
-  const priceInput = createInput("number", "item-price", "0.00", false);
-  priceInput.step = "0.01";
-  priceInput.classList.add("text-end"); 
+  tableRow.appendChild(createTableCell(skuDiv, 5));
+  const priceInput = createInput("number", "item-price", 0, false);
   priceInput.addEventListener("change", () => updateTotal(tableRow));
-  cell.appendChild(priceInput);
-
-  cell = tableRow.insertCell();
+  tableRow.appendChild(createTableCell(priceInput, 2));
   const quantityInput = createInput("number", "quantity-purchased", 1, false);
-  quantityInput.min = "1";
-  quantityInput.classList.add("text-center"); 
   quantityInput.addEventListener("change", () => updateTotal(tableRow));
-  cell.appendChild(quantityInput);
-
-  cell = tableRow.insertCell();
-  const totalInput = createInput("number", "total", "0.00", true);
-  totalInput.step = "0.01";
-  totalInput.classList.add("text-end");
-  cell.appendChild(totalInput);
-
-  cell = tableRow.insertCell();
-  cell.classList.add("text-center"); 
+  tableRow.appendChild(createTableCell(quantityInput, 2));
+  const totalInput = createInput("number", "total", 0, true);
+  tableRow.appendChild(createTableCell(totalInput, 2));
   const removeButton = document.createElement("button");
   removeButton.classList.add("btn", "btn-danger", "btn-sm");
-  removeButton.innerHTML = '<i class="fas fa-times-circle"></i>';
-  removeButton.title = "Remove item";
-  const allRows = tbody.querySelectorAll("tr");
-  allRows.forEach((row, index) => {
-      const btn = row.querySelector('.btn-danger');
-      if (btn) btn.disabled = (allRows.length === 1); 
-  });
-  
+  removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
   removeButton.addEventListener("click", () => {
     tableRow.remove();
-    updateSubtotal();
-    const remainingRows = tbody.querySelectorAll("tr");
-    if (remainingRows.length === 1) {
-        const lastRemoveButton = remainingRows[0].querySelector('.btn-danger');
-        if (lastRemoveButton) lastRemoveButton.disabled = true;
-    }
+    updateTotal(tableRow);
   });
-  cell.appendChild(removeButton);
-
-   if (removeButton.isConnected) new bootstrap.Tooltip(removeButton);
+  tableRow.appendChild(createTableCell(removeButton, 1));
+  tbody.appendChild(tableRow);
 });
 
 const discountField = document.getElementById("discount");
@@ -99,14 +62,28 @@ if (insertOrderButton) {
       const discount = document.getElementById("discount").value;
       const shippingFee = document.getElementById("shippingFee").value;
       const orderDate = document.getElementById("order-date-input").value;
-      const website_id = document.getElementById("selected-website").getAttribute("data-id");
-      const payment_method_id = document.getElementById("selected-payment").getAttribute("data-id");
-      const currency_id = document.getElementById("selected-currency").getAttribute("data-id");
-      const order_status_id = document.getElementById("selected-order-status").getAttribute("data-id");
-      const order_type_id = document.getElementById("selected-order-type").getAttribute("data-id");
-      const shipAddressInput = document.getElementById("ship-address-input").value;
-      const overrideAddressInput = document.getElementById("toggleOverrideAddress").checked ? document.getElementById("override-address-input").value : null;
-      const orderNoteInput = document.getElementById("toggleOrderNote").checked ? document.getElementById("order-note-input").value : null;
+      const website_id = document
+        .getElementById("selected-website")
+        .getAttribute("data-id");
+      const payment_method_id = document
+        .getElementById("selected-payment")
+        .getAttribute("data-id");
+      const currency_id = document
+        .getElementById("selected-currency")
+        .getAttribute("data-id");
+      const order_status_id = document
+        .getElementById("selected-order-status")
+        .getAttribute("data-id");
+      const order_type_id = document
+        .getElementById("selected-order-type")
+        .getAttribute("data-id");
+      const shipAddressInput =
+        document.getElementById("ship-address-input").value;
+      const overrideAddressInput = document.getElementById(
+        "override-address-input"
+      ).value;
+      const orderNoteInput = document.getElementById("order-note-input").value;
+      const fileInput = document.getElementById("file-input");
       const hasDeposit = document.getElementById("hasDeposit");
       const deposit = document.getElementById("deposit").value;
 
@@ -209,23 +186,19 @@ if (insertOrderButton) {
       const newTimeSort = generateNewTimeSort(idate, lastTimeSort);
 
       const formData = new FormData();
-      let uploadedFileResponse = null;
-      if (pendingFileToUpload) {
-          toggleSpinner(true); // Show spinner for file upload part
-          const formData = new FormData();
-          const safeFileName = pendingFileToUpload.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-          const timestampedFileName = `file-${Date.now()}.${safeFileName.split('.').pop()}`;
-          formData.append("file", pendingFileToUpload, timestampedFileName);
-          
-          // Create a specific subfolder for the new order's files
-          // The folder name could be the newOrderId, but ensure it's created if it doesn't exist (backend responsibility)
-          uploadedFileResponse = await DataController.upload(formData, `../../files/orders/${newOrderId}`);
-          toggleSpinner(false); // Hide spinner after file upload attempt
-          
-          if (!uploadedFileResponse || !uploadedFileResponse.status) {
-              Alert.showWarningMessage("Order data will be saved, but file upload failed: " + (uploadedFileResponse?.message || "Unknown upload error."));
-              // Decide if you want to proceed without the file or stop. For now, proceeding.
-          }
+      const file = fileInput.files[0];
+      if (file) {
+        const filename = `file-${Date.now()}.${getFileExtension(file.name)}`;
+        formData.append("file", file, filename);
+        const response = await DataController.upload(formData, "../../files/");
+
+        const to_insert_file = {
+          order_id: orderId,
+          file_name: response.fileName,
+          file_pathname: response.filePath,
+        };
+
+        const res = await DataController.insert("order_files", to_insert_file);
       }
 
       const newOrder = {
@@ -261,9 +234,9 @@ if (insertOrderButton) {
           ? 1
           : 2,
         raw_address: shipAddressInput,
+        override_address: overrideAddressInput || null,
         buyer_email: buyer_email,
-        override_address: overrideAddressInput, // Already handled by ternary above
-        order_note: orderNoteInput
+        order_note: orderNoteInput,
       };
 
       const items = tbody.querySelectorAll(".item");
@@ -321,28 +294,9 @@ if (insertOrderButton) {
         Alert.showErrorMessage("Order item is empty!");
         return;
       }
-      const orderInsertResult = await insert_order(newOrder, itemsList);
-
-      if (orderInsertResult && orderInsertResult.res1 && orderInsertResult.res2) { // Assuming res1 for order, res2 for items
-        let fileDbSaveMessage = "";
-        // If file was uploaded successfully, save its record to DB
-        if (uploadedFileResponse && uploadedFileResponse.status && uploadedFileResponse.filePath) {
-            const fileDataToSave = {
-                order_id: orderId, // Use the newly created order_id
-                file_name: uploadedFileResponse.fileName,
-                file_pathname: uploadedFileResponse.filePath,
-            };
-            const fileDbSaveResult = await DataController.insert("order_files", fileDataToSave);
-            if (!fileDbSaveResult || !fileDbSaveResult.status) {
-                fileDbSaveMessage = " (but failed to save file record)";
-            }
-        }
-        
-        Alert.showSuccessMessage(`Order Inserted Successfully${fileDbSaveMessage}`);
-        pendingFileToUpload = null;
-        document.getElementById('hiddenFileInput').value = "";
-        document.getElementById('selectedFileName').textContent = "";
-
+      const result = await insert_order(newOrder, itemsList);
+      if (result && result.res1 && result.res2) {
+        Alert.showSuccessMessage("Order Inserted Successfully");
         if (request_id) {
           const result2 = await DataController.updateByKey(
             "requests",
@@ -365,9 +319,6 @@ if (insertOrderButton) {
             "order_status_id",
             7
           );
-          pendingFileToUpload = null;
-          document.getElementById('hiddenFileInput').value = "";
-          document.getElementById('selectedFileName').textContent = "";
           setTimeout(() => {
             window.location.href = "../../pages/return_management/return.php";
           }, 2000);
@@ -392,20 +343,34 @@ if (insertOrderButton) {
 if (saveOrderButton) {
   saveOrderButton.addEventListener("click", async () => {
     try {
-      const order_details = await get_order_details(orderIdValue);
+      const order_details = await get_order_details(order_id);
       const { details, items } = order_details.data1;
       const tbody = document.getElementById("item-list-body");
       const discount = document.getElementById("discount").value;
       const shippingFee = document.getElementById("shippingFee").value;
       const orderDate = document.getElementById("order-date-input").value;
-      const website_id = document.getElementById("selected-website").getAttribute("data-id");
-      const payment_method_id = document.getElementById("selected-payment").getAttribute("data-id");
-      const currency_id = document.getElementById("selected-currency").getAttribute("data-id");
-      const order_status_id = document.getElementById("selected-order-status").getAttribute("data-id");
-      const order_type_id = document.getElementById("selected-order-type").getAttribute("data-id");
-      const shipAddressInput =  document.getElementById("ship-address-input").value;
-      const overrideAddressInput = document.getElementById("toggleOverrideAddress").checked ? document.getElementById("override-address-input").value : null;
-      const orderNoteInput = document.getElementById("toggleOrderNote").checked ? document.getElementById("order-note-input").value : null;
+      const website_id = document
+        .getElementById("selected-website")
+        .getAttribute("data-id");
+      const payment_method_id = document
+        .getElementById("selected-payment")
+        .getAttribute("data-id");
+      const currency_id = document
+        .getElementById("selected-currency")
+        .getAttribute("data-id");
+      const order_status_id = document
+        .getElementById("selected-order-status")
+        .getAttribute("data-id");
+      const order_type_id = document
+        .getElementById("selected-order-type")
+        .getAttribute("data-id");
+      const shipAddressInput =
+        document.getElementById("ship-address-input").value;
+      const overrideAddressInput = document.getElementById(
+        "override-address-input"
+      ).value;
+      const orderNoteInput = document.getElementById("order-note-input").value;
+      const fileInput = document.getElementById("file-input");
       const hasDeposit = document.getElementById("hasDeposit").checked;
       const deposit = document.getElementById("deposit").value;
 
@@ -529,6 +494,21 @@ if (saveOrderButton) {
 
       var currentDate = new Date();
       currentDate = formatDate(currentDate);
+
+      const formData = new FormData();
+      const file = fileInput.files[0];
+      if (file) {
+        const filename = `file-${Date.now()}.${getFileExtension(file.name)}`;
+        formData.append("file", file, filename);
+        const response = await DataController.upload(formData, "../../files/");
+        const to_insert_file = {
+          order_id: orderId,
+          file_name: response.fileName,
+          file_pathname: response.filePath,
+        };
+
+        const res = await DataController.insert("order_files", to_insert_file);
+      }
 
       let to_update_order = {};
 
@@ -679,11 +659,22 @@ if (saveOrderButton) {
         details.raw_address,
         shipAddressInput
       );
-       to_update_order = updatedObject(to_update_order, "override_address", details.override_address, overrideAddressInput);
-      to_update_order = updatedObject(to_update_order, "order_note", details.order_note, orderNoteInput);
+      to_update_order = updatedObject(
+        to_update_order,
+        "override_address",
+        details.override_address,
+        overrideAddressInput || null
+      );
+      to_update_order = updatedObject(
+        to_update_order,
+        "order_note",
+        details.order_note,
+        orderNoteInput
+      );
       // to_update_order = updatedObject(to_update_order, "timesort", details.timesort, newTimeSort);
 
       const itemsRows = tbody.querySelectorAll(".item");
+
       if (itemsRows.length == 0) {
         Alert.showErrorMessage("Order item can not be empty!");
         return;
@@ -743,8 +734,6 @@ if (saveOrderButton) {
 
       for (const itemInList of itemsList) {
         const index = to_delete_items.indexOf(itemInList.unique_id);
-        console.log("index", index);
-        console.log("itemInList", itemInList);
         if (index !== -1) {
           let to_update_items_object = {};
           to_update_items_object = updatedObject(
@@ -783,9 +772,6 @@ if (saveOrderButton) {
 
       const swalQueue = Alert.createQueue();
 
-      console.log("to_insert_items", to_insert_items);
-      console.log("to_update_items", to_update_items);
-      console.log("to_delete_items", to_delete_items);
       if (to_insert_items && to_insert_items.length > 0) {
         for (const to_insert_item of to_insert_items) {
           const res = await DataController.insert(
@@ -873,24 +859,26 @@ if (saveOrderButton) {
       }
 
       if (to_update_order && Object.keys(to_update_order).length > 0) {
-        const res = await update_order("order_id", orderIdValue, to_update_order);
+        const res = await update_order(
+          "order_id",
+          details.order_id,
+          to_update_order
+        );
         if (res.status) {
           Alert.showSuccessMessage("Order updated successfully");
           setTimeout(() => {
-            // window.location.reload();
+            window.location.reload();
           }, 2000);
         } else {
           Alert.showErrorMessage("Order updated failed");
           setTimeout(() => {
-            // window.location.reload();
+            window.location.reload();
           }, 2000);
         }
-      } else if (!to_insert_items.length && !to_update_items.length && !to_delete_items.length) {
-        Alert.showInfoMessage("No changes detected to save for the order details.");
       } else {
         Alert.showSuccessMessage("Order updated successfully");
         setTimeout(() => {
-          // window.location.reload();
+          window.location.reload();
         }, 2000);
       }
 
@@ -900,6 +888,29 @@ if (saveOrderButton) {
     }
   });
 }
+
+const formattedDate = (date) => {
+  if (date) {
+    const formattedDate1 = date.split("-").join("/");
+    var formattedDate2 =
+      formattedDate1.indexOf("T") != -1
+        ? formattedDate1.substring(0, formattedDate1.indexOf("T"))
+        : formattedDate1;
+    var newDate = new Date(formattedDate2);
+
+    newDate = new Date(
+      newDate.getMonth() +
+        1 +
+        "/" +
+        newDate.getDate() +
+        "/" +
+        newDate.getFullYear()
+    );
+    formattedDate2 = newDate.toDateString();
+    return formattedDate2;
+  }
+  return date;
+};
 
 const formatDate = (date) => {
   var _date =
@@ -1222,66 +1233,45 @@ const update_order_item = async (key, value, toUpdate) => {
   }
 };
 
-const generateItemsListTable = async (order_id_param, request_id_param) => {
+const generateItemsListTable = async (order_id, request_id) => {
   try {
-    // ... (logic to fetch orders, items, details - same as before) ...
     let orders = [];
     const itemDataContainer = document.getElementById("item-data-container");
-    if (!itemDataContainer) { console.error("item-data-container not found!"); return; }
     itemDataContainer.innerHTML = "";
 
     const currencyText = document.getElementById("currency");
-    if(currencyText) currencyText.innerHTML = "";
-
+    currencyText.innerHTML = "";
 
     const tableElement = document.createElement("table");
-    // REMOVE table-responsive from here, it's on the parent div
-    tableElement.classList.add( 
-      "table", // Keep 'table' class
+    tableElement.classList.add(
+      "table",
       "table-bordered",
       "table-striped",
-      "table-hover",
-      "table-sm" // Added table-sm for more compact rows
+      "table-hover"
     );
 
     const tableHeader = document.createElement("thead");
-    const tableHeaderRow = tableHeader.insertRow(); // Use insertRow for thead
-    // REMOVE: tableHeaderRow.classList.add("row"); // Not needed for standard table structure
-
-    // Define headers and their indicative classes for potential width styling via CSS
-    const headers = [
-        { text: "Product SKU", class: "col-sku" }, // Class for potential CSS width
-        { text: "Price", class: "col-price text-end" }, // text-end for numbers
-        { text: "Quantity", class: "col-qty text-center" }, // text-center for qty
-        { text: "Total", class: "col-total text-end" },
-        { text: "", class: "col-actions" } // For remove button
-    ];
-
-    headers.forEach(headerInfo => {
-        const th = document.createElement("th");
-        th.textContent = headerInfo.text;
-        if (headerInfo.class) th.classList.add(...headerInfo.class.split(' ')); // Add classes to th
-        tableHeaderRow.appendChild(th);
-    });
-    // tableHeaderRow.innerHTML = `...`; // Avoid innerHTML for building table rows/headers
-
+    const tableHeaderRow = document.createElement("tr");
+    tableHeaderRow.classList.add("row");
+    tableHeaderRow.innerHTML = `<th class="col-5">Product SKU</th>
+             <th class="col-2">Price</th>
+             <th class="col-2">Quantity</th>
+             <th class="col-2">Total</th>
+             <th class="col-1"></th>`;
+    tableHeader.appendChild(tableHeaderRow);
     tableElement.appendChild(tableHeader);
 
     const tableBody = document.createElement("tbody");
     tableBody.id = "item-list-body";
-
-    const currentOrderId = order_id_param || (request_id_param ? to_return_order_id : null);
-
-    if (currentOrderId || request_id_param) {
+    if (order_id || request_id) {
       let items = [];
       let details = {};
-      if (currentOrderId && !request_id_param) { 
-        const result = await get_order_details(order_id_param);
+      if (order_id) {
+        const result = await get_order_details(order_id);
         orders = result.data1;
         items = orders.items;
         details = orders.details;
-      }
-      else if (request_id_param) { 
+      } else if (request_id) {
         const result = await get_order_data_from_request(request_id);
         orders = result[0];
         items = orders.nested.items;
@@ -1289,146 +1279,104 @@ const generateItemsListTable = async (order_id_param, request_id_param) => {
         to_return_order_id = details.order_id;
       }
 
-      if (details.currency_code && currencyText) currencyText.innerHTML = details.currency_code;
+      currencyText.innerHTML = details.currency_code;
+      items.forEach((item, index) => {
+        const tableRow = document.createElement("tr");
+        tableRow.classList.add("item", "row");
 
-      if (items && items.length > 0) {
-          items.forEach((item, index) => {
-            const tableRow = tableBody.insertRow(); // Use insertRow for tbody
-            // REMOVE: tableRow.classList.add("item", "row");
+        const skuInput = createInput(
+          "text",
+          "order-product-sku",
+          item.order_product_sku,
+          false
+        );
+        const skuDiv = createSkuDiv(skuInput);
+        tableRow.appendChild(createTableCell(skuDiv, 5));
 
-            tableRow.classList.add("item");
-            // Cell 1: Product SKU (with dropdown search)
-            let cell = tableRow.insertCell();
-            // cell.classList.add("col-5"); // Let CSS handle width via .col-sku
-            const skuInput = createInput("text", "order-product-sku", item.order_product_sku, false);
-            skuInput.setAttribute("order_product_id", item.sku_settings_id || item.order_item_id); // Ensure ID is set
-            skuInput.setAttribute("order_product_name", item.report_product_name || item.order_product_sku);
-            const skuDiv = createSkuDiv(skuInput);
-            cell.appendChild(skuDiv);
+        const priceInput = createInput(
+          "number",
+          "item-price",
+          item.item_price,
+          false
+        );
+        priceInput.addEventListener("change", () => updateTotal(tableRow));
+        tableRow.appendChild(createTableCell(priceInput, 2));
 
-            // Cell 2: Price
-            cell = tableRow.insertCell();
-            // cell.classList.add("col-2", "text-end");
-            const priceInput = createInput("number", "item-price", parseFloat(item.item_price).toFixed(2), false);
-            priceInput.step = "0.01"; // Allow decimals
-            priceInput.classList.add("text-end");
-            priceInput.addEventListener("change", () => updateTotal(tableRow));
-            cell.appendChild(priceInput);
+        const quantityInput = createInput(
+          "number",
+          "quantity-purchased",
+          item.quantity_purchased,
+          false
+        );
+        quantityInput.addEventListener("change", () => updateTotal(tableRow));
+        tableRow.appendChild(createTableCell(quantityInput, 2));
 
-            // Cell 3: Quantity
-            cell = tableRow.insertCell();
-            // cell.classList.add("col-2", "text-center");
-            const quantityInput = createInput("number", "quantity-purchased", item.quantity_purchased, false);
-            quantityInput.min = "1"; // Min quantity
-            quantityInput.classList.add("text-center");
-            quantityInput.addEventListener("change", () => updateTotal(tableRow));
-            cell.appendChild(quantityInput);
+        const totalInput = createInput(
+          "number",
+          "total",
+          parseFloat(item.total).toFixed(2),
+          true
+        );
+        tableRow.appendChild(createTableCell(totalInput, 2));
 
-            // Cell 4: Total
-            cell = tableRow.insertCell();
-            // cell.classList.add("col-2", "text-end");
-            const totalInput = createInput("number", "total", parseFloat(item.total).toFixed(2), true);
-            totalInput.step = "0.01";
-            totalInput.classList.add("text-end");
-            cell.appendChild(totalInput);
+        const removeButton = document.createElement("button");
+        removeButton.classList.add("btn", "btn-danger", "btn-sm");
+        removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+        removeButton.disabled = index === 0;
+        removeButton.addEventListener("click", () => {
+          tableRow.remove();
+          updateTotal(tableRow);
+        });
+        tableRow.appendChild(createTableCell(removeButton, 1));
 
-            // Cell 5: Remove Button
-            cell = tableRow.insertCell();
-            // cell.classList.add("col-1", "text-center");
-            const removeButton = document.createElement("button");
-            removeButton.classList.add("btn", "btn-danger", "btn-sm");
-            removeButton.innerHTML = '<i class="fas fa-times-circle"></i>';
-            removeButton.disabled = items.length === 1; // Disable if only one item
-            removeButton.title = "Remove item";
-            // new bootstrap.Tooltip(removeButton); // Initialize after append
-            removeButton.addEventListener("click", () => {
-                tableRow.remove();
-                updateSubtotal(); // Call updateSubtotal directly
-                 // Re-evaluate disable state of remaining remove buttons
-                const remainingRows = tableBody.querySelectorAll("tr");
-                if(remainingRows.length === 1){
-                    const lastRemoveButton = remainingRows[0].querySelector('.btn-danger');
-                    if(lastRemoveButton) lastRemoveButton.disabled = true;
-                }
-            });
-            cell.appendChild(removeButton);
-          });
-      } else {
-          // No items for existing order, show a placeholder or allow adding new
-          addInitialEmptyItemRow(tableBody);
-      }
+        tableBody.appendChild(tableRow);
+      });
+      discountField.value = details.ship_promotion_discount;
+      shippingFeeField.value = details.shipping_fee;
+    } else {
+      currencyText.innerHTML = "USD";
+      const tableRow = document.createElement("tr");
+      tableRow.classList.add("item", "row");
+      const skuInput = createInput("text", "order-product-sku", "", false);
+      const skuDiv = createSkuDiv(skuInput);
+      tableRow.appendChild(createTableCell(skuDiv, 5));
 
+      const priceInput = createInput("number", "item-price", 0, false);
+      priceInput.addEventListener("change", () => updateTotal(tableRow));
+      tableRow.appendChild(createTableCell(priceInput, 2));
 
-      if(discountField && details.ship_promotion_discount !== undefined) discountField.value = details.ship_promotion_discount;
-      if(shippingFeeField && details.shipping_fee !== undefined) shippingFeeField.value = details.shipping_fee;
+      const quantityInput = createInput(
+        "number",
+        "quantity-purchased",
+        1,
+        false
+      );
+      quantityInput.addEventListener("change", () => updateTotal(tableRow));
+      tableRow.appendChild(createTableCell(quantityInput, 2));
 
-    } else { // New order
-      if(currencyText) currencyText.innerHTML = "USD"; // Default for new order
-      addInitialEmptyItemRow(tableBody); // Add one empty row to start
-      if(discountField) discountField.value = 0;
-      if(shippingFeeField) shippingFeeField.value = 0;
+      const totalInput = createInput("number", "total", 0, true);
+      tableRow.appendChild(createTableCell(totalInput, 2));
+
+      const removeButton = document.createElement("button");
+      removeButton.classList.add("btn", "btn-danger", "btn-sm");
+      removeButton.innerHTML = '<i class="fa fa-times-circle"></i>';
+      removeButton.disabled = true;
+      removeButton.addEventListener("click", () => {
+        tableRow.remove();
+        updateTotal(tableRow);
+      });
+      tableRow.appendChild(createTableCell(removeButton, 1));
+      tableBody.appendChild(tableRow);
+      discountField.value = 0;
+      shippingFeeField.value = 0;
     }
     tableElement.appendChild(tableBody);
     itemDataContainer.appendChild(tableElement);
-    initializeDynamicBootstrapComponents(tableElement);
     updateSubtotal();
   } catch (error) {
-    console.error("Error in generateItemsListTable:", error);
-    // Display an error message in the itemDataContainer
-    if(document.getElementById("item-data-container")) {
-        document.getElementById("item-data-container").innerHTML = `<div class="alert alert-danger">Could not load order items.</div>`;
-    }
+    console.error(error);
   }
 };
-
-function addInitialEmptyItemRow(tbody) {
-    const tableRow = tbody.insertRow();
-    // tableRow.classList.add("item", "row"); // Not needed for standard table
-
-    tableRow.classList.add("item");
-    let cell = tableRow.insertCell();
-    const skuInput = createInput("text", "order-product-sku", "", false);
-    const skuDiv = createSkuDiv(skuInput);
-    cell.appendChild(skuDiv);
-
-    cell = tableRow.insertCell();
-    const priceInput = createInput("number", "item-price", "0.00", false);
-    priceInput.step = "0.01";
-    priceInput.classList.add("text-end");
-    priceInput.addEventListener("change", () => updateTotal(tableRow));
-    cell.appendChild(priceInput);
-
-    cell = tableRow.insertCell();
-    const quantityInput = createInput("number", "quantity-purchased", 1, false);
-    quantityInput.min = "1";
-    quantityInput.classList.add("text-center");
-    quantityInput.addEventListener("change", () => updateTotal(tableRow));
-    cell.appendChild(quantityInput);
-
-    cell = tableRow.insertCell();
-    const totalInput = createInput("number", "total", "0.00", true);
-    totalInput.step = "0.01";
-    totalInput.classList.add("text-end");
-    cell.appendChild(totalInput);
-
-    cell = tableRow.insertCell();
-    const removeButton = document.createElement("button");
-    removeButton.classList.add("btn", "btn-danger", "btn-sm");
-    removeButton.innerHTML = '<i class="fas fa-times-circle"></i>';
-    removeButton.disabled = true; // First row cannot be removed
-    removeButton.title = "Remove item";
-    // new bootstrap.Tooltip(removeButton); // Initialize after append
-    removeButton.addEventListener("click", () => {
-        tableRow.remove();
-        updateSubtotal();
-         const remainingRows = tbody.querySelectorAll("tr");
-        if(remainingRows.length === 1){
-            const lastRemoveButton = remainingRows[0].querySelector('.btn-danger');
-            if(lastRemoveButton) lastRemoveButton.disabled = true;
-        }
-    });
-    cell.appendChild(removeButton);
-}
 
 const generateTable = async (limit, page) => {
   try {
@@ -1568,7 +1516,62 @@ const generateDropdown = async (order_id, request_id) => {
       currencyText.innerText = currency_code;
 
       if (files.length > 0) {
-        displayOrderFiles(files);
+        const fileListGroup = document.getElementById("file-list");
+        fileListGroup.innerHTML = "";
+
+        files.forEach((file) => {
+          const listItem = document.createElement("li");
+          listItem.classList.add(
+            "list-group-item",
+            "list-group-item-secondary",
+            "mb-2"
+          );
+
+          const fileList = document.createElement("span");
+          fileList.classList.add("me-2");
+          fileList.innerHTML = file.file_name;
+
+          const deleteButton = document.createElement("button");
+          deleteButton.classList.add("btn", "btn-danger", "me-1");
+          deleteButton.innerHTML = "Delete";
+
+          deleteButton.addEventListener("click", async () => {
+            const result = await DataController._delete(
+              "order_files",
+              "id",
+              file.id
+            );
+            if (result.status) {
+              Alert.showSuccessMessage("Delete file successfully!");
+              setTimeout(() => {
+                window.location.reload();
+              }, 2000);
+            } else {
+              Alert.showErrorMessage("File deleted failed!");
+            }
+          });
+
+          const downloadButton = document.createElement("button");
+          downloadButton.classList.add("btn", "btn-primary");
+          downloadButton.innerHTML = "Download";
+          downloadButton.addEventListener("click", async () => {
+            try {
+              const result = await DataController.download(file.file_pathname);
+              const link = document.createElement("a");
+              link.href = window.URL.createObjectURL(result);
+              link.download = file.file_name;
+              link.click();
+              Alert.showSuccessMessage("Download file successfully!");
+            } catch (error) {
+              Alert.showErrorMessage("File Downloaded failed!");
+            }
+          });
+
+          listItem.appendChild(fileList);
+          listItem.appendChild(deleteButton);
+          listItem.appendChild(downloadButton);
+          fileListGroup.appendChild(listItem);
+        });
       }
     }
 
@@ -1655,122 +1658,64 @@ const createTableCell = (element, colspan) => {
   return cell;
 };
 
-function createSkuDiv(skuInput) {
-  const uniqueDropdownId = `sku-dropdown-${Math.random().toString(36).substring(7)}`;
-  
+const createSkuDiv = (skuInput) => {
   const skuDiv = document.createElement("div");
-  // No need for position-relative on skuDiv if Bootstrap JS handles the dropdown positioning
-  // Bootstrap will typically append the menu to the body or a specified container.
-  skuDiv.classList.add("dropdown", "sku-search-dropdown-container"); // Keep sku-search-dropdown-container for potential specific styling
-
-  // Configure the input as the dropdown toggle
-  skuInput.classList.add("dropdown-toggle"); // Required by Bootstrap for styling/JS
-  skuInput.setAttribute("data-bs-toggle", "dropdown");
-  skuInput.setAttribute("data-bs-auto-close", "outside"); // Prevents closing on click inside menu
-  skuInput.setAttribute("aria-expanded", "false");
-  skuInput.setAttribute("aria-controls", uniqueDropdownId); // Link to the menu
-  skuInput.setAttribute("autocomplete", "off");
-  if (!skuInput.id) skuInput.id = `sku-input-${Math.random().toString(36).substring(7)}`;
-
-
+  skuDiv.classList.add("dropdown");
   const skuDropdown = document.createElement("ul");
-  skuDropdown.id = uniqueDropdownId;
-  skuDropdown.classList.add("dropdown-menu", "w-100"); // w-100 to match input width, Popper.js might adjust
-  skuDropdown.setAttribute("aria-labelledby", skuInput.id);
-  // Remove direct z-index and position styling, let Bootstrap/Popper.js handle it.
-  // skuDropdown.style.position = 'absolute';
-  // skuDropdown.style.zIndex = '1050'; 
-  // skuDropdown.style.width = 'auto';
-  // skuDropdown.style.minWidth = '100%';
-
-
-  const loadingIndicator = document.createElement("li");
-  loadingIndicator.classList.add("dropdown-item", "text-muted", "d-none");
-  loadingIndicator.textContent = "Loading...";
-  // Initial content for the dropdown
-  skuDropdown.appendChild(loadingIndicator);
-
-
-  let debounceTimer;
-  let bsDropdownInstance = null; // To store Bootstrap dropdown instance
-
-  // Function to show/hide dropdown, potentially managed by Bootstrap
-  const showSkuDropdown = () => {
-    if (bsDropdownInstance) bsDropdownInstance.show();
-    else skuDropdown.classList.add("show"); // Fallback if BS instance not ready
-  };
-  const hideSkuDropdown = () => {
-    if (bsDropdownInstance) bsDropdownInstance.hide();
-    else skuDropdown.classList.remove("show"); // Fallback
-  };
-
-  skuInput.addEventListener("input", () => {
+  skuDropdown.classList.add("dropdown-menu");
+  skuInput.classList.add("dropdown-toggle");
+  skuInput.setAttribute("data-bs-toggle", "dropdown");
+  skuInput.addEventListener("input", async () => {
     skuInput.removeAttribute("order_product_id");
     skuInput.removeAttribute("order_product_name");
-    const searchTerm = skuInput.value.trim();
-    
-    // Clear previous results, keep/re-add loading indicator
-    skuDropdown.innerHTML = ""; 
-    skuDropdown.appendChild(loadingIndicator);
+    const searchTerm = skuInput.value;
+    const skuOptions = await get_sku_search(searchTerm);
+    updateSkuDropdown(skuOptions.data, skuInput, skuDropdown);
+  });
 
-    clearTimeout(debounceTimer);
-    if (searchTerm.length < 2) {
-        hideSkuDropdown();
-        loadingIndicator.classList.add("d-none");
-        return;
+  skuInput.addEventListener("keyup", function (event) {
+    const activeOption = skuDropdown.querySelector(".dropdown-item.active");
+    const options = skuDropdown.querySelectorAll(".dropdown-item");
+    const currentIndex = Array.from(options).indexOf(activeOption);
+    if ((event.key === "Enter" || event.keyCode === 13) && options.length > 0) {
+      event.preventDefault();
+      const selectedValue = activeOption.getAttribute(
+        "order_product_sku_option"
+      );
+      skuInput.setAttribute(
+        "order_product_id",
+        activeOption.getAttribute("order_product_id")
+      );
+      skuInput.setAttribute(
+        "order_product_name",
+        activeOption.getAttribute("order_product_name")
+      );
+      skuInput.value = selectedValue;
+    }
+    if (
+      (event.key === "ArrowUp" || event.keyCode === 38 || event.key === "Up") &&
+      currentIndex > 0
+    ) {
+      event.preventDefault();
+      options[currentIndex].classList.remove("active");
+      options[currentIndex - 1].classList.add("active");
     }
 
-    loadingIndicator.classList.remove("d-none");
-    showSkuDropdown(); // Show dropdown when typing starts (after min length)
-
-    debounceTimer = setTimeout(async () => {
-        try {
-            const skuOptionsResponse = await get_sku_search(searchTerm);
-            loadingIndicator.classList.add("d-none");
-            if (skuOptionsResponse && skuOptionsResponse.success) {
-                updateSkuDropdown(skuOptionsResponse.data, skuInput, skuDropdown, bsDropdownInstance); // Pass instance
-            } else {
-                skuDropdown.innerHTML = `<li class="dropdown-item text-danger">Error: ${skuOptionsResponse.error || 'Could not load SKUs'}</li>`;
-            }
-        } catch (error) {
-            console.error("SKU Search error:", error);
-            loadingIndicator.classList.add("d-none");
-            skuDropdown.innerHTML = '<li class="dropdown-item text-danger">Search failed.</li>';
-        }
-    }, 400);
-  });
-
-  skuInput.addEventListener("keydown", function (event) {
-    const items = Array.from(skuDropdown.querySelectorAll(".dropdown-item:not(.text-muted):not(.text-danger)"));
-    if (!items.length) return;
-    let activeIndex = items.findIndex(item => item.classList.contains("active"));
-
-    if (event.key === "ArrowDown") { /* ... same ... */ }
-    else if (event.key === "ArrowUp") { /* ... same ... */ }
-    else if (event.key === "Enter" && activeIndex !== -1) {
+    if (
+      (event.key === "ArrowDown" ||
+        event.keyCode === 40 ||
+        event.key === "Down") &&
+      currentIndex < options.length - 1
+    ) {
       event.preventDefault();
-      items[activeIndex].click();
-      // Bootstrap with auto-close="outside" might not hide it on item click,
-      // so manually hide if needed, or ensure item click logic does.
-      // hideSkuDropdown(); // Usually handled by item click itself
-      return;
-    } else if (event.key === "Escape") {
-      hideSkuDropdown();
-      return;
-    } else { return; }
-    items.forEach(item => item.classList.remove("active"));
-    if(items[activeIndex]) items[activeIndex].classList.add("active");
+      options[currentIndex].classList.remove("active");
+      options[currentIndex + 1].classList.add("active");
+    }
   });
-
-  // No need for document click listener if data-bs-auto-close="outside" works well
-  // Bootstrap handles this.
-
   skuDiv.appendChild(skuInput);
   skuDiv.appendChild(skuDropdown);
-  skuDiv.dataset.needsDropdownInit = "true"; 
-
   return skuDiv;
-}
+};
 
 const updateTotal = async (tableRow) => {
   let item_price = parseFloat(tableRow.querySelector(".item-price").value);
@@ -1823,37 +1768,46 @@ const updateAllTotal = (subtotal) => {
   allTotalField.innerHTML = allTotal;
 };
 
-function updateSkuDropdown(skuOptions, skuInput, skuDropdown, bsDropdownInstance) {
-  skuDropdown.innerHTML = ""; // Clear loading/error
-  if (!skuOptions || skuOptions.length === 0) {
-    skuDropdown.innerHTML = '<li class="dropdown-item text-muted">No SKUs found.</li>';
-    if (bsDropdownInstance) bsDropdownInstance.update(); // Tell Bootstrap to update Popper.js position
-    return;
+const updateSkuDropdown = (skuOptions, skuInput, skuDropdown) => {
+  skuDropdown.innerHTML = "";
+  if (skuOptions.length === 0) {
+    skuDropdown.classList.add("d-none");
+  } else {
+    skuDropdown.classList.remove("d-none");
   }
-
-  skuOptions.forEach((skuData) => {
-    const listItem = document.createElement("li");
-    const optionLink = document.createElement("a");
-    optionLink.classList.add("dropdown-item");
-    optionLink.href = "#";
-    optionLink.textContent = `${skuData.order_product_sku} (${skuData.report_product_name || 'N/A'})`;
-    
-    optionLink.addEventListener("click", function (event) {
+  skuOptions.forEach((order_product_sku, index) => {
+    const list = document.createElement("li");
+    const option = document.createElement("a");
+    const sku = order_product_sku.order_product_sku;
+    const id = order_product_sku.id;
+    const name = order_product_sku.report_product_name;
+    if (index === 0) {
+      option.classList.add("dropdown-item", "active");
+    } else {
+      option.classList.add("dropdown-item");
+    }
+    option.setAttribute("order_product_sku_option", sku);
+    option.setAttribute("order_product_id", id);
+    option.setAttribute("order_product_name", name);
+    option.value = sku;
+    option.textContent = sku;
+    option.addEventListener("click", function (event) {
       event.preventDefault();
-      event.stopPropagation(); // Important to prevent other click listeners if any
-      skuInput.value = skuData.order_product_sku;
-      skuInput.setAttribute("order_product_id", skuData.id);
-      skuInput.setAttribute("order_product_name", skuData.report_product_name || skuData.order_product_sku);
-      
-      if (bsDropdownInstance) bsDropdownInstance.hide(); // Use Bootstrap's hide method
-      else skuDropdown.classList.remove("show"); // Fallback
+      const selectedValue = this.getAttribute("order_product_sku_option");
+      skuInput.setAttribute(
+        "order_product_id",
+        this.getAttribute("order_product_id")
+      );
+      skuInput.setAttribute(
+        "order_product_name",
+        this.getAttribute("order_product_name")
+      );
+      skuInput.value = selectedValue;
     });
-    listItem.appendChild(optionLink);
-    skuDropdown.appendChild(listItem);
+    list.appendChild(option);
+    skuDropdown.appendChild(list);
   });
-
-  if (bsDropdownInstance) bsDropdownInstance.update(); // Update Popper.js position after adding items
-}
+};
 
 const appendDropdownList = (button, dropdown, data, description) => {
   const list = document.createElement("li");
@@ -1903,324 +1857,17 @@ const appendDropdownList = (button, dropdown, data, description) => {
   list.appendChild(option);
   dropdown.appendChild(list);
 };
-function initializeDynamicBootstrapComponents(parentElement) {
-    // Initialize Dropdowns
-    const dropdownToggles = parentElement.querySelectorAll('[data-bs-toggle="dropdown"]');
-    dropdownToggles.forEach(toggle => {
-        // Avoid re-initializing if an instance already exists
-        if (!bootstrap.Dropdown.getInstance(toggle)) {
-            new bootstrap.Dropdown(toggle);
-        }
-    });
 
-    // Initialize Tooltips (if you moved all tooltip init here)
-    const tooltipTriggers = parentElement.querySelectorAll('[title]:not([data-bs-toggle="popover"])'); // Be more specific
-    tooltipTriggers.forEach(trigger => {
-        const existing = bootstrap.Tooltip.getInstance(trigger);
-        if(existing) existing.dispose();
-        new bootstrap.Tooltip(trigger);
-    });
+if (order_id) {
+  generateItemsListTable(order_id);
+  generateDropdown(order_id);
+  generateTable(10, 1);
+} else if (request_id) {
+  generateItemsListTable(null, request_id);
+  generateDropdown(null, request_id);
+  generateTable(10, 1);
+} else {
+  generateTable(10, 1);
+  generateDropdown(false);
+  generateItemsListTable(false);
 }
-function setupToggleableTextareas() {
-    const toggleOverrideAddressCheckbox = document.getElementById('toggleOverrideAddress');
-    const overrideAddressContainer = document.getElementById('overrideAddressContainer');
-    const overrideAddressInput = document.getElementById('override-address-input');
-
-    const toggleOrderNoteCheckbox = document.getElementById('toggleOrderNote');
-    const orderNoteContainer = document.getElementById('orderNoteContainer');
-    const orderNoteInput = document.getElementById('order-note-input');
-
-    if (toggleOverrideAddressCheckbox && overrideAddressContainer && overrideAddressInput) {
-        // Initial state based on value
-        if (overrideAddressInput.value.trim() !== "") {
-            toggleOverrideAddressCheckbox.checked = true;
-            overrideAddressContainer.classList.remove('d-none');
-        }
-        toggleOverrideAddressCheckbox.addEventListener('change', function() {
-            overrideAddressContainer.classList.toggle('d-none', !this.checked);
-            if (!this.checked) overrideAddressInput.value = ""; // Clear if hiding
-        });
-    }
-
-    if (toggleOrderNoteCheckbox && orderNoteContainer && orderNoteInput) {
-        // Initial state based on value
-        if (orderNoteInput.value.trim() !== "") {
-            toggleOrderNoteCheckbox.checked = true;
-            orderNoteContainer.classList.remove('d-none');
-        }
-        toggleOrderNoteCheckbox.addEventListener('change', function() {
-            orderNoteContainer.classList.toggle('d-none', !this.checked);
-            if (!this.checked) orderNoteInput.value = ""; // Clear if hiding
-        });
-    }
-}
-
-function displayOrderFiles(filesArray) {
-    const container = document.getElementById("file-preview-container");
-    if (!container) {
-        console.error("file-preview-container not found!");
-        return;
-    }
-    container.innerHTML = ""; // Clear previous previews
-
-    if (!filesArray || filesArray.length === 0) {
-        container.innerHTML = '<p class="text-muted small fst-italic">No files attached to this order.</p>';
-        return;
-    }
-
-    const fileGrid = document.createElement("div");
-    fileGrid.classList.add("row", "g-3"); // Use Bootstrap grid for layout
-
-    filesArray.forEach(file => {
-        const colDiv = document.createElement("div");
-        // Adjust column size based on how many previews you want per row
-        // e.g., col-md-4 for 3 cards per row on medium screens and up
-        colDiv.classList.add("col-12", "col-md-6", "col-lg-4"); 
-
-        const card = document.createElement("div");
-        card.classList.add("card", "h-100", "file-preview-item"); // Added h-100 for consistent height if using grid
-
-        const cardBody = document.createElement("div");
-        cardBody.classList.add("card-body", "d-flex", "flex-column");
-
-        const previewElementContainer = document.createElement("div");
-        previewElementContainer.classList.add("mb-2", "text-center", "flex-grow-1", "d-flex", "align-items-center", "justify-content-center");
-        previewElementContainer.style.minHeight = "150px"; // Ensure some height for non-image previews
-        previewElementContainer.style.backgroundColor = "#f8f9fa"; // Light background for preview area
-        previewElementContainer.style.border = "1px dashed #ced4da";
-        previewElementContainer.style.borderRadius = ".25rem";
-        
-
-        const ext = file.file_name.split('.').pop().toLowerCase();
-        const filePath = `../../${file.file_pathname}`; // Construct full relative path
-
-        let previewElement;
-
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
-            previewElement = document.createElement("img");
-            previewElement.src = filePath;
-            previewElement.alt = file.file_name;
-            previewElement.classList.add("img-fluid"); // Bootstrap class for responsive images
-            previewElement.style.maxHeight = "200px"; // Limit image height
-            previewElement.style.objectFit = "contain";
-            previewElement.onerror = () => { 
-                previewElementContainer.innerHTML = '<i class="fas fa-image fa-3x text-muted"></i><p class="small text-danger mt-1">Preview unavailable</p>';
-            };
-        } else if (ext === 'pdf') {
-            previewElement = document.createElement("iframe");
-            previewElement.src = filePath + '#toolbar=0&navpanes=0&scrollbar=0'; // Basic PDF viewer, hide toolbar
-            previewElement.style.width = "100%";
-            previewElement.style.height = "200px"; // Adjust height as needed
-            previewElement.style.border = "none";
-            // Fallback if iframe fails or isn't supported well for PDF
-            previewElement.onerror = () => { 
-                previewElementContainer.innerHTML = '<i class="fas fa-file-pdf fa-3x text-danger"></i><p class="small text-danger mt-1">PDF Preview failed</p>';
-            };
-             // Some browsers might not trigger onerror for iframe src issues.
-            // You could add a 'load' listener and check if contentDocument is accessible, but that's complex.
-        } else if (['txt', 'csv', 'md', 'json', 'xml', 'html', 'css', 'js'].includes(ext)) { // Common text-based files
-            previewElement = document.createElement("iframe");
-            previewElement.src = filePath;
-            previewElement.style.width = "100%";
-            previewElement.style.height = "200px";
-            previewElement.style.border = "1px solid #eee";
-            previewElement.sandbox = "allow-scripts allow-same-origin"; // Security for HTML/JS iframed, be careful
-             previewElement.onerror = () => { 
-                previewElementContainer.innerHTML = '<i class="fas fa-file-alt fa-3x text-secondary"></i><p class="small text-danger mt-1">Text Preview failed</p>';
-            };
-        }
-        // Add more types like 'audio', 'video' using <audio>, <video> tags if needed
-        // else if (['mp3', 'wav', 'ogg'].includes(ext)) { /* create <audio> */ }
-        // else if (['mp4', 'webm', 'ogv'].includes(ext)) { /* create <video> */ }
-        else {
-            // Fallback to icon for other types
-            let iconClass = "fas fa-file fa-3x text-muted";
-            if (['doc', 'docx'].includes(ext)) iconClass = "fas fa-file-word fa-3x text-primary";
-            else if (['xls', 'xlsx'].includes(ext)) iconClass = "fas fa-file-excel fa-3x text-success";
-            else if (['ppt', 'pptx'].includes(ext)) iconClass = "fas fa-file-powerpoint fa-3x text-warning";
-            else if (['zip', 'rar', '7z'].includes(ext)) iconClass = "fas fa-file-archive fa-3x text-info";
-            
-            previewElementContainer.innerHTML = `<i class="${iconClass}"></i><p class="small mt-1">${ext.toUpperCase()} File</p>`;
-        }
-
-        if (previewElement) {
-            previewElementContainer.appendChild(previewElement);
-        }
-        cardBody.appendChild(previewElementContainer);
-
-        const fileNameP = document.createElement("h6"); // Use h6 for slightly more prominent name
-        fileNameP.classList.add("card-title", "mt-2", "mb-1", "text-truncate");
-        fileNameP.textContent = file.file_name;
-        fileNameP.title = file.file_name;
-        cardBody.appendChild(fileNameP);
-        
-        // Optional: Add more file info like size, upload date if available
-
-        const actionsDiv = document.createElement("div");
-        actionsDiv.classList.add("mt-auto", "pt-2", "d-flex", "justify-content-end"); // mt-auto pushes to bottom
-
-        const downloadButton = document.createElement("a"); // Use <a> for direct download if possible
-        downloadButton.classList.add("btn", "btn-sm", "btn-outline-primary", "me-2");
-        downloadButton.href = filePath; // Direct link to file
-        downloadButton.download = file.file_name; // Suggest filename to browser
-        downloadButton.innerHTML = '<i class="fas fa-download"></i>';
-        downloadButton.title = "Download File";
-        new bootstrap.Tooltip(downloadButton);
-        // Optional: Fallback to DataController.download if direct link fails for some reason
-        // downloadButton.addEventListener("click", async (e) => { /* ... your existing DataController.download logic ... */ });
-        actionsDiv.appendChild(downloadButton);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.classList.add("btn", "btn-sm", "btn-outline-danger");
-        deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
-        deleteButton.title = "Delete File";
-        new bootstrap.Tooltip(deleteButton);
-        deleteButton.addEventListener("click", async () => {
-            const confirmDelete = await Alert.showConfirmModal(`Are you sure you want to delete "${file.file_name}"?`);
-            if (!confirmDelete.isConfirmed) return;
-            
-            try {
-                toggleSpinner(true);
-                const result = await DataController._delete("order_files", "id", file.id);
-                toggleSpinner(false);
-                if (result.status) {
-                    Alert.showSuccessMessage("File deleted successfully!");
-                    colDiv.remove(); // Remove the whole card column
-                    // If no files left, update the container message
-                    if (fileGrid.children.length === 0) {
-                        container.innerHTML = '<p class="text-muted small fst-italic">No files attached to this order.</p>';
-                    }
-                } else {
-                    Alert.showErrorMessage("File delete failed: " + (result.message || ""));
-                }
-            } catch (err) {
-                toggleSpinner(false);
-                Alert.showErrorMessage("Error deleting file.");
-            }
-        });
-        actionsDiv.appendChild(deleteButton);
-        cardBody.appendChild(actionsDiv);
-        card.appendChild(cardBody);
-        colDiv.appendChild(card);
-        fileGrid.appendChild(colDiv);
-    });
-    container.appendChild(fileGrid);
-
-    // Initialize any new tooltips
-    const tooltipTriggerList = Array.from(container.querySelectorAll('[title]'));
-    tooltipTriggerList.forEach(tooltipTriggerEl => {
-        const existing = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
-        if(existing) existing.dispose();
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-}
-
-// --- File Upload Handling (Requirement 4) ---
-function setupFileUpload() {
-    const selectFileButton = document.getElementById('selectFileButton');
-    const hiddenFileInput = document.getElementById('hiddenFileInput');
-    const selectedFileNameSpan = document.getElementById('selectedFileName');
-    const uploadSelectedFileButton = document.getElementById('uploadSelectedFileButton');
-
-    if (selectFileButton && hiddenFileInput && selectedFileNameSpan && uploadSelectedFileButton) {
-        selectFileButton.addEventListener('click', () => hiddenFileInput.click());
-
-        hiddenFileInput.addEventListener('change', function() {
-            if (this.files && this.files.length > 0) {
-                selectedFileNameSpan.textContent = this.files[0].name;
-                uploadSelectedFileButton.classList.remove('d-none');
-                pendingFileToUpload = this.files[0]; // Store for Add Order mode
-            } else {
-                selectedFileNameSpan.textContent = "";
-                uploadSelectedFileButton.classList.add('d-none');
-                pendingFileToUpload = null;
-            }
-        });
-
-        uploadSelectedFileButton.addEventListener('click', async function() {
-            if (!hiddenFileInput.files || hiddenFileInput.files.length === 0) {
-                Alert.showWarningMessage("No file selected to upload.");
-                return;
-            }
-            const fileToUpload = hiddenFileInput.files[0];
-
-            if (orderIdValue) { // EDIT Order Mode - Upload immediately
-                toggleSpinner(true);
-                uploadSelectedFileButton.disabled = true;
-                try {
-                    const formData = new FormData();
-                    // Sanitize filename on client-side for safety, though backend should also do it
-                    const safeFileName = fileToUpload.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                    const timestampedFileName = `file-${Date.now()}.${safeFileName.split('.').pop()}`;
-
-                    formData.append("file", fileToUpload, timestampedFileName);
-                    const uploadResponse = await DataController.upload(formData, `../../files/orders/${orderIdValue}`); // Upload to a subfolder for the order
-                    console.log("Upload response:", uploadResponse);
-                    if (uploadResponse && uploadResponse.filePath) {
-                        const fileDataToSave = {
-                            order_id: orderIdValue,
-                            file_name: uploadResponse.fileName, // Use filename from server response
-                            file_pathname: uploadResponse.filePath, // Use filepath from server response
-                        };
-                        const dbSaveResult = await DataController.insert("order_files", fileDataToSave);
-                        console.log("DB save result:", dbSaveResult);
-                        if (dbSaveResult) {
-                            Alert.showSuccessMessage("File uploaded and saved successfully!");
-                            // Refresh file list
-                            const updatedOrderDetails = await get_order_details(orderIdValue);
-                            if(updatedOrderDetails && updatedOrderDetails.data1 && updatedOrderDetails.data1.files){
-                                displayOrderFiles(updatedOrderDetails.data1.files);
-                            }
-                        } else {
-                            Alert.showErrorMessage("File uploaded, but failed to save record to database. " + (dbSaveResult?.message || ""));
-                        }
-                    } else {
-                        Alert.showErrorMessage("File upload failed. " + (uploadResponse?.message || ""));
-                    }
-                } catch (err) {
-                    console.error("Upload error:", err);
-                    Alert.showErrorMessage("An error occurred during file upload.");
-                } finally {
-                    toggleSpinner(false);
-                    hiddenFileInput.value = ""; // Clear the file input
-                    selectedFileNameSpan.textContent = "";
-                    uploadSelectedFileButton.classList.add('d-none');
-                    uploadSelectedFileButton.disabled = false;
-                    pendingFileToUpload = null;
-                }
-            } else { // ADD Order Mode - File is stored in pendingFileToUpload, will be handled by insertOrderButton
-                Alert.showInfoMessage(`File "${fileToUpload.name}" is selected and will be uploaded when the order is added.`);
-                // Keep upload button hidden or show a different message, as direct upload isn't happening here
-                uploadSelectedFileButton.classList.add('d-none'); 
-            }
-        });
-    }
-}
-
-function toggleSpinner(loading) {
-  const spinner = document.getElementById("loading-spinner");
-  if (spinner) {
-    spinner.style.display = loading ? "block" : "none"; // Use block for fixed-top
-  }
-}
-
-async function initializePage() {
-    toggleSpinner(true);
-    try {
-        await generateDropdown(orderIdValue, requestIdValue); // Populates form fields and existing files
-        await generateItemsListTable(orderIdValue, requestIdValue); // Populates item list
-        setupToggleableTextareas(); // Setup toggles after values might have been populated
-        setupFileUpload(); // Setup file upload listeners
-
-        if (orderIdValue) { // If editing an order, also load the bottom table
-            await generateTable(10, 1); // Your function for the bottom "Recently Added" table
-        }
-    } catch (error) {
-        console.error("Error initializing page:", error);
-        Alert.showErrorMessage("Could not load all order details.");
-    } finally {
-        toggleSpinner(false);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', initializePage);

@@ -1,0 +1,42 @@
+services:
+  php:
+    build:
+      context: .  # ระบุ path ที่มี Dockerfile ของคุณ (ถ้า Dockerfile อยู่ใน directory เดียวกับ docker-compose.yml ให้ใช้ .)
+      dockerfile: Dockerfile
+    container_name: my-php56
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./apache.conf:/etc/apache2/conf-enabled/servername.conf
+    networks:
+      - mynetwork
+  my-mysql:
+    image: mysql:5.7
+    container_name: my-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: mydb
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - mynetwork
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: my-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: my-mysql
+      MYSQL_ROOT_PASSWORD: 123456
+    volumes:
+      - ./phpmyadmin.ini:/usr/local/etc/php/conf.d/phpmyadmin.ini
+      - ./apache.conf:/etc/apache2/conf-enabled/servername.conf
+    networks:
+      - mynetwork
+
+volumes:
+  mysql_data:
+
+networks:
+  mynetwork:

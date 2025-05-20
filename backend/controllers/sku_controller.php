@@ -1,5 +1,5 @@
 <?php
-function get_skus($conn, $limit, $offset)
+function get_skus($conn, $limit, $offset, $filters = [])
 {
     try {
         $query = "
@@ -7,53 +7,156 @@ function get_skus($conn, $limit, $offset)
                 ss.id, 
                 ss.order_product_sku, 
                 ss.report_product_name,
-                ws.id as wsid,
-                sb.id as sbid,
+                ss.warehouse_id,      -- This is the foreign key ID
+                ss.warehouse_sku_id,  -- This is the foreign key ID
+                ss.sku_brand_id,      -- This is the foreign key ID
                 w.name as warehouse_name,
                 ws.name as warehouse_sku_name,
                 sb.name as sku_brand_name
             FROM sku_settings ss
-            JOIN warehouses w ON ss.warehouse_id = w.id
-            JOIN warehouse_skus ws ON ss.warehouse_sku_id = ws.id
-            JOIN sku_brands sb ON ss.sku_brand_id = sb.id
-            ORDER BY ss.order_product_sku ASC
-            LIMIT :limit OFFSET :offset;
-            ";
+            LEFT JOIN warehouses w ON ss.warehouse_id = w.id
+            LEFT JOIN warehouse_skus ws ON ss.warehouse_sku_id = ws.id
+            LEFT JOIN sku_brands sb ON ss.sku_brand_id = sb.id
+        ";
+
+        $conditions = [];
+        $params = []; // Parameters for binding
+
+        // Define a map for filter keys from frontend to database columns
+        // Frontend sends: search_sku, warehouse_id, warehouse_sku_id, sku_brand_id
+        $filter_column_map = [
+            'search_sku'        => ['ss.order_product_sku', 'ss.report_product_name'], // Uses LIKE
+            'warehouse_id'      => 'ss.warehouse_id',       // Uses = (exact match with ID)
+            'warehouse_sku_id'  => 'ss.warehouse_sku_id',   // Uses =
+            'sku_brand_id'          => 'ss.sku_brand_id'        // Uses =
+        ];
+
+        foreach ($filters as $key => $value) {
+            // Ensure value is not an empty string after trimming.
+            // For ID fields, an empty string from select means "All", so we don't filter.
+            $trimmed_value = trim((string)$value);
+            if ($trimmed_value !== "" && isset($filter_column_map[$key])) {
+
+                $db_targets = $filter_column_map[$key];
+                $param_placeholder = ":" . preg_replace('/[^a-z0-9_]/i', '', $key); // Sanitize placeholder key
+
+                if ($key === 'search_sku' && is_array($db_targets)) {
+                    $or_conditions = [];
+                    foreach ($db_targets as $idx => $db_col) {
+                        $specific_placeholder = $param_placeholder . "_" . $idx;
+                        $or_conditions[] = $db_col . " LIKE " . $specific_placeholder;
+                        $params[$specific_placeholder] = '%' . $trimmed_value . '%';
+                    }
+                    $conditions[] = "(" . implode(" OR ", $or_conditions) . ")";
+                } else if (in_array($key, ['warehouse_id', 'warehouse_sku_id', 'sku_brand_id'])) {
+                    // Exact match for ID based filters
+                    $db_column = $db_targets; // It's a string (e.g., 'ss.warehouse_id')
+                    $conditions[] = $db_column . " = " . $param_placeholder;
+                    $params[$param_placeholder] = (int)$trimmed_value; // Cast to int for ID
+                }
+                // Add other filter types here if needed (e.g., date ranges, etc.)
+            }
+        }
+
+        if (count($conditions) > 0) {
+            $query .= " WHERE " . implode(" AND ", $conditions);
+        }
+
+        $query .= " ORDER BY ss.order_product_sku ASC ";
+
+        if ($limit !== null) {
+            $query .= " LIMIT :limit_val ";
+            $params[':limit_val'] = (int)$limit;
+        }
+        if ($offset !== null) {
+            $query .= " OFFSET :offset_val ";
+            $params[':offset_val'] = (int)$offset;
+        }
 
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-
+        foreach ($params as $param_key => $param_val) {
+            // Determine PDO type based on the key or value type
+            if (
+                $param_key === ':limit_val' || $param_key === ':offset_val' ||
+                strpos($param_key, '_id_val') !== false || is_int($param_val)
+            ) { // Check if param is for an ID
+                $stmt->bindValue($param_key, (int)$param_val, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($param_key, $param_val, PDO::PARAM_STR);
+            }
+        }
         $stmt->execute();
 
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $jsonData = json_encode($result);
-        return $jsonData;
+        return json_encode($result);
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return null;
+        error_log("Error in get_skus: " . $e->getMessage() . " Query: " . $query . " Params: " . json_encode($params));
+        return json_encode(['error' => 'Database error in get_skus. Check logs.']);
     }
 }
 
-function get_sku_count($conn)
+function get_sku_count($conn, $filters = [])
 {
     try {
         $query = "
-            SELECT COUNT(*) as count 
+            SELECT COUNT(DISTINCT ss.id) as count 
             FROM sku_settings ss
-            JOIN warehouses w ON ss.warehouse_id = w.id
-            JOIN warehouse_skus ws ON ss.warehouse_sku_id = ws.id
-            JOIN sku_brands sb ON ss.sku_brand_id = sb.id;
-            ";
+            LEFT JOIN warehouses w ON ss.warehouse_id = w.id
+            LEFT JOIN warehouse_skus ws ON ss.warehouse_sku_id = ws.id
+            LEFT JOIN sku_brands sb ON ss.sku_brand_id = sb.id
+        ";
+
+        $conditions = [];
+        $params = [];
+
+        $filter_column_map = [
+            'search_sku'        => ['ss.order_product_sku', 'ss.report_product_name'],
+            'warehouse_id'      => 'ss.warehouse_id',
+            'warehouse_sku_id'  => 'ss.warehouse_sku_id',
+            'sku_brand_id'          => 'ss.sku_brand_id'
+        ];
+
+        foreach ($filters as $key => $value) {
+            $trimmed_value = trim((string)$value);
+            if ($trimmed_value !== "" && isset($filter_column_map[$key])) {
+                $db_targets = $filter_column_map[$key];
+                $param_placeholder = ":" . preg_replace('/[^a-z0-9_]/i', '', $key);
+
+                if ($key === 'search_sku' && is_array($db_targets)) {
+                    $or_conditions = [];
+                    foreach ($db_targets as $idx => $db_col) {
+                        $specific_placeholder = $param_placeholder . "_" . $idx;
+                        $or_conditions[] = $db_col . " LIKE " . $specific_placeholder;
+                        $params[$specific_placeholder] = '%' . $trimmed_value . '%';
+                    }
+                    $conditions[] = "(" . implode(" OR ", $or_conditions) . ")";
+                } else if (in_array($key, ['warehouse_id', 'warehouse_sku_id', 'sku_brand_id'])) {
+                    $db_column = $db_targets;
+                    $conditions[] = $db_column . " = " . $param_placeholder;
+                    $params[$param_placeholder] = (int)$trimmed_value;
+                }
+            }
+        }
+
+        if (count($conditions) > 0) {
+            $query .= " WHERE " . implode(" AND ", $conditions);
+        }
 
         $stmt = $conn->prepare($query);
+        foreach ($params as $param_key => $param_val) {
+            if (strpos($param_key, '_id') !== false || is_int($param_val)) { // Simple check for ID params
+                $stmt->bindValue($param_key, (int)$param_val, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue($param_key, $param_val, PDO::PARAM_STR);
+            }
+        }
         $stmt->execute();
+
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $jsonData = json_encode($result);
-        return $jsonData;
+        return json_encode($result);
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return null;
+        error_log("Error in get_sku_count: " . $e->getMessage() . " Query: " . $query . " Params: " . json_encode($params));
+        return json_encode([['count' => 0, 'error' => 'Database error in get_sku_count. Check logs.']]);
     }
 }
 

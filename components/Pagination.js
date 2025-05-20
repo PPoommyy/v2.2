@@ -59,7 +59,6 @@ const createPageLink = (pageNumber, name, generateTable) => {
 
   link.classList.add("page-link");
   link.setAttribute("role", "button");
-  link.setAttribute("aria-label", `${name} Page ${pageNumber}`);
   link.setAttribute("page-number", pageNumber);
   link.textContent = name;
   link.addEventListener("click", function (event) {

@@ -8,13 +8,17 @@ try {
     $USERNAME = 'komsant';
     $PASSWORD = 'ktest347#';
     $DATABASE = 'komsant_test'; */
-    $HOST = 'localhost';
+    /* $HOST = 'localhost';
     $USERNAME = 'root';
     $PASSWORD = '';
-    $DATABASE = 'komsant_om';
+    $DATABASE = 'komsant_om'; */
+    $HOST = 'my-mysql';
+    $USERNAME = 'root';
+    $PASSWORD = '123456';
+    $DATABASE = 'komsant_test';
     $conn = new PDO("mysql:host=$HOST;dbname=$DATABASE;charset=utf8", $USERNAME, $PASSWORD);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     //echo "Connected successfully"; 
 } catch (PDOException $e) {
-    //echo "Connection failed: " . $e->getMessage();
+    echo "Connection failed: " . $e->getMessage();
 }

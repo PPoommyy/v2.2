@@ -8,6 +8,12 @@ function getFilterValue($filterName)
     return isset($_GET[$filterName]) ? htmlspecialchars($_GET[$filterName]) : null;
 }
 
+$search_term = getFilterValue('search_term');
+if ($search_term) {
+    $filterConditions[] = "(o.buyer_email LIKE :search_term OR o.buyer_name LIKE :search_term)";
+    $filterParams[':search_term'] = '%' . $search_term . '%';
+}
+
 $website = getFilterValue('website');
 if ($website) {
     $filterConditions[] = "w.name = :website";

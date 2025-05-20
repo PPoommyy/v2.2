@@ -2,273 +2,357 @@ import { Alert } from "../../components/Alert.js";
 import { Cell } from "../../components/Cell.js";
 import { DataController } from "../../components/DataController.js";
 
-const get_stock = async (table, limit, page) => {
+let currentStockView = "total";
+let currentSkuSearchTerm = "";
+let currentDateStart = "";
+let currentDateEnd = "";
+let currentPage = 1;
+const limit = 100;
+
+function formatDateTime(dateTimeString) {
+    if (!dateTimeString) return 'N/A';
+    try {
+        const date = new Date(dateTimeString);
+        if (isNaN(date)) return 'Invalid Date';
+
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    } catch (e) {
+        console.warn("Could not format date:", dateTimeString, e);
+        return dateTimeString; 
+    }
+}
+
+
+const get_stock = async (table, limit, page, skuSearch, dateStart, dateEnd) => {
   try {
-    const response = await axios.get(
-      `../../backend/get/stock/get_stock.php?table=${table}&limit=${limit}&page=${page}`
-    );
-    return response;
+    let url = `../../backend/get/stock/get_stock.php?table=${table}&limit=${limit}&page=${page}`;
+    if (skuSearch) {
+      url += `&search_sku=${encodeURIComponent(skuSearch)}`;
+    }
+    if (dateStart && (table === 'stock_in' || table === 'stock_out')) { // Only apply date filters for IN/OUT views
+      url += `&date_start=${encodeURIComponent(dateStart)}`;
+    }
+    if (dateEnd && (table === 'stock_in' || table === 'stock_out')) {
+      url += `&date_end=${encodeURIComponent(dateEnd)}`;
+    }
+    const response = await axios.get(url);
+    return response.data;
   } catch (error) {
+    console.error("Error fetching stock data:", error);
+    Alert.showErrorMessage("Failed to fetch stock data. " + (error.response?.data?.message || error.message));
     throw error;
   }
 };
 
 function toggleSpinner(loading) {
   const spinner = document.getElementById("loading-spinner");
-  if (loading) {
-    spinner.style.display = "inline-block";
-  } else {
-    spinner.style.display = "none";
+  if (spinner) {
+    spinner.style.display = loading ? "block" : "none";
   }
 }
 
-let checkboxStates = [];
-
-function updateCheckBoxList(key, checkboxStates) {
-  const index = checkboxStates.indexOf(key);
-  // const downloadOrdersButton = document.getElementById('downloadOrders');
-
-  if (index === -1) {
-    checkboxStates.push(key);
-  } else {
-    checkboxStates.splice(index, 1);
-  }
-  checkboxStates.sort(function (a, b) {
-    return a - b;
-  });
-  if (checkboxStates.length > 0) {
-    // downloadOrdersButton.removeAttribute('disabled');
-  } else {
-    // downloadOrdersButton.setAttribute('disabled', '');
-  }
-}
-
-const generateTable = async (table, limit, page) => {
+const generateTable = async () => {
   try {
     toggleSpinner(true);
-    const stock = await get_stock(table, limit, page);
+    const stockDataResponse = await get_stock(
+        currentStockView, limit, currentPage,
+        currentSkuSearchTerm, currentDateStart, currentDateEnd
+    );
+
     const stockContainer = document.getElementById("stock-container");
     stockContainer.innerHTML = "";
+
+    if (!stockDataResponse || (stockDataResponse.error && !stockDataResponse.stock && !stockDataResponse.stock_in && !stockDataResponse.stock_out) ) {
+        stockContainer.innerHTML = `<div class="alert alert-danger">Could not load stock data. ${stockDataResponse.error || ''}</div>`;
+        toggleSpinner(false);
+        return;
+    }
+
+    let dataArray;
+    let tableHeaders = [];
+
+    if (currentStockView === "total" && stockDataResponse.stock) {
+        dataArray = stockDataResponse.stock;
+        // Headers: SKU, Product Name, Remaining, Min Qty, Max Qty, Alert Status, Actions
+        tableHeaders = ["SKU", "Product Name", "Remaining Stock", "Min Qty", "Max Qty", "Alert?", "Actions"];
+    } else if (currentStockView === "stock_in" && stockDataResponse.stock_in) {
+        dataArray = stockDataResponse.stock_in;
+        tableHeaders = ["SKU", "Product Name", "Received Qty", "Batch Remaining", "Received Datetime"];
+    } else if (currentStockView === "stock_out" && stockDataResponse.stock_out) {
+        dataArray = stockDataResponse.stock_out;
+        tableHeaders = ["SKU", "Product Name", "Issued Qty", "Issued Datetime"];
+    } else {
+        stockContainer.innerHTML = `<div class="alert alert-warning">No data available for this view or filters.</div>`;
+        if(stockDataResponse.message && !stockDataResponse.error) Alert.showInfoMessage(stockDataResponse.message);
+        toggleSpinner(false);
+        return;
+    }
+
+    if (!dataArray || dataArray.length === 0) {
+        stockContainer.innerHTML = `<div class="alert alert-info text-center">No stock records found matching your criteria.</div>`;
+        toggleSpinner(false);
+        return;
+    }
+
     const tableElement = document.createElement("table");
-    tableElement.classList.add(
-      "table",
-      "table-bordered",
-      "table-striped",
-      "table-hover",
-      "table-condensed"
-    );
+    tableElement.classList.add("table", "table-bordered", "table-striped", "table-hover", "table-sm");
+
     const tableHeader = document.createElement("thead");
-    const tableHeaderRow = document.createElement("tr");
+    const tableHeaderRow = tableHeader.insertRow();
+    tableHeaders.forEach((headerText) => {
+      const th = document.createElement("th");
+      th.textContent = headerText;
+      tableHeaderRow.appendChild(th);
+    });
+    tableElement.appendChild(tableHeader);
 
     const tableBody = document.createElement("tbody");
-    toggleSpinner(true);
-    let tableHeaders = [];
-    checkboxStates = [];
+    dataArray.forEach((item) => {
+      const tableRow = tableBody.insertRow();
 
-    if (table === "total") {
-      const stockData = stock.data.stock;
-      tableHeaders = [/* "",  */ "Product Name", "Remaining Stock"];
-      tableHeaders.forEach((header) => {
-        const th = document.createElement("th");
-        th.textContent = header;
-        tableHeaderRow.appendChild(th);
-      });
-      stockData.forEach((stock, index) => {
-        const { sku_settings_id, product_order_product_sku, total_remaining } =
-          stock;
-        const tableRow = document.createElement("tr");
-        const checkboxInput = document.createElement("input");
-        checkboxInput.type = "checkbox";
-        checkboxInput.name = "items";
-        checkboxInput.value = sku_settings_id;
-        /* tableRow.appendChild(
-          Cell.createElementCell(checkboxInput, false, false, [
-            "th",
-            "w-auto",
-            "text-center",
-            "d-flex",
-            "justify-content-center",
-          ])
-        ); */
-        tableRow.appendChild(
-          Cell.createSpanCell(product_order_product_sku, false, false)
-        );
-        tableRow.appendChild(
-          Cell.createSpanCell(total_remaining, false, false)
-        );
-        tableBody.appendChild(tableRow);
-      });
-      tableHeader.appendChild(tableHeaderRow);
-      tableElement.appendChild(tableHeader);
-      tableElement.appendChild(tableBody);
-      stockContainer.appendChild(tableElement);
-      const inputCheckbox = document.querySelectorAll('input[name="items"]');
-      inputCheckbox.forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-          const sku_settings_id = this.value;
-          updateCheckBoxList(sku_settings_id, checkboxStates);
+      // Low stock visual indication for "total" view
+      if (currentStockView === "total" && item.is_low_stock == 1) { // Check the flag from backend
+        tableRow.classList.add("table-danger"); // Bootstrap class for danger/warning
+      }
+
+      if (currentStockView === "total") {
+        const { sku_id, order_product_sku, report_product_name, total_remaining, 
+                min_quantity, max_quantity, enable_low_stock_alert, is_low_stock } = item;
+        
+        const skuCell = tableRow.insertCell();
+        skuCell.textContent = order_product_sku;
+        if (is_low_stock == 1) { // This flag already considers enable_low_stock_alert
+            const lowStockIcon = document.createElement('i');
+            lowStockIcon.classList.add('fas', 'fa-exclamation-triangle', 'text-warning', 'ms-2');
+            lowStockIcon.title = 'Stock is low!';
+            new bootstrap.Tooltip(lowStockIcon);
+            skuCell.appendChild(lowStockIcon);
+        }
+
+        tableRow.appendChild(Cell.createSpanCell(report_product_name || 'N/A'));
+        tableRow.appendChild(Cell.createSpanCell(total_remaining !== null ? total_remaining : 'N/A'));
+        tableRow.appendChild(Cell.createSpanCell(min_quantity !== null ? min_quantity : 'Not Set'));
+        tableRow.appendChild(Cell.createSpanCell(max_quantity !== null ? max_quantity : 'Not Set'));
+        
+        // Display "Alert Active" status
+        const alertStatusCell = tableRow.insertCell();
+        alertStatusCell.classList.add('text-center');
+        if (enable_low_stock_alert == 1) {
+            alertStatusCell.innerHTML = '<i class="fas fa-bell text-success" title="Alert Enabled"></i>';
+            new bootstrap.Tooltip(alertStatusCell.querySelector('i'));
+        } else {
+            alertStatusCell.innerHTML = '<i class="fas fa-bell-slash text-muted" title="Alert Disabled"></i>';
+            new bootstrap.Tooltip(alertStatusCell.querySelector('i'));
+        }
+
+
+        const actionsCell = tableRow.insertCell();
+        actionsCell.classList.add("text-center");
+        const editLevelsBtn = document.createElement("button");
+        editLevelsBtn.classList.add("btn", "btn-sm", "btn-outline-secondary");
+        editLevelsBtn.innerHTML = `<i class="fas fa-cog"></i> Settings`; // Changed icon/text
+        editLevelsBtn.setAttribute('data-bs-toggle', 'tooltip');
+        editLevelsBtn.setAttribute('data-bs-placement', 'top');
+        editLevelsBtn.setAttribute('title', 'Configure Stock Settings');
+        new bootstrap.Tooltip(editLevelsBtn);
+        editLevelsBtn.addEventListener("click", () => {
+            document.getElementById("stockLevelSkuIdInput").value = sku_id;
+            document.getElementById("stockLevelSkuNameLabel").textContent = order_product_sku;
+            document.getElementById("minQuantityInput").value = min_quantity !== null ? min_quantity : "";
+            document.getElementById("maxQuantityInput").value = max_quantity !== null ? max_quantity : "";
+            document.getElementById("enableLowStockAlertCheckbox").checked = (enable_low_stock_alert == 1); // Set checkbox state
+            const modal = new bootstrap.Modal(document.getElementById('setStockLevelsModal'));
+            modal.show();
         });
-      });
-    } else if (table === "stock_in") {
-      const stockData = stock.data.stock_in;
-      tableHeaders = [
-        // "",
-        "Product Name",
-        "Receive Quantity",
-        "Remaining Quantity",
-        "Received Date",
-      ];
-      tableHeaders.forEach((header) => {
-        const th = document.createElement("th");
-        th.textContent = header;
-        tableHeaderRow.appendChild(th);
-      });
-      stockData.forEach((stock, index) => {
-        const {
-          stock_id,
-          product_order_product_sku,
-          received_quantity,
-          remaining_quantity,
-          received_date,
-        } = stock;
-        const tableRow = document.createElement("tr");
-        const checkboxInput = document.createElement("input");
-        checkboxInput.type = "checkbox";
-        checkboxInput.name = "items";
-        checkboxInput.value = stock_id;
-        // tableRow.appendChild(
-        //   Cell.createElementCell(checkboxInput, false, false, [
-        //     "th",
-        //     "w-auto",
-        //     "text-center",
-        //     "d-flex",
-        //     "justify-content-center",
-        //   ])
-        // );
-        tableRow.appendChild(
-          Cell.createSpanCell(product_order_product_sku, false, false)
-        );
-        tableRow.appendChild(
-          Cell.createSpanCell(received_quantity, false, false)
-        );
-        tableRow.appendChild(
-          Cell.createSpanCell(remaining_quantity, false, false)
-        );
-        tableRow.appendChild(Cell.createSpanCell(received_date, false, false));
-        tableBody.appendChild(tableRow);
-      });
-      tableHeader.appendChild(tableHeaderRow);
-      tableElement.appendChild(tableHeader);
-      tableElement.appendChild(tableBody);
-      stockContainer.appendChild(tableElement);
-      const inputCheckbox = document.querySelectorAll('input[name="items"]');
-      inputCheckbox.forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-          const stock_id = this.value;
-          updateCheckBoxList(stock_id, checkboxStates);
-        });
-      });
-    } else if (table === "stock_out") {
-      const stockData = stock.data.stock_out;
-      tableHeaders = [
-        /* "",  */ "Product Name",
-        "Issued Quantity",
-        "Issued Date",
-      ];
-      tableHeaders.forEach((header) => {
-        const th = document.createElement("th");
-        th.textContent = header;
-        tableHeaderRow.appendChild(th);
-      });
-      stockData.forEach((stock, index) => {
-        const {
-          stock_out_id,
-          product_order_product_sku,
-          sku_settings_id,
-          issued_quantity,
-          issued_date,
-        } = stock;
-        const tableRow = document.createElement("tr");
-        const checkboxInput = document.createElement("input");
-        checkboxInput.type = "checkbox";
-        checkboxInput.name = "items";
-        checkboxInput.value = stock_out_id;
-        /* tableRow.appendChild(
-          Cell.createElementCell(checkboxInput, false, false, [
-            "th",
-            "w-auto",
-            "text-center",
-            "d-flex",
-            "justify-content-center",
-          ])
-        ); */
-        tableRow.appendChild(
-          Cell.createSpanCell(product_order_product_sku, false, false)
-        );
-        tableRow.appendChild(
-          Cell.createSpanCell(issued_quantity, false, false)
-        );
-        tableRow.appendChild(Cell.createSpanCell(issued_date, false, false));
-        tableBody.appendChild(tableRow);
-      });
-      tableHeader.appendChild(tableHeaderRow);
-      tableElement.appendChild(tableHeader);
-      tableElement.appendChild(tableBody);
-      stockContainer.appendChild(tableElement);
-      const inputCheckbox = document.querySelectorAll('input[name="items"]');
-      inputCheckbox.forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-          const stock_id = this.value;
-          updateCheckBoxList(stock_id, checkboxStates);
-        });
-      });
-    }
+        actionsCell.appendChild(editLevelsBtn);
+
+      } else if (currentStockView === "stock_in") {
+        const { order_product_sku, report_product_name, received_quantity, remaining_quantity, received_date } = item;
+        tableRow.appendChild(Cell.createSpanCell(order_product_sku));
+        tableRow.appendChild(Cell.createSpanCell(report_product_name || 'N/A'));
+        tableRow.appendChild(Cell.createSpanCell(received_quantity));
+        tableRow.appendChild(Cell.createSpanCell(remaining_quantity)); // Remaining of this specific batch
+        tableRow.appendChild(Cell.createSpanCell(formatDateTime(received_date)));
+      } else if (currentStockView === "stock_out") {
+        const { order_product_sku, report_product_name, issued_quantity, issued_date } = item;
+        tableRow.appendChild(Cell.createSpanCell(order_product_sku));
+        tableRow.appendChild(Cell.createSpanCell(report_product_name || 'N/A'));
+        tableRow.appendChild(Cell.createSpanCell(issued_quantity));
+        tableRow.appendChild(Cell.createSpanCell(formatDateTime(issued_date)));
+      }
+    });
+    tableElement.appendChild(tableBody);
+    stockContainer.appendChild(tableElement);
+
   } catch (error) {
-    console.error(error);
-    Alert.render("Failed to fetch data", "error");
+    console.error("Error in generateTable:", error);
+    document.getElementById("stock-container").innerHTML = `<div class="alert alert-danger text-center">Could not display stock data. Please try again.</div>`;
   } finally {
     toggleSpinner(false);
   }
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const totalStockMenu = document.getElementById("total-stock");
-  const stockIn = document.getElementById("stock-in");
-  const stockOut = document.getElementById("stock-out");
+  const stockViewRadios = document.querySelectorAll('input[name="stockViewRadio"]');
+  const applyFiltersButton = document.getElementById("applyFiltersButton");
+  const skuSearchInput = document.getElementById("skuSearchInput");
+  const dateStartInput = document.getElementById("dateStartInput");
+  const dateEndInput = document.getElementById("dateEndInput");
+  const saveStockLevelsButton = document.getElementById("saveStockLevelsButton");
 
-  const checkButtonPermission = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
+  await checkButtonPermissionAndLoadStock();
 
-    if (user) {
-      fetch("../../backend/lokin/check_permission_buttons.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          permissions: user[0].permissions,
-          page: "stock",
-        }),
-      })
-        .then((res) => res.text())
-        .then((html) => {
-          document.getElementById("permission-buttons-container").innerHTML =
-            html;
-          generateTable("total", 100, 1);
-        });
+  stockViewRadios.forEach(radio => {
+    radio.addEventListener("change", async function() {
+      if (this.checked) {
+        currentStockView = this.value;
+        currentPage = 1;
+        const isTotalView = currentStockView === 'total';
+        dateStartInput.disabled = isTotalView;
+        dateEndInput.disabled = isTotalView;
+        if (isTotalView) {
+            currentDateStart = ""; dateStartInput.value = "";
+            currentDateEnd = ""; dateEndInput.value = "";
+        }
+        await generateTable();
+      }
+    });
+  });
+
+  applyFiltersButton.addEventListener("click", async () => {
+    currentSkuSearchTerm = skuSearchInput.value.trim();
+    if (currentStockView !== 'total') { // Only get dates if not total view
+        currentDateStart = dateStartInput.value;
+        currentDateEnd = dateEndInput.value;
+    } else {
+        currentDateStart = ""; // Ensure dates are clear for total view
+        currentDateEnd = "";
     }
-  };
+    currentPage = 1;
 
-  checkButtonPermission();
-
-  generateTable("total", 100, 1);
-  totalStockMenu.addEventListener("click", async () => {
-    generateTable("total", 100, 1);
+    if (currentDateStart && currentDateEnd && currentDateStart > currentDateEnd) {
+        Alert.showWarningMessage("Start date cannot be after end date.");
+        return;
+    }
+    await generateTable();
   });
 
-  stockIn.addEventListener("click", async () => {
-    generateTable("stock_in", 100, 1);
+  skuSearchInput.addEventListener("keypress", async (event) => {
+    if (event.key === "Enter") {
+      applyFiltersButton.click();
+    }
   });
 
-  stockOut.addEventListener("click", async () => {
-    generateTable("stock_out", 100, 1);
+  saveStockLevelsButton.addEventListener("click", async () => {
+    const skuId = document.getElementById("stockLevelSkuIdInput").value;
+    const minQuantity = document.getElementById("minQuantityInput").value;
+    const maxQuantity = document.getElementById("maxQuantityInput").value;
+    const enableAlert = document.getElementById("enableLowStockAlertCheckbox").checked; // Get checkbox value
+
+    if (!skuId) {
+        Alert.showErrorMessage("SKU ID is missing.");
+        return;
+    }
+    if (minQuantity !== "" && parseInt(minQuantity) < 0) {
+        Alert.showErrorMessage("Min Quantity must be 0 or greater.");
+        return;
+    }
+     if (maxQuantity !== "" && parseInt(maxQuantity) < 0) {
+        Alert.showErrorMessage("Max Quantity must be 0 or greater.");
+        return;
+    }
+    if (minQuantity !== "" && maxQuantity !== "" && parseInt(minQuantity) > parseInt(maxQuantity)) {
+        Alert.showErrorMessage("Min Quantity cannot be greater than Max Quantity.");
+        return;
+    }
+
+
+     try {
+        toggleSpinner(true);
+        let allUpdatesSuccessful = true;
+        let messages = [];
+
+        // Create an array of updates to send if backend supports it, or call individually
+        const updates = [];
+        if (minQuantity !== "") {
+            updates.push({ field: "min_quantity", value: parseInt(minQuantity, 10) });
+        } else { // If field is cleared, send null or handle as needed in backend
+            updates.push({ field: "min_quantity", value: null });
+        }
+
+        if (maxQuantity !== "") {
+            updates.push({ field: "max_quantity", value: parseInt(maxQuantity, 10) });
+        } else {
+             updates.push({ field: "max_quantity", value: null });
+        }
+        
+        // Always update enable_low_stock_alert
+        updates.push({ field: "enable_low_stock_alert", value: enableAlert ? 1 : 0 });
+
+
+        for (const update of updates) {
+            if (!allUpdatesSuccessful) break; // Stop if a previous update failed
+
+            const result = await DataController.updateByKey(
+                "sku_settings", "id", skuId, update.field, update.value
+            );
+            if (!(result && result.status)) {
+                allUpdatesSuccessful = false;
+                messages.push(`Failed to update ${update.field}. ` + (result?.message || ""));
+            }
+        }
+        
+        toggleSpinner(false);
+
+        if (allUpdatesSuccessful) {
+            Alert.showSuccessMessage("Stock settings updated successfully!");
+            const modalInstance = bootstrap.Modal.getInstance(document.getElementById('setStockLevelsModal'));
+            if(modalInstance) modalInstance.hide();
+            await generateTable();
+        } else {
+            Alert.showErrorMessage("Some settings failed to update: " + messages.join(" "));
+        }
+    } catch (error) {
+        toggleSpinner(false);
+        console.error("Error updating stock settings:", error);
+        Alert.showErrorMessage("An error occurred. "  + (error.response?.data?.message || error.message));
+    }
   });
+
+  // ... (Initial disabling of date filters remains the same)
+  if (document.getElementById('total-stock').checked) {
+    dateStartInput.disabled = true;
+    dateEndInput.disabled = true;
+  }
 });
+
+async function checkButtonPermissionAndLoadStock() {
+  const userString = localStorage.getItem("user");
+  if (userString) {
+    try {
+      const userArray = JSON.parse(userString);
+      const user = userArray && userArray[0];
+      if (user && user.permissions) {
+        const response = await fetch("../../backend/lokin/check_permission_buttons.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ permissions: user.permissions, page: "stock" }),
+        });
+        if(response.ok){
+            const html = await response.text();
+            document.getElementById("permission-buttons-container").innerHTML = html;
+        } else {
+            console.error("Failed to load permission buttons:", response.statusText);
+        }
+      }
+    } catch (error) {
+      console.error("Error processing user permissions:", error);
+    }
+  }
+  await generateTable();
+}

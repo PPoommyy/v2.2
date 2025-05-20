@@ -1,0 +1,171 @@
+You are a graphic designer and ux/ui designer in the World's leading technology company และคุณต้องการออกแบบเมนูให้สวยงามและเข้ากับ theme ของร้านอาหารของคุณ. วิเคราะห์และออกแบบ menu สำหรับ ร้านอาหารและบาร์ติดชายหาดบนเกาะเสม็ด ประเทศไทย ที่มี theme ของร้านเป็นแนวโจรสลัด. โดย menu จะแบ่งออกเป็น 3 ประเภทคือ 1. อาหาร 2. เครื่องดื่ม(มีทั้งแอลกอฮอลและไม่มีแอลกอฮอล) 3. เมนูแนะนำ(ประจำเดือนหรือตามฤดู คุณลองวิเคราะห์แล้วเลือกมา), และ menu ควรจะมี 4 ภาษา คือภาษาไทย อังกฤษ จีน รัสเซีย. ฉันต้องการให้คุณออกแบบตั้งแต่ การจัดวางรูปภาพอาหาร ชื่อเมนู และราคา, font ขนาด และ สีของตัวอักษร, โดยมีสีพื้นหลัง เป็นสีดำ, เลือกวัสดุที่ใช้ที่ใช้ทำเมนู เช่น ขนาดกระดาษ ประเภทกระดาษ วิธีการเข้าเล่ม. โดยให้สมมุติข้อมูลเมนูตามร้านอาหารและบาร์ ริมทะเลทั่วไป.
+
+1. You are a graphic designer and ux/ui designer in the world's leading technology company and you want to design a beautiful menu that fits the theme of your restaurant. Analyze and design a menu for a beachfront restaurant and bar on Koh Samet, Thailand, which has a pirate theme. The menu will be divided into 3 categories: 1. Food 2. Drinks (both alcoholic and non-alcoholic) 3. Recommended menus (monthly or seasonal, you analyze and choose), and the menu should be in 4 languages: Thai, English, Chinese, Russian. I need you to design everything from the layout of food photos, menu names and prices, font size and color, with a black background color, and choose the materials used to make the menu, such as paper size, paper type, and binding methods. Assume that the menu information is like a typical beachfront restaurant or bar.
+
+2. **Prompt for AI Graphic Designer:**
+
+Design a visually appealing menu for a beach bar and restaurant located on Koh Samet, Thailand, with a pirate theme. The menu should be organized into three categories: 1. Food 2. Beverages (both alcoholic and non-alcoholic) 3. Monthly/Seasonal Recommendations. The menu must include four languages: Thai, English, Chinese, and Russian. Consider the following specifications:
+
+1. **Visual Layout:**
+   - Arrange food images creatively to enhance visual appeal.
+   - Include menu item names and prices in a clear and engaging manner.
+   - Use a black background color throughout the menu.
+
+2. **Typography:**
+   - Choose appropriate fonts that match the pirate theme.
+   - Specify font sizes for headings, subheadings, and body text.
+   - Select colors for the text that contrast well with the black background for readability.
+
+3. **Material and Size:**
+   - Decide on the size of the menu (e.g., A4, A5).
+   - Specify the type of paper (e.g., glossy, matte) that complements the beach setting.
+   - Propose a binding method (e.g., spiral binding, stapled).
+
+4. **Content Creation:**
+   - Generate fictional menu items that reflect typical beach bar offerings, including dishes and drinks suitable for the theme.
+   - Ensure that the monthly/seasonal recommendations are relevant to local ingredients and seasonal availability.
+
+5. **Visual Elements:**
+   - Incorporate pirate-themed graphics or icons to enhance the overall design.
+   - Use borders or frames that fit the theme while maintaining a modern aesthetic.
+
+6. **Final Presentation:**
+   - Create a mock-up of the menu design that showcases all elements cohesively.
+   - Provide a brief description of the design choices and how they align with the brand identity of the beach bar.
+
+Ensure that the design is user-friendly, visually striking, and captures the essence of a pirate-themed beach dining experience.
+
+3. **Prompt:**
+
+You are a highly skilled graphic designer and UX/UI designer working for a top-tier technology company. Your task is to create a visually appealing and functional menu for a beachfront restaurant and bar located on Koh Samet, Thailand, with a pirate theme. The menu will be categorized into three main sections: 1. Food 2. Drinks (including both alcoholic and non-alcoholic options) 3. Recommended menus (monthly or seasonal selections). 
+
+1. **Design Requirements**:
+   - Theme: Pirate-themed design reflecting a beach ambiance.
+   - Layout: Create a structured layout that emphasizes food photos, menu names, and prices for each category.
+   - Language: The menu must be presented in four languages: Thai, English, Chinese, and Russian. Ensure text is appropriately localized.
+   - Background: Use a black background color to enhance readability and visual appeal.
+
+2. **Content**:
+   - **Food Section**: List popular beachfront dishes, including seafood specialties, local Thai cuisine, and international favorites. Use enticing names and descriptions.
+   - **Drinks Section**: Include a variety of drinks, detailing both alcoholic (cocktails, beers, wines) and non-alcoholic (mocktails, juices) options. Highlight signature drinks.
+   - **Recommended Menus**: Analyze seasonal ingredients and trends, suggesting monthly specials that fit the restaurant's theme.
+
+3. **Visual Elements**:
+   - **Font Size and Color**: Select readable fonts with appropriate sizes for headers, subheaders, and body text. Consider contrasting colors against the black background to enhance visibility.
+   - **Food Photos**: Strategically place high-quality images of food and drinks to entice customers. Ensure images complement the pirate theme.
+
+4. **Materials**:
+   - **Paper Size and Type**: Choose a durable paper type suitable for a beachfront environment (e.g., waterproof or tear-resistant). Specify dimensions (e.g., A4 or A5).
+   - **Binding Methods**: Recommend binding options that are practical for handling and appealing visually, such as spiral binding or laminated pages.
+
+5. **Final Presentation**:
+   - Provide a mockup of the menu layout, showing placement of sections, images, and text in all four languages.
+   - Include notes on the rationale behind design choices, ensuring they align with the pirate theme and beachfront setting.
+
+Your output should encapsulate a detailed design proposal for the menu, emphasizing creativity, usability, and thematic coherence.
+
+4. **Prompt:**
+You are a Machine Learning Engineer and Data Analyst at openai and you want to help improve the prompt for ai for your best friend to use. Analyze and improve the prompt below to get the most efficient results. You want to meet your friend's needs and get usable results. And importantly, if you analyze and find out which parts need to be added or modified without affecting the original requirements, you can manage it. The output is the prompt message that can be used immediately.
+
+"You are a highly skilled graphic designer and UX/UI designer working for a top-tier technology company. Your task is to create a visually appealing and functional menu for a beachfront restaurant and bar located on Koh Samet, Thailand, with a pirate theme. The menu will be categorized into three main sections: 1. Food 2. Drinks (including both alcoholic and non-alcoholic options) 3. Recommended menus (monthly or seasonal selections). 
+
+1. **Design Requirements**:
+   - **Theme**: Develop a pirate-themed design that encapsulates a beach ambiance, incorporating elements such as nautical motifs and treasure-inspired visuals.
+   - **Layout**: Design a structured layout that emphasizes enticing food photos, clear menu names, and competitive prices for each category, ensuring easy navigation for customers.
+   - **Language**: Present the menu in four languages: Thai, English, Chinese, and Russian. Ensure that all text is appropriately localized and culturally relevant.
+   - **Background**: Utilize a black background color to enhance readability and visual appeal while ensuring that all design elements stand out.
+
+2. **Content**:
+   - **Food Section**: Curate a selection of popular beachfront dishes, including seafood specialties, local Thai cuisine, and international favorites. Use imaginative names and descriptions that evoke curiosity and appetite.
+   - **Drinks Section**: Compile a diverse array of drinks, detailing both alcoholic options (cocktails, beers, wines) and non-alcoholic options (mocktails, juices). Highlight signature drinks that align with the pirate theme.
+   - **Recommended Menus**: Analyze seasonal ingredients and culinary trends, proposing monthly specials that resonate with the restaurant's theme and enhance customer experience.
+
+3. **Visual Elements**:
+   - **Font Size and Color**: Choose legible fonts with appropriate sizes for headers, subheaders, and body text. Ensure contrasting colors against the black background enhance visibility and aesthetic appeal.
+   - **Food Photos**: Integrate high-quality images of food and drinks strategically to entice customers visually. Ensure that images are thematically coherent with the pirate concept.
+
+4. **Materials**:
+   - **Paper Size and Type**: Select a durable paper type suitable for a beachfront environment (e.g., waterproof or tear-resistant). Specify dimensions, such as A4 or A5, to ensure practicality and usability.
+   - **Binding Methods**: Recommend binding options that facilitate ease of handling and align with the visual theme, such as spiral binding or laminated pages.
+
+5. **Final Presentation**:
+   - Provide a detailed mockup of the menu layout, showcasing the placement of sections, images, and text in all four languages.
+   - Include comprehensive notes on the rationale behind each design choice, ensuring alignment with the pirate theme and the beachfront setting. Highlight how the design enhances usability and customer engagement.
+
+Your output should encapsulate a detailed design proposal for the menu, emphasizing creativity, usability, and thematic coherence while ensuring that it meets the specific needs of the beachfront restaurant and bar."
+
+You are a world‑class Graphic & UX/UI Designer for a top‑tier tech brand. Today’s mission: craft a visually stunning, pirate‑themed menu for a beachfront restaurant & bar on Koh Samet, Thailand. The menu has three categories—Food, Drinks (both alcoholic and non‑alcoholic), and Monthly/Seasonal Recommendations—and must be delivered as a full mockup and style guide.
+
+**1. Overall Style & Deliverables**  
+- **Theme & Mood**: A playful pirate‑meets‑tropical vibe—nautical icons (anchors, compasses, treasure maps), aged‑paper textures, weathered wood, rope borders.  
+- **File output**:  
+  - Fully editable mockup (Figma/Sketch/Adobe XD).  
+  - High‑res PDF export for print.  
+  - A one‑page style guide (font sizes, color palette with HEX codes, icon library).  
+
+**2. Layout & Navigation**  
+- **Grid & Flow**: Three clear panels (Food, Drinks, Recommendations). Ensure scannability with visual hierarchy: section headers → item names → descriptions → prices.  
+- **Interactivity (optional)**: If digital, specify hover states for item details and language‑toggle controls.  
+
+**3. Content Structure**  
+- **Multilingual Support**: Each item in Thai, English, Chinese (简体), and Russian—localized phrasing, respect cultural conventions (e.g. currency, dietary labels).  
+- **Food**: 8–10 signature dishes—mix local seafood (e.g. “Black Pearl Seafood Platter”) and international beach‑bar classics. Short, evocative descriptions (1–2 lines).  
+- **Drinks**: 6–8 cocktails (e.g. “Captain’s Rum Punch”), 4 beers, 4 wines, 4 mocktails/juices—call out “House Special” badges.  
+- **Recommendations**: Four rotating monthly specials tied to seasonal Thai ingredients. Include a short “chef’s note” for each.  
+
+**4. Visual Assets**  
+- **Imagery**: Place >5 high‑quality food/drink photos—apply a warm, sunlit filter to match beach setting. Frame images with subtle porthole or treasure‑map borders.  
+- **Typography & Color**:  
+  - Headings: Decorative serif (e.g. “Pirates Bold”), 36 pt.  
+  - Body: Clean sans‑serif (e.g. “Open Sans”), 14 pt.  
+  - Colors: Off‑white (#F8F0E3), pirate‑gold (#C49E4C), ocean‑blue (#2A5D8F), coral‑red (#C1440E) on a deep‑charcoal background (#111111).  
+
+**5. Material & Printing Specs**  
+- **Paper**: Waterproof matte synthetic, tear‑resistant.  
+- **Size**: A4 (landscape) or A5 (portrait)—you choose the best fit.  
+- **Binding**: Spiral binding with antique‑brass coils or fully laminated single sheets on an acetate ring.  
+
+**6. Rationale & Annotation**  
+- Annotate your mockup: explain each design decision (icon choices, layout, language treatment) in callouts or side notes.  
+- Highlight how usability (legibility, hierarchy) and theme (pirate, beach) reinforce brand identity and boost customer engagement.
+
+Deliver all assets and documentation in a single shared folder link.  
+
+**Prompt for AI Design Generation:**
+
+You are a world-class Graphic & UX/UI Designer tasked with creating a visually stunning, pirate-themed menu for a beachfront restaurant & bar located on Koh Samet, Thailand. Your design should reflect a playful pirate-meets-tropical vibe and include the following specifications:
+
+1. **Overall Style & Deliverables**  
+   - **Theme & Mood**: Incorporate nautical icons (anchors, compasses, treasure maps), aged-paper textures, weathered wood, and rope borders to create a cohesive pirate aesthetic.  
+   - **File Output**: Deliver the following:  
+     - Fully editable mockup in Figma, Sketch, or Adobe XD.  
+     - High-resolution PDF export suitable for print.  
+     - A one-page style guide outlining font sizes, color palette with HEX codes, and an icon library.
+
+2. **Layout & Navigation**  
+   - **Grid & Flow**: Structure the menu into three distinct panels for Food, Drinks, and Recommendations, ensuring scannability with a clear visual hierarchy (section headers, item names, descriptions, prices).  
+   - **Interactivity (optional)**: If the menu is digital, include hover states for item details and language-toggle controls.
+
+3. **Content Structure**  
+   - **Multilingual Support**: Provide menu items in Thai, English, Chinese (简体), and Russian, ensuring localized phrasing and cultural conventions are respected (e.g., currency, dietary labels).  
+   - **Food Section**: Feature 8-10 signature dishes that blend local seafood with international beach-bar classics. Provide short, evocative descriptions (1-2 lines) for each item.  
+   - **Drinks Section**: Include 6-8 cocktails (e.g., “Captain’s Rum Punch”), 4 beers, 4 wines, and 4 mocktails/juices, designating “House Special” items with badges.  
+   - **Recommendations Section**: Highlight four rotating monthly specials using seasonal Thai ingredients, accompanied by a short “chef’s note” for each dish.
+
+4. **Visual Assets**  
+   - **Imagery**: Integrate more than 5 high-quality photos of food and drinks, applying a warm, sunlit filter to evoke the beach setting. Frame these images with subtle porthole or treasure-map borders.  
+   - **Typography & Color**:  
+     - Headings: Use a decorative serif font (e.g., “Pirates Bold”) at 36 pt.  
+     - Body: Choose a clean sans-serif font (e.g., “Open Sans”) at 14 pt.  
+     - Color Palette: Off-white (#F8F0E3), pirate-gold (#C49E4C), ocean-blue (#2A5D8F), coral-red (#C1440E), against a deep-charcoal background (#111111).
+
+5. **Material & Printing Specs**  
+   - **Paper**: Specify waterproof matte synthetic material that is tear-resistant.  
+   - **Size**: Choose either A4 (landscape) or A5 (portrait) based on the best fit for your design.  
+   - **Binding**: Opt for spiral binding with antique-brass coils or fully laminated single sheets connected by an acetate ring.
+
+6. **Rationale & Annotation**  
+   - Provide annotations in your mockup to explain each design decision, including icon choices, layout, and language treatment.  
+   - Highlight how usability aspects (legibility, hierarchy) and thematic elements (pirate, beach) enhance brand identity and promote customer engagement.
+
+Ensure all assets and documentation are delivered in a single shared folder link for easy access.

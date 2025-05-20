@@ -648,7 +648,7 @@ function insert($conn, $table, $data)
         $stmt->execute();
         return $conn->lastInsertId();
     } catch (PDOException $e) {
-        return null;
+        return $e->getMessage();
     }
 }
 
